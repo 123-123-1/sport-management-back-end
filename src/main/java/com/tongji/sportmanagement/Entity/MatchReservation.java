@@ -4,23 +4,22 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
+
 @Getter
 @Setter
 @Entity
-@Table(name = "groupmember")
-public class GroupMember {
+@Table(name = "matchreservation")
+public class MatchReservation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "user_id")
-    private Integer user;
+    @Column(name = "expiration_time")
+    private Instant expirationTime;
 
-    @Column(name = "group_id")
-    private Integer group;
-
-    @Column(name = "role")
-    private Integer role;
+    @Column(name = "reserved_count")
+    private Integer reservedCount;
 
 }

@@ -1,18 +1,32 @@
 package com.tongji.sportmanagement.Entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.Date;
+import java.time.Instant;
 
-
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
+@Entity
+@Table(name = "venuecomment")
 public class VenueComment {
-    private String commentID;
-    private String venueID;
-    private String userID;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
+
+    @Column(name = "content")
     private String content;
-    private Date time;
-    private float score;
+
+    @Column(name = "time")
+    private Instant time;
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @Column(name = "venue_id", nullable = false)
+    private Integer venue;
+
 }

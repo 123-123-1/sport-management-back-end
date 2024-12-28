@@ -7,20 +7,20 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "groupmember")
-public class GroupMember {
+@Table(name = "reservation")
+public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "user_id")
-    private Integer user;
+    @Column(name = "type", length = 10)
+    private String type;
 
-    @Column(name = "group_id")
-    private Integer group;
+    @Column(name = "state", length = 10)
+    private String state;
 
-    @Column(name = "role")
-    private Integer role;
+    @Column(name = "time_slot_id", nullable = false)
+    private Integer timeSlot;
 
 }

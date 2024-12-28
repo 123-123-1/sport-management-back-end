@@ -7,24 +7,26 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "`group`")
-public class Group {
+@Table(name = "venuemanager")
+public class VenueManager {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Lob
+    @Column(name = "name", length = 20)
+    private String name;
+
+    @Column(name = "image", length = 100)
+    private String image;
+
     @Column(name = "description")
     private String description;
 
-    @Column(name = "name", length = 100)
-    private String name;
+    @Column(name = "location", length = 100)
+    private String location;
 
-    @Column(name = "photo", length = 100)
-    private String photo;
-
-    @Column(name = "chat_id")
-    private Integer chat;
+    @Column(name = "allow_reserve")
+    private Boolean allowReserve;
 
 }

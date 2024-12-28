@@ -1,18 +1,34 @@
 package com.tongji.sportmanagement.Entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.Instant;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
+@Entity
+@Table(name = "chat")
 public class Chat {
-    private String chatID;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
+
+    @Column(name = "chat_name", length = 50)
     private String chatName;
+
+    @ColumnDefault("'groupChat'")
+    @Lob
+    @Column(name = "type")
     private String type;
-    private Date creatingTime;
+
+    @Column(name = "creating_time")
+    private Instant creatingTime;
+
+    @Column(name = "photo", length = 100)
     private String photo;
+
 }
