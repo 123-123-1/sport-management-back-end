@@ -7,6 +7,7 @@ import java.util.Date;
 
 @AllArgsConstructor
 @Data
+
 public class ExpandMessage {
     private String msgID;
     private String content;

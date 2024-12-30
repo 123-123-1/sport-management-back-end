@@ -9,7 +9,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "matchreservation")
+@Table(name = "match_reservation")
 public class MatchReservation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
