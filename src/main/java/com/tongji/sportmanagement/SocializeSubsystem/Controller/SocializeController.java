@@ -4,13 +4,15 @@ package com.tongji.sportmanagement.SocializeSubsystem.Controller;
 import com.tongji.sportmanagement.Common.DTO.ResultData;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 
-import com.tongji.sportmanagement.SocializeSubsystem.DTO.ChatDto;
-import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageDto;
-import com.tongji.sportmanagement.SocializeSubsystem.DTO.QuitChatDto;
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.*;
+import com.tongji.sportmanagement.SocializeSubsystem.Entity.Message;
 import com.tongji.sportmanagement.SocializeSubsystem.Service.ChatService;
 import com.tongji.sportmanagement.SocializeSubsystem.Service.MessageService;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/socialize")
@@ -62,13 +64,21 @@ public class SocializeController {
     }
 
     @PatchMapping("/Chat")
-    public ResponseEntity<Object> Chat(@RequestBody ChatDto chat){
-
+    public ResponseEntity<Object> inviteIntoChat(@RequestBody InviteDto inviteDto){
+        try{
+            //验证token
+            chatService.inviteToChat(inviteDto);
+            return ResponseEntity.status(200).body(ResultMsg.success("已经成功邀请该用户"));
+        }
+        catch (Exception e){
+            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
     }
 
     @PostMapping("/Message")
     public ResponseEntity<Object> sendMessage(@RequestBody MessageDto messageDto){
         try{
+            //验证token
             var message= messageService.sendMessage(messageDto);
             return ResponseEntity.status(200).body(ResultData.success(message));
         }
@@ -76,19 +86,30 @@ public class SocializeController {
             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
         }
     }
+
+    @GetMapping("/Message")
+    public ResponseEntity<Object> getChatHistory(@RequestBody MessageHistoryDto messageHistoryDto) {
+        try {
+            //验证token
+            List<Message> msgs=messageService.getChatHistory(messageHistoryDto);
+            return ResponseEntity.status(200).body(ResultData.success(msgs));
+        }
+        catch (Exception e){
+            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/Message")
+    public ResponseEntity<ResultMsg> deleteMessage(@RequestBody MessageDeleteDto messageDeleteDto) {
+        try{
+            messageService.deleteMsg(messageDeleteDto);
+            return ResponseEntity.status(200).body(ResultMsg.success("消息撤回成功"));
+        }
+        catch (Exception e){
+            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
+    }
 /*
-    @GetMapping("/getChatHistory")
-    public ResponseEntity<ArrayList<ExpandMessage>> getChatHistory(String chatID){
-        var p=new ArrayList<ExpandMessage>();
-        p.add( new ExpandMessage(chatID,null,null,null,null,null));
-        return ResponseEntity.status(200).body(p);
-    }
-
-    @DeleteMapping("/deleteMessage")
-    public ResponseEntity<ResultMsg> deleteMessage(String msgID){
-        return ResponseEntity.status(200).body(new ResultMsg(msgID));
-    }
-
     @GetMapping("/getChatMembers")
     public ResponseEntity<ArrayList<BriefUser>> getChatMember(String chatID){
         var p=new ArrayList<BriefUser>();
