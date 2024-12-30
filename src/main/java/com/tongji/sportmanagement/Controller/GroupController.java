@@ -5,8 +5,6 @@ import com.tongji.sportmanagement.DTO.ExpandGroupMember;
 import com.tongji.sportmanagement.DTO.ResultMsg;
 import com.tongji.sportmanagement.Entity.Group;
 import com.tongji.sportmanagement.Entity.GroupApplication;
-import com.tongji.sportmanagement.Entity.GroupMember;
-import com.tongji.sportmanagement.Entity.GroupMemberRecord;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

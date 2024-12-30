@@ -6,5 +6,16 @@ spring:
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update # 自动更新数据库表结构
+    show-sql: true       # 显示SQL语句
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true # 格式化SQL输出
+        hibernate.connection.characterEncoding: utf8
+        hibernate.connection.CharSet: utf8
+        hibernate.connection.useUnicode: true
 server:
   port: 8080
