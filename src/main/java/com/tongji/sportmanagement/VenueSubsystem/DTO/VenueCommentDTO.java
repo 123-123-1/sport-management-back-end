@@ -13,5 +13,5 @@ public class VenueCommentDTO
 {
   long total;
   int page;
-  List<VenueCommentItem> comments;
+  List<CommentItemDTO> comments;
 }
