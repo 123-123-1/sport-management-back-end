@@ -4,7 +4,7 @@ package com.tongji.sportmanagement.SocializeSubsystem.Service;
 import com.tongji.sportmanagement.AccountSubsystem.Entity.User;
 import com.tongji.sportmanagement.SocializeSubsystem.Repository.FriendApplicationRepository;
 
-import com.tongji.sportmanagement.SocializeSubsystem.DTO.AuditResultDTO;
+import com.tongji.sportmanagement.Common.DTO.AuditResultDTO;
 import com.tongji.sportmanagement.Common.DTO.ChatDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendApplicationDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatType;
@@ -43,8 +43,8 @@ public class FriendApplicationService {
         if (friendApplicationRepository.existsByApplicantIdAndReviewerId(auditResultDTO.getAuditObjectId(), auditResultDTO.getReviewerId())) {
             if (auditResultDTO.isResult()) {
                  friendApplicationRepository.setState(auditResultDTO.getAuditObjectId(),FriendApplicationState.accepted);
-                 User user=friendApplicationRepository.getApplicantByApplicationId(auditResultDTO.getAuditObjectId());
-                 List<Integer> members=List.of(user.getUserId(),auditResultDTO.getReviewerId());
+                 Integer userId=friendApplicationRepository.getApplicantByApplicationId(auditResultDTO.getAuditObjectId());
+                 List<Integer> members=List.of(userId,auditResultDTO.getReviewerId());
                  chatService.createChat(new ChatDTO(auditResultDTO.getReviewerId(),null,null,members), ChatType.friendChat);
             }
             else {

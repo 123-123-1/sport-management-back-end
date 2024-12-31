@@ -20,8 +20,8 @@ public interface FriendApplicationRepository extends JpaRepository<FriendApplica
     @Query("update FriendApplication f set f.state=?2 where f.applicantId=?1")
     void setState(Integer applicationId, FriendApplicationState friendApplicationState);
 
-    @Query("select u from FriendApplication f join User u on f.applicantId=u.userId")
-    User getApplicantByApplicationId(Integer applicationId);
+    @Query("select f.applicantId from FriendApplication f where f.applicantId=?1")
+    Integer getApplicantByApplicationId(Integer applicationId);
 
     List<FriendApplication> findFriendApplicationsByReviewerId(Integer userId);
 }

@@ -43,14 +43,12 @@ public class GroupApplication {
 
     @NotNull
     @Column(name = "applicant_id", nullable = false)
-    private Integer applicant;
+    private Integer applicantId;
 
     @NotNull
     @Column(name = "group_id", nullable = false)
-    private Integer group;
+    private Integer groupId;
 
     @Column(name = "reviewer_id")
-    private Integer reviewer;
-
-
+    private Integer reviewerId;
 }

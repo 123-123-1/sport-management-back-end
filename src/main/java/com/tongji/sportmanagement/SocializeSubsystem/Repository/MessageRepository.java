@@ -21,4 +21,6 @@ public interface MessageRepository  extends JpaRepository<Message, Integer> {
     @Modifying
     @Query("delete from Message m where m.messageId=?1 and m.userId=?2 and m.time>?3")
     Integer deleteByMessageIdAndUserIdAndTime(Integer messageId, Integer userId,Instant time);
+
+    void deleteByChatId(Integer chatId);
 }

@@ -19,12 +19,9 @@ public class Group {
     private String description;
 
     @Column(name = "name", length = 100)
-    private String name;
-
-    @Column(name = "photo", length = 100)
-    private String photo;
+    private String groupName;
 
     @Column(name = "chat_id")
-    private Integer chat;
+    private Integer chatId;
 
 }

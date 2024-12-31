@@ -10,6 +10,7 @@ import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatMember;
 import com.tongji.sportmanagement.SocializeSubsystem.Repository.ChatMemberRepository;
 import com.tongji.sportmanagement.SocializeSubsystem.Repository.ChatRepository;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatType;
+import com.tongji.sportmanagement.SocializeSubsystem.Repository.MessageRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -21,10 +22,12 @@ import java.util.List;
 public class ChatService {
     private final ChatRepository chatRepository;
     private final ChatMemberRepository chatMemberRepository;
+    private final MessageRepository messageRepository;
 
-    public ChatService(ChatRepository chatRepository, ChatMemberRepository chatMemberRepository) {
+    public ChatService(ChatRepository chatRepository, ChatMemberRepository chatMemberRepository, MessageRepository messageRepository) {
         this.chatRepository = chatRepository;
         this.chatMemberRepository = chatMemberRepository;
+        this.messageRepository = messageRepository;
     }
 
     @Transactional
@@ -60,6 +63,10 @@ public class ChatService {
         if(p==0){
             throw new RuntimeException("该用户没有加入该群聊");
         }
+        if(chatMemberRepository.countByChatId(chatId)==0){
+            messageRepository.deleteByChatId(chatId);
+            chatRepository.deleteById(chatId);
+        }
     }
 
     @Transactional
@@ -94,6 +101,7 @@ public class ChatService {
         if(chatRepository.existFriendship(ff.getOperatorId(),ff.getTargetId(),ff.getChatId())){
              chatMemberRepository.deleteByUserId(ff.getOperatorId());
              chatMemberRepository.deleteByUserId(ff.getTargetId());
+             messageRepository.deleteByChatId(ff.getChatId());
              chatRepository.deleteById(ff.getChatId());
         }
         else{

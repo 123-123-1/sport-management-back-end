@@ -17,15 +17,15 @@ public class GroupMember {
     private Integer groupMembershipId;
 
     @Column(name = "user_id")
-    private Integer user;
+    private Integer userId;
 
     @Column(name = "group_id")
-    private Integer group;
+    private Integer groupId;
 
     @NotNull
     @ColumnDefault("'member'")
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private GroupMemberRole state;
+    private GroupMemberRole role;
 }
 

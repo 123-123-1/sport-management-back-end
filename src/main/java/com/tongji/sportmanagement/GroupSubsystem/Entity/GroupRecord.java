@@ -2,7 +2,9 @@ package com.tongji.sportmanagement.GroupSubsystem.Entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
@@ -10,6 +12,8 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "group_record")
 public class GroupRecord {
     @Id
@@ -18,13 +22,13 @@ public class GroupRecord {
     private Integer groupRecordId;
 
     @Column(name = "operator_id")
-    private Integer operator;
+    private Integer operatorId;
 
     @Column(name = "target_id")
-    private Integer target;
+    private Integer targetId;
 
     @Column(name = "group_id")
-    private Integer group;
+    private Integer groupId;
 
     @Column(name = "time")
     private Instant time;

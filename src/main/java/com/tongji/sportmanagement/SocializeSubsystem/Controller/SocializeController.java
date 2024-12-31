@@ -1,7 +1,7 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Controller;
 
 
-import com.tongji.sportmanagement.SocializeSubsystem.DTO.AuditResultDTO;
+import com.tongji.sportmanagement.Common.DTO.AuditResultDTO;
 import com.tongji.sportmanagement.Common.DTO.ChatDTO;
 import com.tongji.sportmanagement.Common.DTO.ResultData;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
