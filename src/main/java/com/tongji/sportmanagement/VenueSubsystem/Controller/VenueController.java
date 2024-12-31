@@ -1,21 +1,14 @@
-package com.tongji.sportmanagement.Controller;
+package com.tongji.sportmanagement.VenueSubsystem.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.tongji.sportmanagement.VenueSubsystem.Service.VenueService;
+
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import com.tongji.sportmanagement.DTO.VenueListDTO;
-import com.tongji.sportmanagement.Entity.Venue;
-import com.tongji.sportmanagement.Repository.VenueRepository;
-
-import java.util.List;
-
-import com.tongji.sportmanagement.DTO.ErrorMsg;
-import com.tongji.sportmanagement.Service.VenueService;
 
 @RestController
 @RequestMapping("/api/venues")
@@ -42,11 +35,11 @@ public class VenueController
     return service.getVenueCourts(venueId);
   }
 
-  // @GetMapping("/timeslots")
-  // public ArrayList<Timeslot> getVenueTimeslots(@RequestParam String date)
-  // {
-
-  // }
+  @GetMapping("/timeslots")
+  public ResponseEntity<Object> getVenueTimeslots(@RequestParam int venueId, @RequestParam String date)
+  {
+    return service.getVenueTimeslots(venueId, date);
+  }
 
   // @GetMapping("/comments")
   // public ArrayList<Comment> getVenueComments(@RequestParam int venueID)

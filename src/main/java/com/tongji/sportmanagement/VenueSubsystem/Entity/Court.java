@@ -1,4 +1,4 @@
-package com.tongji.sportmanagement.Entity;
+package com.tongji.sportmanagement.VenueSubsystem.Entity;
 
 import org.hibernate.annotations.ColumnDefault;
 

@@ -1,4 +1,4 @@
-package com.tongji.sportmanagement.Entity;
+package com.tongji.sportmanagement.VenueSubsystem.Entity;
 
 import org.hibernate.annotations.ColumnDefault;
 
@@ -9,13 +9,13 @@ import lombok.Setter;
 
 enum AvailabilityState
 {
-  reservable, matching, full, closed
+  reserveable, matching, full, closed
 }
 
 @Entity
 @Getter
 @Setter
-@Table(name = "court_availablity")
+@Table(name = "court_availability")
 public class CourtAvailability
 {
   @Id
