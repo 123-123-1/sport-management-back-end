@@ -1,4 +1,4 @@
-package com.tongji.sportmanagement.Common;
+package com.tongji.sportmanagement.Common.DTO;
 import lombok.*;
 
 @AllArgsConstructor

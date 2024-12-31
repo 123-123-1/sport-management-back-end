@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.tongji.sportmanagement.Common.ErrorMsg;
+import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
 import com.tongji.sportmanagement.Repository.CourtAvailabilityRepository;
 import com.tongji.sportmanagement.Repository.CourtRepository;
 import com.tongji.sportmanagement.Repository.TimeslotRepository;
@@ -86,5 +86,10 @@ public class VenueService
     }
     return ResponseEntity.ok().body(result);
   }
+
+  // public ResponseEntity<Object> getVenueComments(int venueId)
+  // {
+
+  // }
 }
 

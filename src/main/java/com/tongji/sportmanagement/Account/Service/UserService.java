@@ -2,7 +2,7 @@ package com.tongji.sportmanagement.Account.Service;
 
 import com.tongji.sportmanagement.Account.DTO.RegisterRequestDTO;
 import com.tongji.sportmanagement.Account.Repository.UserRepository;
-import com.tongji.sportmanagement.DTO.ErrorMsg;
+import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
 import com.tongji.sportmanagement.Entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

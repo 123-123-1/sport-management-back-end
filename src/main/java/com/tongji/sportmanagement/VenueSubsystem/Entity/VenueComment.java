@@ -6,12 +6,12 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-// import com.tongji.sportmanagement.Entity.User;
+// import com.tongji.sportmanagement.Account.Entity.User;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "venuecomment")
+@Table(name = "venue_comment")
 public class VenueComment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

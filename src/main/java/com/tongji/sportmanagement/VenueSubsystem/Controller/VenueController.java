@@ -42,7 +42,7 @@ public class VenueController
   }
 
   // @GetMapping("/comments")
-  // public ArrayList<Comment> getVenueComments(@RequestParam int venueID)
+  // public ResponseEntity<Object> getVenueComments(@RequestParam int venueID)
   // {
 
   // }
