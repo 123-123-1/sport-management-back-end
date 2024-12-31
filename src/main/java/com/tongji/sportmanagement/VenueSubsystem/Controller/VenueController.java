@@ -1,13 +1,15 @@
 package com.tongji.sportmanagement.VenueSubsystem.Controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tongji.sportmanagement.VenueSubsystem.DTO.PostCommentDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Service.VenueService;
 
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,14 +46,14 @@ public class VenueController
   }
 
   @GetMapping("/comments")
-  public ResponseEntity<Object> getVenueComments(@RequestParam int venueId)
+  public ResponseEntity<Object> getVenueComments(@RequestParam int venueId, @RequestParam int page)
   {
-    return service.getVenueComments(venueId, 1);
+    return service.getVenueComments(venueId, page);
   }
 
-  // @PostMapping("/comments")
-  // public ResultMsg postVenueComment(@RequestBody Comment comment)
-  // {
-
-  // }
+  @PostMapping("/comments")
+  public ResponseEntity<Object> postVenueComment(@RequestBody PostCommentDTO comment, @RequestAttribute int userId)
+  {
+    return service.postVenueComment(comment, userId);
+  }
 }

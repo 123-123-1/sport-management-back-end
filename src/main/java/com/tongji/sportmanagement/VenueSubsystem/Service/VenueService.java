@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
 import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
+import com.tongji.sportmanagement.VenueSubsystem.DTO.CommentItemDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.PostCommentDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueCommentDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueListDTO;
@@ -104,12 +105,16 @@ public class VenueService
   public ResponseEntity<Object> getVenueComments(int venueId, int page)
   {
     List<VenueComment> comments = (List<VenueComment>)commentRepositiory.findAllByVenueId(venueId);
-    List<VenueCommentDTO> result = new ArrayList<VenueCommentDTO>();
+    List<CommentItemDTO> result = new ArrayList<CommentItemDTO>();
+    for (VenueComment comment : comments) {
+      result.add(new CommentItemDTO(comment, null));
+    }
     return ResponseEntity.ok().body(result);
   }
 
-  public ResponseEntity<Object> postVenueComments(int userId, PostCommentDTO comment)
+  public ResponseEntity<Object> postVenueComment(int userId, PostCommentDTO comment)
   {
+
     return ResponseEntity.ok().body("success");
   }
 }
