@@ -1,5 +1,6 @@
 package com.tongji.sportmanagement.AccountSubsystem.Service;
 
+import com.tongji.sportmanagement.AccountSubsystem.DTO.LoginResponseDTO;
 import com.tongji.sportmanagement.AccountSubsystem.DTO.RegisterRequestDTO;
 import com.tongji.sportmanagement.AccountSubsystem.Repository.UserRepository;
 import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
@@ -30,23 +31,8 @@ public class UserService {
         if(!user.getPassword().equals(password)) {
             return ResponseEntity.status(400).body(new ErrorMsg("密码错误"));
         }
-
-//        try {
-//            return ResponseEntity.ok(accountService.login(loginRequestDto.getIdentity(), loginRequestDto.getPassword()));
-//        } catch (InvalidCredentialsException e) {
-//            return ResponseEntity.status(401).body(e.getMessage());
-//        }
-
-//        try{
-//            if (userName == null || password == null) {
-//                throw new InvalidCredentialsException("User not found or invalid password");
-//            }
-//            return ResponseEntity.status(200).body("success");
-//        } catch (Exception e) {
-//            return ResponseEntity.status(500).body();
-//        }
-
-        return ResponseEntity.status(200).body("success");
+        LoginResponseDTO loginResponseDTO = JwtService.getTokenById(user.getUserId());
+        return ResponseEntity.status(200).body(loginResponseDTO);
     }
 
 
