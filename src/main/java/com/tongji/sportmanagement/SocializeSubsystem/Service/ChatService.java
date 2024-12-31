@@ -1,41 +1,43 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Service;
 
 
-import com.tongji.sportmanagement.Common.DTO.LittleUserDTO;
-import com.tongji.sportmanagement.Common.Repository.UserRepository;
+import com.tongji.sportmanagement.Repository.UserRepository;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.ChatDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.ChatDetailDTO;
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.InviteDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Chat;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatMember;
-import com.tongji.sportmanagement.SocializeSubsystem.Repository.ChatMemberRepository;
-import com.tongji.sportmanagement.SocializeSubsystem.Repository.ChatRepository;
+import com.tongji.sportmanagement.Repository.ChatMemberRepository;
+import com.tongji.sportmanagement.Repository.ChatRepository;
+import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatType;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
 public class ChatService {
+    private final ChatRepository chatRepository;
+    private final ChatMemberRepository chatMemberRepository;
 
-
-    @Autowired
-    private ChatRepository chatRepository;
-    @Autowired
-    private ChatMemberRepository chatMemberRepository;
-    @Autowired
-    private UserRepository userRepository;
+    public ChatService(ChatRepository chatRepository, ChatMemberRepository chatMemberRepository,UserRepository userRepository) {
+        this.chatRepository = chatRepository;
+        this.chatMemberRepository = chatMemberRepository;
+    }
 
     @Transactional
-    public Chat createChat(ChatDTO chatDto) {
+    public Chat createChat(ChatDTO chatDto,ChatType chatType) {
         if(!chatDto.getMembers().contains(chatDto.getUserId())){
             throw new RuntimeException("群聊成员不包含发起人");
         }
         Chat chat = new Chat();
         BeanUtils.copyProperties(chatDto, chat);
-        chat.setType("groupChat");
+        chat.setType(chatType);
+        chat.setCreatingTime(Instant.now());
         var finalChat = chatRepository.save(chat);
         List<ChatMember> members = chatDto.getMembers().stream().map(
                 userId -> {
@@ -48,6 +50,7 @@ public class ChatService {
         chatMemberRepository.saveAll(members);
         return chat;
     }
+
 
     public List<Chat> getChatsByUserId(Integer userId) {
         return chatRepository.findChatsByUserId(userId);
@@ -85,7 +88,7 @@ public class ChatService {
         return chatDetailDTO;
     }
 
-    public List<Chat> getFriendsBy(Integer userId) {
+    public List<FriendDTO> getFriendsBy(Integer userId) {
         return chatRepository.findFriendsByUserId(userId);
     }
 }

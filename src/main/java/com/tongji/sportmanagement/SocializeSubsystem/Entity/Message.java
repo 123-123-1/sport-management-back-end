@@ -1,6 +1,5 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Entity;
 
-import com.tongji.sportmanagement.Common.Entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

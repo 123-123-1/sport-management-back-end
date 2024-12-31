@@ -4,10 +4,12 @@ package com.tongji.sportmanagement.SocializeSubsystem.Controller;
 import com.tongji.sportmanagement.Common.DTO.ResultData;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 
-import com.tongji.sportmanagement.Common.Repository.UserRepository;
+import com.tongji.sportmanagement.Repository.UserRepository;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.*;
-import com.tongji.sportmanagement.SocializeSubsystem.Entity.Message;
+import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatType;
+import com.tongji.sportmanagement.SocializeSubsystem.Entity.FriendApplication;
 import com.tongji.sportmanagement.SocializeSubsystem.Service.ChatService;
+import com.tongji.sportmanagement.SocializeSubsystem.Service.FriendApplicationService;
 import com.tongji.sportmanagement.SocializeSubsystem.Service.MessageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,10 +22,12 @@ public class SocializeController {
 
     private final ChatService chatService;
     private final MessageService messageService;
+    private final FriendApplicationService friendApplicationService;
 
-    public SocializeController(ChatService chatService, MessageService messageService, UserRepository userRepository) {
+    public SocializeController(ChatService chatService, MessageService messageService, UserRepository userRepository, FriendApplicationService friendApplicationService) {
         this.chatService = chatService;
         this.messageService = messageService;
+        this.friendApplicationService = friendApplicationService;
     }
 
     //@RequestHeader("Authorization") String token,
@@ -32,7 +36,7 @@ public class SocializeController {
     public ResponseEntity<Object> createChat( @RequestBody ChatDTO chat) {
         try {
             //验证token
-            var c=chatService.createChat(chat);
+            var c=chatService.createChat(chat, ChatType.groupChat);
             return ResponseEntity.status(200).body(ResultData.success(c));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
@@ -133,50 +137,46 @@ public class SocializeController {
         }
     }
 
-    @PostMapping("/postFriendApplication")
-    public ResponseEntity<ResultMsg> postFriendApplication(String userID , @RequestBody FriendApplication friendApplication){
-        return ResponseEntity.status(200).body(new ResultMsg(userID+friendApplication.toString()));
+    @PostMapping("/application")
+    public ResponseEntity<ResultMsg> postFriendApplication(@RequestBody FriendApplicationDTO friendApplication){
+        try{
+            //验证token
+            friendApplicationService.postFriendApplication(friendApplication);
+            return ResponseEntity.status(200).body(ResultMsg.success("好友申请已发送"));
+        }
+        catch (Exception e){
+            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
     }
+    @PatchMapping("/application")
+    public ResponseEntity<ResultMsg> processFriendApplication(@RequestBody AuditResultDTO auditResultDTO) {
+        try {
+            //验证token
+            friendApplicationService.auditFriendApplication(auditResultDTO);
+            return ResponseEntity.status(200).body(ResultMsg.success("好友申请处理成功"));
+        }
+        catch (Exception e){
+            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/application")
+    public ResponseEntity<Object> getFriendApplication(Integer userId){
+        try {
+            var applications=friendApplicationService.getAllFriendApplication(userId);
+            return ResponseEntity.status(200).body(ResultData.success(applications));
+        }
+        catch (Exception e){
+            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
+    }
+
+
+
 /*
     @DeleteMapping("/deleteFriend")
     public ResponseEntity<ResultMsg> deleteFriend(String userID,String chatID){
         return ResponseEntity.status(200).body(new ResultMsg(userID+chatID));
     }
-
-
-
-
-    @PutMapping("/processFriendApplication")
-    public ResponseEntity<ResultMsg> processFriendApplication(String applicationID , boolean result){
-        return ResponseEntity.status(200).body(new ResultMsg(applicationID+result));
-    }
-
-    @GetMapping("/getFriendApplication")
-    public ResponseEntity<ArrayList<FriendApplication>> getFriendApplication(String userID){
-        var p=new ArrayList<FriendApplication>();
-        p.add(new FriendApplication(userID,null,null,null,null,null,null));
-        return ResponseEntity.status(200).body(p);
-    }
-
-    @GetMapping("/getVenueComments")
-    public ResponseEntity<ArrayList<ExpandComment>> getVenueComments(String userID){
-        var p=new ArrayList<ExpandComment>();
-        p.add(new ExpandComment(userID,null,null,null,null,0,null,null));
-        return ResponseEntity.status(200).body(p);
-    }
-
-    @PostMapping("/postVenueComment")
-    public ResponseEntity<ResultMsg> postVenueComment(@RequestBody VenueComment comment){
-        return ResponseEntity.status(200).body(new ResultMsg(comment.toString()));
-    }
-
-    @DeleteMapping("/deleteVenueComment")
-    public ResponseEntity<ResultMsg> deleteVenueComment(String commentID){
-        return ResponseEntity.status(200).body(new ResultMsg(commentID));
-    }
-
-    @PutMapping("/editVenueComment")
-    public ResponseEntity<ResultMsg> editVenueComment(@RequestBody VenueComment comment){
-        return ResponseEntity.status(200).body(new ResultMsg(comment.toString()));
-    }*/
+*/
 }

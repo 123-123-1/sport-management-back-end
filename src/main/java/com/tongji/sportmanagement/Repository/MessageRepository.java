@@ -1,4 +1,4 @@
-package com.tongji.sportmanagement.SocializeSubsystem.Repository;
+package com.tongji.sportmanagement.Repository;
 
 
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageUserDTO;
@@ -14,9 +14,8 @@ import java.util.List;
 @Repository
 public interface MessageRepository  extends JpaRepository<Message, Integer> {
 
-    @Query("select new com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageUserDTO(u,m)" +
-            " from (select m from Message m join Chat c on c.chatId=m.chatId where c.chatId=?1) " +
-            "join User u on m.userId=u.userId")
+    @Query("select new com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageUserDTO(m,u)" +
+            " from Message m join Chat c on c.chatId=m.chatId  join User u on m.userId=u.userId")
     List<MessageUserDTO> getHistoryByChatId(Integer chatId);
 
     @Modifying

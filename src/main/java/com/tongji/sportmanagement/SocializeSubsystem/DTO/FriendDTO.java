@@ -1,16 +1,14 @@
 package com.tongji.sportmanagement.SocializeSubsystem.DTO;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.time.Instant;
-import java.util.List;
-
 @Data
 @AllArgsConstructor
-public class ChatDTO {
+public class FriendDTO {
     Integer userId;
-    String chatName;
+    Integer chatId;
+    String userName;
     String photo;
-    private List<Integer> members;
 }

@@ -5,8 +5,8 @@ import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageDeleteDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageUserDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Message;
-import com.tongji.sportmanagement.SocializeSubsystem.Repository.ChatMemberRepository;
-import com.tongji.sportmanagement.SocializeSubsystem.Repository.MessageRepository;
+import com.tongji.sportmanagement.Repository.ChatMemberRepository;
+import com.tongji.sportmanagement.Repository.MessageRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +19,13 @@ import java.util.List;
 @Service
 public class MessageService {
 
-    @Autowired
-    private MessageRepository messageRepository;
-    @Autowired
-    private ChatMemberRepository chatMemberRepository;
+    private final MessageRepository messageRepository;
+    private final ChatMemberRepository chatMemberRepository;
 
+    public MessageService(MessageRepository messageRepository, ChatMemberRepository chatMemberRepository) {
+        this.messageRepository = messageRepository;
+        this.chatMemberRepository = chatMemberRepository;
+    }
 
     @Transactional
     public Message sendMessage(MessageDTO messageDto) {

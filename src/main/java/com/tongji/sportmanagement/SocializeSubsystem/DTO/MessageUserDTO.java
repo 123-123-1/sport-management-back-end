@@ -1,13 +1,15 @@
 package com.tongji.sportmanagement.SocializeSubsystem.DTO;
 
-import com.tongji.sportmanagement.Common.Entity.User;
+import com.tongji.sportmanagement.UserSystem.Entity.User;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Message;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
 import java.time.Instant;
 
 @Data
+@AllArgsConstructor
 public class MessageUserDTO {
     private Integer messageId;
     private Instant time;

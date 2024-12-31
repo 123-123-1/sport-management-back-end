@@ -1,6 +1,7 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
@@ -21,10 +22,12 @@ public class FriendApplication {
     @Column(name = "apply_info", length = 100)
     private String applyInfo;
 
+    @NotNull
     @ColumnDefault("'waiting'")
-    @Lob
+    @Enumerated(EnumType.STRING)
     @Column(name = "state", nullable = false)
-    private String state;
+    private FriendApplicationState state;
+
 
     @Column(name = "operation_time")
     private Instant operationTime;
@@ -34,9 +37,8 @@ public class FriendApplication {
 
 
     @Column(name = "applicant_id")
-    private Integer applicant;
+    private Integer applicantId;
 
     @Column(name = "reviewer_id")
-    private Integer reviewer;
-
+    private Integer reviewerId;
 }

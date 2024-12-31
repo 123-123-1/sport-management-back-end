@@ -1,8 +1,10 @@
 package com.tongji.sportmanagement.GroupSubsystem.Entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter
@@ -20,7 +22,10 @@ public class GroupMember {
     @Column(name = "group_id")
     private Integer group;
 
-    @Column(name = "role")
-    private Integer role;
-
+    @NotNull
+    @ColumnDefault("'member'")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private GroupMemberRole state;
 }
+

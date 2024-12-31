@@ -1,6 +1,7 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
@@ -20,10 +21,12 @@ public class Chat {
     @Column(name = "chat_name", length = 50)
     private String chatName;
 
+    @NotNull
     @ColumnDefault("'groupChat'")
-    @Lob
-    @Column(name = "type")
-    private String type;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private ChatType type;
+
 
     @Column(name = "creation_time")
     private Instant creatingTime;
