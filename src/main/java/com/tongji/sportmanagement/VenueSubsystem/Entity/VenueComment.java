@@ -6,8 +6,6 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-// import com.tongji.sportmanagement.Account.Entity.User;
-
 @Getter
 @Setter
 @Entity
@@ -24,9 +22,8 @@ public class VenueComment {
     @Column(name = "time")
     private Instant time;
 
-    // @OneToOne(fetch = FetchType.LAZY, optional = false)
-    // @JoinColumn(name = "user_id", nullable = false)
-    // private User user;
+    @Column(name = "user_id", nullable = false)
+    private Integer userId;
 
     @Column(name = "venue_id", nullable = false)
     private Integer venue;
