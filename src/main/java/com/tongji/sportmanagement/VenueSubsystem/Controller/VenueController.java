@@ -52,8 +52,13 @@ public class VenueController
   }
 
   @PostMapping("/comments")
-  public ResponseEntity<Object> postVenueComment(@RequestBody PostCommentDTO comment, @RequestAttribute int userId)
+  // 等待JWT相关功能
+  // public ResponseEntity<Object> postVenueComment(@RequestBody PostCommentDTO comment, @RequestAttribute int userId)
+  // {
+  //   return service.postVenueComment(comment, userId);
+  // }
+  public ResponseEntity<Object> postVenueComment(@RequestBody PostCommentDTO comment)
   {
-    return service.postVenueComment(comment, userId);
+    return service.postVenueComment(comment, 1);
   }
 }

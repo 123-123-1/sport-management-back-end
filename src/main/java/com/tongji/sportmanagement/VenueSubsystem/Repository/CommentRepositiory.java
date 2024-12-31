@@ -8,7 +8,7 @@ import com.tongji.sportmanagement.VenueSubsystem.Entity.VenueComment;
 
 public interface CommentRepositiory extends CrudRepository<VenueComment, Integer>
 {
-  @Query(value = "SELECT * FROM venue_comment WHERE venue_id = :venueId LIMIT :count OFFSET :offset", nativeQuery = true)
+  @Query(value = "SELECT * FROM venue_comment WHERE venue_id = :venueId ORDER BY time DESC LIMIT :count OFFSET :offset", nativeQuery = true)
   Iterable<VenueComment> findCommentByVenueId(@Param("venueId") Integer venueId, @Param("offset") long offset, @Param("count") int count);
 
   @Query(value = "SELECT COUNT(*) FROM venue_comment WHERE venue_id = :venueId", nativeQuery = true)

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class PostCommentDTO
 {
   int venueId;
-  Double rating;
+  Double score;
   String content;
-  Instant commentTime;
+  Instant time;
 }

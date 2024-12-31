@@ -10,6 +10,8 @@ import com.tongji.sportmanagement.VenueSubsystem.Repository.CourtAvailabilityRep
 import com.tongji.sportmanagement.VenueSubsystem.Repository.CourtRepository;
 import com.tongji.sportmanagement.VenueSubsystem.Repository.TimeslotRepository;
 import com.tongji.sportmanagement.VenueSubsystem.Repository.VenueRepository;
+
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -100,12 +102,15 @@ public class VenueService
 
   public ResponseEntity<Object> getVenueComments(int venueId, long page)
   {
+    // 1. 获取所有用户评论
     long offset = (page - 1) * pageCommentCount;
     List<VenueComment> comments = (List<VenueComment>)commentRepositiory.findCommentByVenueId(venueId, offset, pageCommentCount);
+    // 2. 获取评论的所有用户信息
     List<CommentItemDTO> userComments = new ArrayList<CommentItemDTO>();
     for (VenueComment comment : comments) {
-      userComments.add(new CommentItemDTO(comment, null));
+      userComments.add(new CommentItemDTO(comment, userController.getUserProfile(comment.getUserId())));
     }
+    // 3. 生成查询结果
     VenueCommentDTO result = new VenueCommentDTO();
     result.setTotal(commentRepositiory.getCommentCount(venueId));
     result.setPage(page);
@@ -116,10 +121,8 @@ public class VenueService
   public ResponseEntity<Object> postVenueComment(PostCommentDTO comment, int userId)
   {
     VenueComment userComment = new VenueComment();
-    userComment.setVenueId(comment.getVenueId());
-    userComment.setTime(comment.getCommentTime());
+    BeanUtils.copyProperties(comment, userComment);
     userComment.setUserId(userId);
-    userComment.setContent(comment.getContent());
     commentRepositiory.save(userComment);
     return ResponseEntity.ok().body("success");
   }
