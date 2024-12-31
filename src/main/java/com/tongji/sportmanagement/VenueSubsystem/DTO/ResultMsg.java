@@ -1,4 +1,4 @@
-package com.tongji.sportmanagement.DTO;
+package com.tongji.sportmanagement.VenueSubsystem.DTO;
 
 
 import lombok.AllArgsConstructor;

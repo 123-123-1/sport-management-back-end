@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
-import com.tongji.sportmanagement.Entity.Venue;
+import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
 
 @Repository
 public interface VenueRepository extends CrudRepository<Venue, Integer>

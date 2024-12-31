@@ -1,6 +1,6 @@
 package com.tongji.sportmanagement.Repository;
 
-import com.tongji.sportmanagement.Entity.Court;
+import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
