@@ -27,11 +27,6 @@ import com.tongji.sportmanagement.VenueSubsystem.Entity.Timeslot;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.VenueComment;
 import com.tongji.sportmanagement.VenueSubsystem.Repository.CommentRepositiory;
-import com.tongji.sportmanagement.VenueSubsystem.Repository.CourtAvailabilityRepository;
-import com.tongji.sportmanagement.VenueSubsystem.Repository.CourtRepository;
-import com.tongji.sportmanagement.VenueSubsystem.Repository.TimeslotRepository;
-import com.tongji.sportmanagement.VenueSubsystem.Repository.VenueRepository;
-
 
 @Service
 public class VenueService
@@ -50,7 +45,8 @@ public class VenueService
   @Autowired
   private UserController userController;
 
-  final int pageCount = 10; // 一页场馆的数量
+  final int pageVenueCount = 10; // 一页场馆的数量
+  final int pageCommentCount = 10; // 一页评论的数量
 
   // 获取所有场馆 or 根据名称关键字查找场馆
   public ResponseEntity<Object> getAllVenues(int page, String name)
@@ -58,11 +54,11 @@ public class VenueService
     List<Venue> result;
     long total = 0;
     if(name.isBlank()){
-      result = (List<Venue>) venueRepository.findPageVenue((page - 1) * pageCount, pageCount);
+      result = (List<Venue>) venueRepository.findPageVenue((page - 1) * pageVenueCount, pageVenueCount);
       total = venueRepository.count();
     }
     else{
-      result = (List<Venue>) venueRepository.findVenueByName(name, (page - 1) * pageCount, pageCount);
+      result = (List<Venue>) venueRepository.findVenueByName(name, (page - 1) * pageVenueCount, pageVenueCount);
       total = venueRepository.getVenueNameCount(name);
     }
     return ResponseEntity.ok().body(new VenueListDTO(total, page, result));
@@ -102,19 +98,29 @@ public class VenueService
     return ResponseEntity.ok().body(result);
   }
 
-  public ResponseEntity<Object> getVenueComments(int venueId, int page)
+  public ResponseEntity<Object> getVenueComments(int venueId, long page)
   {
-    List<VenueComment> comments = (List<VenueComment>)commentRepositiory.findAllByVenueId(venueId);
-    List<CommentItemDTO> result = new ArrayList<CommentItemDTO>();
+    long offset = (page - 1) * pageCommentCount;
+    List<VenueComment> comments = (List<VenueComment>)commentRepositiory.findCommentByVenueId(venueId, offset, pageCommentCount);
+    List<CommentItemDTO> userComments = new ArrayList<CommentItemDTO>();
     for (VenueComment comment : comments) {
-      result.add(new CommentItemDTO(comment, null));
+      userComments.add(new CommentItemDTO(comment, null));
     }
+    VenueCommentDTO result = new VenueCommentDTO();
+    result.setTotal(commentRepositiory.getCommentCount(venueId));
+    result.setPage(page);
+    result.setComments(userComments);
     return ResponseEntity.ok().body(result);
   }
 
-  public ResponseEntity<Object> postVenueComment(int userId, PostCommentDTO comment)
+  public ResponseEntity<Object> postVenueComment(PostCommentDTO comment, int userId)
   {
-
+    VenueComment userComment = new VenueComment();
+    userComment.setVenueId(comment.getVenueId());
+    userComment.setTime(comment.getCommentTime());
+    userComment.setUserId(userId);
+    userComment.setContent(comment.getContent());
+    commentRepositiory.save(userComment);
     return ResponseEntity.ok().body("success");
   }
 }

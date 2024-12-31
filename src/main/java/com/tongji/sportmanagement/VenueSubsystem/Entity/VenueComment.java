@@ -27,8 +27,10 @@ public class VenueComment {
     // @OneToOne(fetch = FetchType.LAZY, optional = false)
     // @JoinColumn(name = "user_id", nullable = false)
     // private User user;
+    @Column(name = "user_id", nullable = false)
+    private Integer userId;
 
     @Column(name = "venue_id", nullable = false)
-    private Integer venue_id;
+    private Integer venueId;
 
 }

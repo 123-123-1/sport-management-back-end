@@ -46,7 +46,7 @@ public class VenueController
   }
 
   @GetMapping("/comments")
-  public ResponseEntity<Object> getVenueComments(@RequestParam int venueId, @RequestParam int page)
+  public ResponseEntity<Object> getVenueComments(@RequestParam int venueId, @RequestParam long page)
   {
     return service.getVenueComments(venueId, page);
   }

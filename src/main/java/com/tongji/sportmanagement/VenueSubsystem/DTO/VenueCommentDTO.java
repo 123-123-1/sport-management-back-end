@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class VenueCommentDTO
 {
   long total;
-  int page;
+  long page;
   List<CommentItemDTO> comments;
 }
