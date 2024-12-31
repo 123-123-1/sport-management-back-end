@@ -17,12 +17,12 @@ import java.util.*;
 public class SocializeController {
 
 
-    @GetMapping("/getChatByID")
-    public ResponseEntity<ArrayList<Chat>> getChatByID(String userID){
-        ArrayList<Chat> chatList = new ArrayList<>();
-        chatList.add(new Chat("100","100","100",new Date(),null));
-        return ResponseEntity.status(200).body(chatList);
-    }
+//    @GetMapping("/getChatByID")
+//    public ResponseEntity<ArrayList<Chat>> getChatByID(String userID){
+//        ArrayList<Chat> chatList = new ArrayList<>();
+//        chatList.add(new Chat("100","100","100",new Date(),null));
+//        return ResponseEntity.status(200).body(chatList);
+//    }
 
     @PostMapping("/createChat")
     public ResponseEntity<ResultMsg> createChat(String userID, @RequestBody CompleteChat chat){
@@ -58,12 +58,12 @@ public class SocializeController {
         return ResponseEntity.status(200).body(p);
     }
 
-    @GetMapping("/getFriends")
-    public ResponseEntity<ArrayList<Chat>> getFirends(String userID){
-        var p=new ArrayList<Chat>();
-        p.add( new Chat(userID,null,null,null,null));
-        return ResponseEntity.status(200).body(p);
-    }
+//    @GetMapping("/getFriends")
+//    public ResponseEntity<ArrayList<Chat>> getFirends(String userID){
+//        var p=new ArrayList<Chat>();
+//        p.add( new Chat(userID,null,null,null,null));
+//        return ResponseEntity.status(200).body(p);
+//    }
 
     @DeleteMapping("/deleteFriend")
     public ResponseEntity<ResultMsg> deleteFriend(String userID,String chatID){
@@ -80,12 +80,12 @@ public class SocializeController {
         return ResponseEntity.status(200).body(new ResultMsg(applicationID+result));
     }
 
-    @GetMapping("/getFriendApplication")
-    public ResponseEntity<ArrayList<FriendApplication>> getFriendApplication(String userID){
-        var p=new ArrayList<FriendApplication>();
-        p.add(new FriendApplication(userID,null,null,null,null,null,null));
-        return ResponseEntity.status(200).body(p);
-    }
+//    @GetMapping("/getFriendApplication")
+//    public ResponseEntity<ArrayList<FriendApplication>> getFriendApplication(String userID){
+//        var p=new ArrayList<FriendApplication>();
+//        p.add(new FriendApplication(userID,null,null,null,null,null,null));
+//        return ResponseEntity.status(200).body(p);
+//    }
 
     @GetMapping("/getVenueComments")
     public ResponseEntity<ArrayList<ExpandComment>> getVenueComments(String userID){

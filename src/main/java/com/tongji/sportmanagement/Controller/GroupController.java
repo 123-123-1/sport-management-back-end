@@ -19,15 +19,15 @@ public class GroupController {
         return ResponseEntity.status(200).body(new ResultMsg(completeGroup.toString()));
     }
 
-    @GetMapping("/getGroups")
-    public ResponseEntity<Group> getGroups() {
-        return ResponseEntity.status(200).body(new Group("10000",null,null,null,null));
-    }
-
-    @GetMapping("/getGroupByID")
-    public ResponseEntity<Group> getGroupByID(String groupID) {
-        return ResponseEntity.status(200).body(new Group(groupID,null,null,null,null));
-    }
+//    @GetMapping("/getGroups")
+//    public ResponseEntity<Group> getGroups() {
+//        return ResponseEntity.status(200).body(new Group("10000",null,null,null,null));
+//    }
+//
+//    @GetMapping("/getGroupByID")
+//    public ResponseEntity<Group> getGroupByID(String groupID) {
+//        return ResponseEntity.status(200).body(new Group(groupID,null,null,null,null));
+//    }
 
     @DeleteMapping("/deleteGroup")
     public ResponseEntity<ResultMsg> deleteGroup(String groupID,String userID) {
@@ -56,10 +56,10 @@ public class GroupController {
         return ResponseEntity.status(200).body(new ResultMsg(applicationID+result));
     }
 
-    @GetMapping("/getGroupMemberRecord")
-    public ResponseEntity<ArrayList<GroupMemberRecord>> getGroupMemberRecord(String userID) {
-        var p= new ArrayList<GroupMemberRecord>();
-        p.add(new GroupMemberRecord(userID,null,null));
-        return ResponseEntity.status(200).body(p);
-    }
+//    @GetMapping("/getGroupMemberRecord")
+//    public ResponseEntity<ArrayList<GroupMemberRecord>> getGroupMemberRecord(String userID) {
+//        var p= new ArrayList<GroupMemberRecord>();
+//        p.add(new GroupMemberRecord(userID,null,null));
+//        return ResponseEntity.status(200).body(p);
+//    }
 }
