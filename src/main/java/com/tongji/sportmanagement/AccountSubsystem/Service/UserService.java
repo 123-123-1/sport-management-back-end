@@ -49,7 +49,7 @@ public class UserService {
 
     public UserProfileDTO getUserProfile(int userId) {
         UserProfileDTO userProfileDTO = new UserProfileDTO();
-        Optional<User> userOptional = userRepository.findById(userId);
+        Optional<User> userOptional = userRepository.findByUserId(userId);
         if(userOptional.isEmpty()) {
             return null;
         }
