@@ -6,15 +6,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.tongji.sportmanagement.VenueSubsystem.Repository.CourtAvailabilityRepository;
+import com.tongji.sportmanagement.VenueSubsystem.Repository.CourtRepository;
+import com.tongji.sportmanagement.VenueSubsystem.Repository.TimeslotRepository;
+import com.tongji.sportmanagement.VenueSubsystem.Repository.VenueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
-import com.tongji.sportmanagement.Repository.CourtAvailabilityRepository;
-import com.tongji.sportmanagement.Repository.CourtRepository;
-import com.tongji.sportmanagement.Repository.TimeslotRepository;
-import com.tongji.sportmanagement.Repository.VenueRepository;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueListDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueTimeslotDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;

@@ -1,6 +1,6 @@
-package com.tongji.sportmanagement.Account.Repository;
+package com.tongji.sportmanagement.AccountSubsystem.Repository;
 
-import com.tongji.sportmanagement.Account.Entity.User;
+import com.tongji.sportmanagement.AccountSubsystem.Entity.User;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

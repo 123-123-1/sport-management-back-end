@@ -1,4 +1,4 @@
-package com.tongji.sportmanagement.Repository;
+package com.tongji.sportmanagement.VenueSubsystem.Repository;
 
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
 

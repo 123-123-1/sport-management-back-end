@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tongji.sportmanagement.Account.Controller.UserController;
+import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
 import com.tongji.sportmanagement.VenueSubsystem.Service.VenueService;
 
 import org.springframework.web.bind.annotation.RequestParam;

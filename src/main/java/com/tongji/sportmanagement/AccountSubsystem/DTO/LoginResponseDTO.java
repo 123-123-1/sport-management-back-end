@@ -1,4 +1,4 @@
-package com.tongji.sportmanagement.Account.DTO;
+package com.tongji.sportmanagement.AccountSubsystem.DTO;
 
 import java.util.Date;
 

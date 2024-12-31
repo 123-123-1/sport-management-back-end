@@ -1,10 +1,9 @@
-package com.tongji.sportmanagement.Account.Entity;
+package com.tongji.sportmanagement.AccountSubsystem.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -15,7 +14,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
-    private Integer id;
+    private Integer userId;
 
     @Column(name = "user_name", nullable = false, length = 50)
     private String userName;
