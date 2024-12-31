@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-// import com.tongji.sportmanagement.AccountSubsystem.Entity.User;
+// import com.tongji.sportmanagement.Account.Entity.User;
 
 @Getter
 @Setter
