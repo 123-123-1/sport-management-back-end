@@ -1,7 +1,6 @@
 package com.tongji.sportmanagement.Account.Repository;
 
-import com.tongji.sportmanagement.Entity.User;
-import org.springframework.data.jpa.repository.Query;
+import com.tongji.sportmanagement.Account.Entity.User;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

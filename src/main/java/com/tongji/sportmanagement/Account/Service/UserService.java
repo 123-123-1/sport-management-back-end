@@ -3,13 +3,13 @@ package com.tongji.sportmanagement.Account.Service;
 import com.tongji.sportmanagement.Account.DTO.RegisterRequestDTO;
 import com.tongji.sportmanagement.Account.Repository.UserRepository;
 import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
-import com.tongji.sportmanagement.Entity.User;
+import com.tongji.sportmanagement.Account.Entity.User;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.Instant;
 
 @Service
 public class UserService {
@@ -47,7 +47,9 @@ public class UserService {
 
 
     public ResponseEntity<Object> register(RegisterRequestDTO data) {
-        User user = new User(data.getUserName(),data.getPassword(),data.getPhone(),data.getRealName(), LocalDateTime.now(),data.getPhoto());
+        User user = new User();
+        BeanUtils.copyProperties(data, user);
+        user.setRegistrationDate(Instant.now());
         userRepository.save(user);
         return ResponseEntity.status(200).body("success");
     }

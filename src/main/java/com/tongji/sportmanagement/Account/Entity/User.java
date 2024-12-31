@@ -1,16 +1,12 @@
-package com.tongji.sportmanagement.Entity;
+package com.tongji.sportmanagement.Account.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "user")
 @AllArgsConstructor
@@ -34,7 +30,7 @@ public class User {
     private String realName;
 
     @Column(name = "registration_date")
-    private LocalDateTime registrationDate;
+    private Instant registrationDate;
 
     @Column(name = "photo", length = 100)
     private String photo;
