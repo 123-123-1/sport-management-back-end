@@ -46,7 +46,7 @@ public class VenueController
   @GetMapping("/comments")
   public ResponseEntity<Object> getVenueComments(@RequestParam int venueId)
   {
-    return service.getVenueComments(venueId);
+    return service.getVenueComments(venueId, 1);
   }
 
   // @PostMapping("/comments")

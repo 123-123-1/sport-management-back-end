@@ -1,10 +1,11 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-import org.jetbrains.annotations.NotNull;
+
 
 import java.time.Instant;
 
