@@ -1,10 +1,9 @@
-package com.tongji.sportmanagement.Account.Entity;
+package com.tongji.sportmanagement.AccountSubsystem.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Data
 @Entity

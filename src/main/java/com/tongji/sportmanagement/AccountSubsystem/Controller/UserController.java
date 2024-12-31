@@ -1,15 +1,15 @@
-package com.tongji.sportmanagement.Account.Controller;
+package com.tongji.sportmanagement.AccountSubsystem.Controller;
 
-import com.tongji.sportmanagement.Account.DTO.LoginRequestDTO;
-import com.tongji.sportmanagement.Account.DTO.RegisterRequestDTO;
-import com.tongji.sportmanagement.Account.Service.UserService;
+import com.tongji.sportmanagement.AccountSubsystem.DTO.LoginRequestDTO;
+import com.tongji.sportmanagement.AccountSubsystem.DTO.RegisterRequestDTO;
+import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
+import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("")
 public class UserController {
 
     @Autowired
@@ -29,4 +29,5 @@ public class UserController {
     public String test() {
         return "test";
     }
+
 }

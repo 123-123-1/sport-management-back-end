@@ -1,4 +1,4 @@
-package com.tongji.sportmanagement.Account.Service;
+package com.tongji.sportmanagement.AccountSubsystem.Service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
