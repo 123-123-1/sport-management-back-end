@@ -33,8 +33,8 @@ public class GroupRecord {
     @Column(name = "time")
     private Instant time;
 
-    @Size(max = 10)
-    @Column(name = "operate_type", length = 10)
+    @Size(max = 30)
+    @Column(name = "operate_type", length = 30)
     private String operateType;
 
 }

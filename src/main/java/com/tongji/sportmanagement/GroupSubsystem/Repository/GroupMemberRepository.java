@@ -16,4 +16,8 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Intege
     boolean checkAuth(Integer groupId, Integer userId);
 
     void deleteByGroupId(Integer groupId);
+
+    void deleteByGroupIdAndUserId(Integer groupId, Integer memberId);
+
+    int countByGroupId(Integer groupId);
 }

@@ -3,7 +3,9 @@ package com.tongji.sportmanagement.GroupSubsystem.Entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -12,6 +14,8 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "group_application")
 public class GroupApplication {
     @Id

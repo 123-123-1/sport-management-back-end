@@ -1,7 +1,7 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Repository;
 
 
-import com.tongji.sportmanagement.Common.DTO.LittleUserDTO;
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.LittleUserDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Chat;
 import org.springframework.data.jpa.repository.JpaRepository;

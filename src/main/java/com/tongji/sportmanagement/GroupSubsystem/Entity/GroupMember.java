@@ -2,13 +2,17 @@ package com.tongji.sportmanagement.GroupSubsystem.Entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "group_member")
 public class GroupMember {
     @Id
@@ -27,5 +31,6 @@ public class GroupMember {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private GroupMemberRole role;
+
 }
 

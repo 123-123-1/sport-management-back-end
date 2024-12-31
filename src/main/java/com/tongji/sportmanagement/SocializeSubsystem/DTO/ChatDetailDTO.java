@@ -1,7 +1,6 @@
 package com.tongji.sportmanagement.SocializeSubsystem.DTO;
 
 
-import com.tongji.sportmanagement.Common.DTO.LittleUserDTO;
 import lombok.Data;
 
 import java.time.Instant;

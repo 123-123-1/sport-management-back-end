@@ -14,7 +14,9 @@ import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupApplicationRepo
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupMemberRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRecordRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRepository;
+import com.tongji.sportmanagement.SocializeSubsystem.Controller.SocializeController;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,21 +32,27 @@ public class GroupService {
     private final GroupApplicationService groupApplicationService;
     private final GroupRecordRepository groupRecordRepository;
     private final GroupApplicationRepository groupApplicationRepository;
+    private final GroupRecordService groupRecordService;
+    private final SocializeController socializeController;
+    private final GroupMemberService groupMemberService;
 
-    public GroupService(GroupRepository groupRepository, GroupMemberRepository groupMemberRepository, GroupController groupController, GroupApplicationService groupApplicationService, GroupRecordRepository groupRecordRepository, GroupApplicationRepository groupApplicationRepository) {
+    public GroupService(GroupRepository groupRepository, GroupMemberRepository groupMemberRepository, GroupController groupController, GroupApplicationService groupApplicationService, GroupRecordRepository groupRecordRepository, GroupApplicationRepository groupApplicationRepository, GroupRecordService groupRecordService, SocializeController socializeController, GroupMemberService groupMemberService) {
         this.groupRepository = groupRepository;
         this.groupMemberRepository = groupMemberRepository;
         this.groupController = groupController;
         this.groupApplicationService = groupApplicationService;
         this.groupRecordRepository = groupRecordRepository;
         this.groupApplicationRepository = groupApplicationRepository;
+        this.groupRecordService = groupRecordService;
+        this.socializeController = socializeController;
+        this.groupMemberService = groupMemberService;
     }
 
     @Transactional
     public void createGroup(CompleteGroupDTO completeGroup){
         Group group = new Group();
         //创建群聊
-        Integer chatId=groupController.createGroupChat(new ChatDTO(completeGroup.getCreatorId(),completeGroup.getGroupName(),null,completeGroup.getMembers()));
+        var chatId=socializeController.createChatId(new ChatDTO(completeGroup.getCreatorId(),completeGroup.getGroupName(),null,completeGroup.getMembers()));
         BeanUtils.copyProperties(completeGroup,group);
         group.setChatId(chatId);
         //创建团体
@@ -56,7 +64,7 @@ public class GroupService {
         groupMember.setRole(GroupMemberRole.leader);
         groupMemberRepository.save(groupMember);
         //添加记录
-        groupRecordRepository.save(new GroupRecord(null, completeGroup.getCreatorId(), null, _group.getGroupId(), Instant.now(),"创建团体"));
+        groupRecordService.addRecord(completeGroup.getCreatorId(), null, _group.getGroupId(),"创建团体");
         //发送邀请
         groupApplicationService.sendApplicationsEd(completeGroup.getMembers(),completeGroup.getCreatorId(),_group);
     }
@@ -73,8 +81,7 @@ public class GroupService {
         }
         GroupDetailDTO groupDetailDTO = new GroupDetailDTO();
         BeanUtils.copyProperties(group,groupDetailDTO);
-        List<GroupMember> members = groupMemberRepository.findGroupMembersByGroupId(groupId);
-        groupDetailDTO.setMembers(groupController.getUserDetail(members.stream().map(GroupMember::getUserId).toList()));
+        groupDetailDTO.setMembers(groupMemberService.getGroupMembers(groupId));
         return groupDetailDTO;
     }
 

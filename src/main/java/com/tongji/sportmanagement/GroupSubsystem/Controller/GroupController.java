@@ -1,30 +1,27 @@
 package com.tongji.sportmanagement.GroupSubsystem.Controller;
 
-import com.tongji.sportmanagement.Common.DTO.ChatDTO;
-import com.tongji.sportmanagement.Common.DTO.LittleUserDTO;
 import com.tongji.sportmanagement.Common.DTO.ResultData;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
-import com.tongji.sportmanagement.GroupSubsystem.DTO.CompleteGroupDTO;
-import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupApplicationDTO;
-import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupDeleteDTO;
+import com.tongji.sportmanagement.GroupSubsystem.DTO.*;
 import com.tongji.sportmanagement.GroupSubsystem.Service.GroupApplicationService;
+import com.tongji.sportmanagement.GroupSubsystem.Service.GroupMemberService;
 import com.tongji.sportmanagement.GroupSubsystem.Service.GroupService;
 import com.tongji.sportmanagement.Common.DTO.AuditResultDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/groups")
+@RequestMapping("/groups")
 public class GroupController {
 
     private final GroupService groupService;
     private final GroupApplicationService groupApplicationService;
+    private final GroupMemberService groupMemberService;
 
-    public GroupController(GroupService groupService, GroupApplicationService groupApplicationService) {
+    public GroupController(GroupService groupService, GroupApplicationService groupApplicationService, GroupMemberService groupMemberService) {
         this.groupService = groupService;
         this.groupApplicationService = groupApplicationService;
+        this.groupMemberService = groupMemberService;
     }
 
     @PostMapping("")
@@ -94,6 +91,17 @@ public class GroupController {
         }
     }
 
+    @PostMapping("/application/{userId}")
+    public ResponseEntity<Object> inviteMember(@PathVariable Integer userId, @RequestBody InviteGroupDTO inviteDTO) {
+        try{
+            groupApplicationService.inviteMember(inviteDTO,userId);
+            return ResponseEntity.status(200).body(ResultMsg.success("已经向该用户发送邀请"));
+        }
+        catch (Exception e) {
+            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
+    }
+
     @PatchMapping("/application")
     public ResponseEntity<Object> updateGroupApplication(@RequestBody AuditResultDTO auditResultDTO) {
         try{
@@ -105,36 +113,32 @@ public class GroupController {
         }
     }
 
-    public List<LittleUserDTO> getUserDetail(List<Integer> users){
-        return null;
+    @DeleteMapping("/members")
+    public ResponseEntity<Object> deleteGroupMember(@RequestBody MemberQuitDTO quitDTO) {
+        try{
+            groupMemberService.quitGroup(quitDTO);
+            return ResponseEntity.status(200).body(ResultMsg.success("退出团体成功"));
+        }
+        catch (Exception e) {
+            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
     }
 
-    public Integer createGroupChat(ChatDTO chatDTO){
-        return null;
+    @DeleteMapping("/members/by")
+    public ResponseEntity<Object> removeGroupMember(@RequestBody MemberDropDTO dropDTO) {
+        try{
+            groupMemberService.dropMember(dropDTO);
+            return ResponseEntity.status(200).body(ResultMsg.success("退出团体成功"));
+        }
+        catch (Exception e) {
+            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
     }
+
 /*
 
-    @DeleteMapping("/removeGroupMember")
-    public ResponseEntity<ResultMsg> removeGroupMember(String groupID,String operatorID,String userID) {
-        return ResponseEntity.status(200).body(new ResultMsg(groupID+operatorID+userID));
-    }
 
-    @GetMapping("/getGroupMembers")
-    public ResponseEntity<ArrayList<ExpandGroupMember>> getGroupMembers(String groupID) {
-        var p= new ArrayList<ExpandGroupMember>();
-        p.add(new ExpandGroupMember(groupID,null,null,null));
-        return ResponseEntity.status(200).body(p);
-    }
 
-    @PostMapping("/postGroupApplication")
-    public ResponseEntity<ResultMsg> postGroupApplication(@RequestBody GroupApplication groupApplication) {
-       return ResponseEntity.status(200).body(new ResultMsg(groupApplication.toString()));
-    }
-
-    @PutMapping("/putGroupApplication")
-    public ResponseEntity<ResultMsg> putGroupApplication(String applicationID,boolean result) {
-        return ResponseEntity.status(200).body(new ResultMsg(applicationID+result));
-    }
 
     @GetMapping("/getGroupMemberRecord")
     public ResponseEntity<ArrayList<GroupMemberRecord>> getGroupMemberRecord(String userID) {

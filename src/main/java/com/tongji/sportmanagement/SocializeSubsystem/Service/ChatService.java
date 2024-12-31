@@ -4,7 +4,7 @@ import com.tongji.sportmanagement.Common.DTO.ChatDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.ChatDetailDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendDeleteDTO;
-import com.tongji.sportmanagement.SocializeSubsystem.DTO.InviteDTO;
+import com.tongji.sportmanagement.Common.DTO.InviteDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Chat;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatMember;
 import com.tongji.sportmanagement.SocializeSubsystem.Repository.ChatMemberRepository;

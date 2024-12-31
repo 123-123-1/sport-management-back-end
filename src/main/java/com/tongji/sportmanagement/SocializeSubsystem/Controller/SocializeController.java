@@ -1,10 +1,7 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Controller;
 
 
-import com.tongji.sportmanagement.Common.DTO.AuditResultDTO;
-import com.tongji.sportmanagement.Common.DTO.ChatDTO;
-import com.tongji.sportmanagement.Common.DTO.ResultData;
-import com.tongji.sportmanagement.Common.DTO.ResultMsg;
+import com.tongji.sportmanagement.Common.DTO.*;
 
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.*;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatType;
@@ -17,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/socialize")
+@RequestMapping("/socialize")
 public class SocializeController {
 
     private final ChatService chatService;
@@ -184,8 +181,14 @@ public class SocializeController {
         }
     }
 
+    public Integer createChatId( ChatDTO chat) {
+        try {
+            //验证token
+            var c=chatService.createChat(chat, ChatType.groupChat);
+            return c.getChatId();
 
-/*
-
-*/
+        } catch (Exception e) {
+            return -1;
+        }
+    }
 }

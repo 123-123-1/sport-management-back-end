@@ -1,4 +1,4 @@
-package com.tongji.sportmanagement.Common.DTO;
+package com.tongji.sportmanagement.SocializeSubsystem.DTO;
 
 
 import lombok.AllArgsConstructor;
