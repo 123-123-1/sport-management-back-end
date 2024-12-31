@@ -16,7 +16,7 @@ public class VenueComment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id", nullable = false)
-    private Integer comment_id;
+    private Integer commentId;
 
     @Column(name = "content")
     private String content;
@@ -24,9 +24,9 @@ public class VenueComment {
     @Column(name = "time")
     private Instant time;
 
-    // @OneToOne(fetch = FetchType.LAZY, optional = false)
-    // @JoinColumn(name = "user_id", nullable = false)
-    // private User user;
+    @Column(name = "score")
+    private Double score;
+
     @Column(name = "user_id", nullable = false)
     private Integer userId;
 
