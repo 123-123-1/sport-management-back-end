@@ -14,13 +14,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
 import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
+import com.tongji.sportmanagement.VenueSubsystem.DTO.PostCommentDTO;
+import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueCommentDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueListDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueTimeslotDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Timeslot;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
+import com.tongji.sportmanagement.VenueSubsystem.Entity.VenueComment;
+import com.tongji.sportmanagement.VenueSubsystem.Repository.CommentRepositiory;
+import com.tongji.sportmanagement.VenueSubsystem.Repository.CourtAvailabilityRepository;
+import com.tongji.sportmanagement.VenueSubsystem.Repository.CourtRepository;
+import com.tongji.sportmanagement.VenueSubsystem.Repository.TimeslotRepository;
+import com.tongji.sportmanagement.VenueSubsystem.Repository.VenueRepository;
 
 
 @Service
@@ -34,6 +43,11 @@ public class VenueService
   private TimeslotRepository timeslotRepository;
   @Autowired
   private CourtAvailabilityRepository courtAvailabilityRepository;
+  @Autowired
+  private CommentRepositiory commentRepositiory;
+
+  @Autowired
+  private UserController userController;
 
   final int pageCount = 10; // 一页场馆的数量
 
@@ -87,9 +101,16 @@ public class VenueService
     return ResponseEntity.ok().body(result);
   }
 
-  // public ResponseEntity<Object> getVenueComments(int venueId)
-  // {
+  public ResponseEntity<Object> getVenueComments(int venueId, int page)
+  {
+    List<VenueComment> comments = (List<VenueComment>)commentRepositiory.findAllByVenueId(venueId);
+    List<VenueCommentDTO> result = new ArrayList<VenueCommentDTO>();
+    return ResponseEntity.ok().body(result);
+  }
 
-  // }
+  public ResponseEntity<Object> postVenueComments(int userId, PostCommentDTO comment)
+  {
+    return ResponseEntity.ok().body("success");
+  }
 }
 
