@@ -1,6 +1,7 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Controller;
 
 
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.AuditResultDTO;
 import com.tongji.sportmanagement.Common.DTO.ChatDTO;
 import com.tongji.sportmanagement.Common.DTO.ResultData;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
@@ -105,6 +106,7 @@ public class SocializeController {
     @GetMapping("/messages")
     public ResponseEntity<Object> getChatHistory(Integer chatId,Integer userId) {
         try {
+            //********************************************************************
             //验证token
             List<MessageUserDTO> msgs=messageService.getChatHistory(chatId,userId);
             return ResponseEntity.status(200).body(ResultData.success(msgs));
@@ -128,6 +130,7 @@ public class SocializeController {
     @GetMapping("/friends")
     public ResponseEntity<Object> getFriends(Integer userId){
         try {
+            //***************************************************************
             //验证token
             var friends= chatService.getFriendsBy(userId);
             return ResponseEntity.status(200).body(ResultData.success(friends));
@@ -170,13 +173,19 @@ public class SocializeController {
             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
         }
     }
-
+    @DeleteMapping("/friends")
+    public ResponseEntity<Object> deleteFriend(@RequestBody FriendDeleteDTO friendDeleteDTO){
+        try{
+            chatService.deleteFriend(friendDeleteDTO);
+            return ResponseEntity.status(200).body(ResultMsg.success("好友删除成功"));
+        }
+        catch (Exception e){
+            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
+    }
 
 
 /*
-    @DeleteMapping("/deleteFriend")
-    public ResponseEntity<ResultMsg> deleteFriend(String userID,String chatID){
-        return ResponseEntity.status(200).body(new ResultMsg(userID+chatID));
-    }
+
 */
 }

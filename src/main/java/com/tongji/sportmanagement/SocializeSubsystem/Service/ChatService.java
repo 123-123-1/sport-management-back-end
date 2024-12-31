@@ -3,6 +3,7 @@ package com.tongji.sportmanagement.SocializeSubsystem.Service;
 import com.tongji.sportmanagement.Common.DTO.ChatDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.ChatDetailDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendDTO;
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendDeleteDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.InviteDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Chat;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatMember;
@@ -87,5 +88,16 @@ public class ChatService {
 
     public List<FriendDTO> getFriendsBy(Integer userId) {
         return chatRepository.findFriendsByUserId(userId);
+    }
+
+    public void deleteFriend(FriendDeleteDTO ff) {
+        if(chatRepository.existFriendship(ff.getOperatorId(),ff.getTargetId(),ff.getChatId())){
+             chatMemberRepository.deleteByUserId(ff.getOperatorId());
+             chatMemberRepository.deleteByUserId(ff.getTargetId());
+             chatRepository.deleteById(ff.getChatId());
+        }
+        else{
+            throw new IllegalArgumentException("删除的好友关系不存在");
+        }
     }
 }

@@ -29,4 +29,7 @@ public interface ChatRepository  extends JpaRepository<Chat, Integer> {
             "where cm.userId = ?1 and c.type = 'friendChat' " +
             "and cmm.userId != ?1")
     List<FriendDTO> findFriendsByUserId(Integer userId);
+
+    @Query("select  exists (select  c from Chat c join  ChatMember cm on cm.userId= ?1 and c.chatId=cm.chatId and c.type='friendChat'and c.chatId=?3 join ChatMember cm1 on cm1.userId=?2 and c.chatId=cm1.chatId)")
+    boolean existFriendship(Integer userId, Integer friendId,Integer chatId);
 }
