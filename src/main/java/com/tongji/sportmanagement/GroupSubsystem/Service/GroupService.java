@@ -9,14 +9,12 @@ import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupDetailDTO;
 import com.tongji.sportmanagement.GroupSubsystem.Entity.Group;
 import com.tongji.sportmanagement.GroupSubsystem.Entity.GroupMember;
 import com.tongji.sportmanagement.GroupSubsystem.Entity.GroupMemberRole;
-import com.tongji.sportmanagement.GroupSubsystem.Entity.GroupRecord;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupApplicationRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupMemberRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRecordRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRepository;
 import com.tongji.sportmanagement.SocializeSubsystem.Controller.SocializeController;
 import org.springframework.beans.BeanUtils;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +26,6 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
-    private final GroupController groupController;
     private final GroupApplicationService groupApplicationService;
     private final GroupRecordRepository groupRecordRepository;
     private final GroupApplicationRepository groupApplicationRepository;
@@ -36,10 +33,9 @@ public class GroupService {
     private final SocializeController socializeController;
     private final GroupMemberService groupMemberService;
 
-    public GroupService(GroupRepository groupRepository, GroupMemberRepository groupMemberRepository, GroupController groupController, GroupApplicationService groupApplicationService, GroupRecordRepository groupRecordRepository, GroupApplicationRepository groupApplicationRepository, GroupRecordService groupRecordService, SocializeController socializeController, GroupMemberService groupMemberService) {
+    public GroupService(GroupRepository groupRepository, GroupMemberRepository groupMemberRepository, GroupApplicationService groupApplicationService, GroupRecordRepository groupRecordRepository, GroupApplicationRepository groupApplicationRepository, GroupRecordService groupRecordService, SocializeController socializeController, GroupMemberService groupMemberService) {
         this.groupRepository = groupRepository;
         this.groupMemberRepository = groupMemberRepository;
-        this.groupController = groupController;
         this.groupApplicationService = groupApplicationService;
         this.groupRecordRepository = groupRecordRepository;
         this.groupApplicationRepository = groupApplicationRepository;
