@@ -14,7 +14,7 @@ import java.time.Instant;
 public class GroupRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "group_record_id", nullable = false)
     private Integer groupRecordId;
 
     @Column(name = "operator_id")

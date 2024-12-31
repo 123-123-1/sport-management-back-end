@@ -14,11 +14,9 @@ import java.time.Instant;
 public class FriendApplication {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "friend_application_id", nullable = false)
     private Integer friendApplicationId;
 
-    @Column(name = "type", nullable = false, length = 10)
-    private String type;
 
     @Column(name = "apply_info", length = 100)
     private String applyInfo;
@@ -34,10 +32,11 @@ public class FriendApplication {
     @Column(name = "expiration_time")
     private Instant expirationTime;
 
-    @Column(name = "applicant", nullable = false)
+
+    @Column(name = "applicant_id")
     private Integer applicant;
 
-    @Column(name = "reviewer", nullable = false)
+    @Column(name = "reviewer_id")
     private Integer reviewer;
 
 }

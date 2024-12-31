@@ -14,7 +14,7 @@ import java.time.Instant;
 public class Chat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "chat_id", nullable = false)
     private Integer chatId;
 
     @Column(name = "chat_name", length = 50)

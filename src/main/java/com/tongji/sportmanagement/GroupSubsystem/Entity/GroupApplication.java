@@ -1,6 +1,7 @@
 package com.tongji.sportmanagement.GroupSubsystem.Entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
@@ -14,7 +15,7 @@ import java.time.Instant;
 public class GroupApplication {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "group_application_id", nullable = false)
     private Integer groupApplicationId;
 
     @ColumnDefault("'invited'")
@@ -36,10 +37,14 @@ public class GroupApplication {
     @Column(name = "expiration_time")
     private Instant expirationTime;
 
-    @Column(name = "user_id", nullable = false)
-    private Integer user;
-
     @Column(name = "group_id", nullable = false)
     private Integer group;
+
+    @NotNull
+    @Column(name = "applicant_id", nullable = false)
+    private Integer applicant;
+
+    @Column(name = "reviewer_id")
+    private Integer reviewer;
 
 }

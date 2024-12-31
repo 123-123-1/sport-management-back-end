@@ -8,7 +8,7 @@ import java.time.Instant;
 
 @AllArgsConstructor
 @Data
-public class MessageDto {
+public class MessageDTO {
     private Instant time;
     private String content;
     private Integer chatId;

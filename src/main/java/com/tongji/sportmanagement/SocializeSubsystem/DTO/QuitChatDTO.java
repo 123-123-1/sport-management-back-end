@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class QuitChatDto {
+public class QuitChatDTO {
     private int userId;
     private int chatId;
 }

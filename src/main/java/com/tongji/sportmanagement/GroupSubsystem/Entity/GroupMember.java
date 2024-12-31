@@ -11,7 +11,7 @@ import lombok.Setter;
 public class GroupMember {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "group_member_id", nullable = false)
     private Integer groupMembershipId;
 
     @Column(name = "user_id")

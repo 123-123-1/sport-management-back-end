@@ -1,9 +1,9 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Service;
 
 
-import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageDeleteDto;
-import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageDto;
-import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageHistoryDto;
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageDTO;
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageDeleteDTO;
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageUserDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Message;
 import com.tongji.sportmanagement.SocializeSubsystem.Repository.ChatMemberRepository;
 import com.tongji.sportmanagement.SocializeSubsystem.Repository.MessageRepository;
@@ -26,7 +26,7 @@ public class MessageService {
 
 
     @Transactional
-    public Message sendMessage(MessageDto messageDto) {
+    public Message sendMessage(MessageDTO messageDto) {
         if (chatMemberRepository.existsChatMemberByChatIdAndUserId(messageDto.getChatId(), messageDto.getUserId())) {
             Message message = new Message();
             BeanUtils.copyProperties(messageDto, message);
@@ -37,16 +37,16 @@ public class MessageService {
         }
     }
 
-    public List<Message> getChatHistory(MessageHistoryDto messageHistoryDto) {
-        if(chatMemberRepository.existsChatMemberByChatIdAndUserId(messageHistoryDto.getChatId(), messageHistoryDto.getUserId())){
-            return messageRepository.getAllByChatId(messageHistoryDto.getChatId());
+    public List<MessageUserDTO> getChatHistory(Integer chatId, Integer userId) {
+        if(chatMemberRepository.existsChatMemberByChatIdAndUserId(chatId,userId)){
+            return messageRepository.getHistoryByChatId(chatId);
         }
         else{
             throw new RuntimeException(("该用户并非该群聊的成员"));
         }
     }
 
-    public void deleteMsg(MessageDeleteDto messageDeleteDto) {
+    public void deleteMsg(MessageDeleteDTO messageDeleteDto) {
         var i=messageRepository.deleteByMessageIdAndUserIdAndTime(messageDeleteDto.getMessageId(), messageDeleteDto.getUserId(),Instant.now().minus(Duration.ofMinutes(5)));
         if(i==0){
            throw new RuntimeException("撤回该信息失败");

@@ -4,11 +4,11 @@ package com.tongji.sportmanagement.SocializeSubsystem.Controller;
 import com.tongji.sportmanagement.Common.DTO.ResultData;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 
+import com.tongji.sportmanagement.Common.Repository.UserRepository;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.*;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Message;
 import com.tongji.sportmanagement.SocializeSubsystem.Service.ChatService;
 import com.tongji.sportmanagement.SocializeSubsystem.Service.MessageService;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,15 +21,15 @@ public class SocializeController {
     private final ChatService chatService;
     private final MessageService messageService;
 
-    public SocializeController(ChatService chatService, MessageService messageService) {
+    public SocializeController(ChatService chatService, MessageService messageService, UserRepository userRepository) {
         this.chatService = chatService;
         this.messageService = messageService;
     }
 
     //@RequestHeader("Authorization") String token,
 
-    @PostMapping("/Chat")
-    public ResponseEntity<Object> createChat( @RequestBody ChatDto chat) {
+    @PostMapping("/chats")
+    public ResponseEntity<Object> createChat( @RequestBody ChatDTO chat) {
         try {
             //验证token
             var c=chatService.createChat(chat);
@@ -39,8 +39,8 @@ public class SocializeController {
         }
     }
 
-    @GetMapping("/Chat")
-    public ResponseEntity<Object> getChatsByID(@RequestBody  Integer userId){
+    @GetMapping("/chats")
+    public ResponseEntity<Object> getChatsByID(Integer userId){
         try{
             //验证token
             var chatList= chatService.getChatsByUserId(userId);
@@ -51,8 +51,8 @@ public class SocializeController {
         }
     }
 
-    @DeleteMapping("/Chat")
-    public ResponseEntity<Object> quitChat(@RequestBody QuitChatDto quitChatDto){
+    @DeleteMapping("/chats")
+    public ResponseEntity<Object> quitChat(@RequestBody QuitChatDTO quitChatDto){
          try{
              //验证token
              chatService.quitChat(quitChatDto.getChatId(),quitChatDto.getUserId());
@@ -63,8 +63,8 @@ public class SocializeController {
          }
     }
 
-    @PatchMapping("/Chat")
-    public ResponseEntity<Object> inviteIntoChat(@RequestBody InviteDto inviteDto){
+    @PatchMapping("/chats")
+    public ResponseEntity<Object> inviteIntoChat(@RequestBody InviteDTO inviteDto){
         try{
             //验证token
             chatService.inviteToChat(inviteDto);
@@ -75,8 +75,19 @@ public class SocializeController {
         }
     }
 
-    @PostMapping("/Message")
-    public ResponseEntity<Object> sendMessage(@RequestBody MessageDto messageDto){
+    @GetMapping("/chats/{chatId}")
+    public ResponseEntity<Object> getChatDetail(@PathVariable Integer chatId){
+        try{
+            var chat=chatService.getChatDetails(chatId);
+            return ResponseEntity.status(200).body(ResultData.success(chat));
+        }
+        catch (Exception e){
+            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/messages")
+    public ResponseEntity<Object> sendMessage(@RequestBody MessageDTO messageDto){
         try{
             //验证token
             var message= messageService.sendMessage(messageDto);
@@ -87,11 +98,11 @@ public class SocializeController {
         }
     }
 
-    @GetMapping("/Message")
-    public ResponseEntity<Object> getChatHistory(@RequestBody MessageHistoryDto messageHistoryDto) {
+    @GetMapping("/messages")
+    public ResponseEntity<Object> getChatHistory(Integer chatId,Integer userId) {
         try {
             //验证token
-            List<Message> msgs=messageService.getChatHistory(messageHistoryDto);
+            List<MessageUserDTO> msgs=messageService.getChatHistory(chatId,userId);
             return ResponseEntity.status(200).body(ResultData.success(msgs));
         }
         catch (Exception e){
@@ -99,8 +110,8 @@ public class SocializeController {
         }
     }
 
-    @DeleteMapping("/Message")
-    public ResponseEntity<ResultMsg> deleteMessage(@RequestBody MessageDeleteDto messageDeleteDto) {
+    @DeleteMapping("/messages")
+    public ResponseEntity<Object> deleteMessage(@RequestBody MessageDeleteDTO messageDeleteDto) {
         try{
             messageService.deleteMsg(messageDeleteDto);
             return ResponseEntity.status(200).body(ResultMsg.success("消息撤回成功"));
@@ -109,30 +120,31 @@ public class SocializeController {
             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
         }
     }
+
+    @GetMapping("/friends")
+    public ResponseEntity<Object> getFriends(Integer userId){
+        try {
+            //验证token
+            var friends= chatService.getFriendsBy(userId);
+            return ResponseEntity.status(200).body(ResultData.success(friends));
+        }
+        catch (Exception e){
+            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/postFriendApplication")
+    public ResponseEntity<ResultMsg> postFriendApplication(String userID , @RequestBody FriendApplication friendApplication){
+        return ResponseEntity.status(200).body(new ResultMsg(userID+friendApplication.toString()));
+    }
 /*
-    @GetMapping("/getChatMembers")
-    public ResponseEntity<ArrayList<BriefUser>> getChatMember(String chatID){
-        var p=new ArrayList<BriefUser>();
-        p.add( new BriefUser(chatID,null,null));
-        return ResponseEntity.status(200).body(p);
-    }
-
-    @GetMapping("/getFriends")
-    public ResponseEntity<ArrayList<Chat>> getFirends(String userID){
-        var p=new ArrayList<Chat>();
-        p.add( new Chat(userID,null,null,null,null));
-        return ResponseEntity.status(200).body(p);
-    }
-
     @DeleteMapping("/deleteFriend")
     public ResponseEntity<ResultMsg> deleteFriend(String userID,String chatID){
         return ResponseEntity.status(200).body(new ResultMsg(userID+chatID));
     }
 
-    @PostMapping("/postFriendApplication")
-    public ResponseEntity<ResultMsg> postFriendApplication(String userID , @RequestBody FriendApplication friendApplication){
-         return ResponseEntity.status(200).body(new ResultMsg(userID+friendApplication.toString()));
-    }
+
+
 
     @PutMapping("/processFriendApplication")
     public ResponseEntity<ResultMsg> processFriendApplication(String applicationID , boolean result){

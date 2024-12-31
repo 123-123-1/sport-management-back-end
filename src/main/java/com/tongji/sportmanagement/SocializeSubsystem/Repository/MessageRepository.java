@@ -1,6 +1,7 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Repository;
 
 
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageUserDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -13,9 +14,10 @@ import java.util.List;
 @Repository
 public interface MessageRepository  extends JpaRepository<Message, Integer> {
 
-    boolean existsMessageByChatIdAndUserId(Integer chatId, Integer userId);
-
-    List<Message> getAllByChatId(Integer chatId);
+    @Query("select new com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageUserDTO(u,m)" +
+            " from (select m from Message m join Chat c on c.chatId=m.chatId where c.chatId=?1) " +
+            "join User u on m.userId=u.userId")
+    List<MessageUserDTO> getHistoryByChatId(Integer chatId);
 
     @Modifying
     @Query("delete from Message m where m.messageId=?1 and m.userId=?2 and m.time>?3")

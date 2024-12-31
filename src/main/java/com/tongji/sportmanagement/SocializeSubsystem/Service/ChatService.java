@@ -1,8 +1,11 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Service;
 
 
-import com.tongji.sportmanagement.SocializeSubsystem.DTO.ChatDto;
-import com.tongji.sportmanagement.SocializeSubsystem.DTO.InviteDto;
+import com.tongji.sportmanagement.Common.DTO.LittleUserDTO;
+import com.tongji.sportmanagement.Common.Repository.UserRepository;
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.ChatDTO;
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.ChatDetailDTO;
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.InviteDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Chat;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatMember;
 import com.tongji.sportmanagement.SocializeSubsystem.Repository.ChatMemberRepository;
@@ -22,14 +25,17 @@ public class ChatService {
     private ChatRepository chatRepository;
     @Autowired
     private ChatMemberRepository chatMemberRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Transactional
-    public Chat createChat(ChatDto chatDto) {
+    public Chat createChat(ChatDTO chatDto) {
         if(!chatDto.getMembers().contains(chatDto.getUserId())){
             throw new RuntimeException("群聊成员不包含发起人");
         }
         Chat chat = new Chat();
         BeanUtils.copyProperties(chatDto, chat);
+        chat.setType("groupChat");
         var finalChat = chatRepository.save(chat);
         List<ChatMember> members = chatDto.getMembers().stream().map(
                 userId -> {
@@ -56,7 +62,7 @@ public class ChatService {
     }
 
     @Transactional
-    public void inviteToChat(InviteDto inviteDto) {
+    public void inviteToChat(InviteDTO inviteDto) {
         if (chatMemberRepository.existsChatMemberByChatIdAndUserId(inviteDto.getChatId(), inviteDto.getUserId())) {
             ChatMember chatMember = new ChatMember();
             chatMember.setChatId(inviteDto.getChatId());
@@ -66,5 +72,20 @@ public class ChatService {
         else{
             throw new RuntimeException("该用户并非群聊成员");
         }
+    }
+
+    public ChatDetailDTO getChatDetails(Integer chatId) {
+        Chat chat=chatRepository.findById(chatId).orElse(null);
+        if(chat==null){
+            throw  new RuntimeException("未找到对应的群聊");
+        }
+        ChatDetailDTO chatDetailDTO=new ChatDetailDTO();
+        BeanUtils.copyProperties(chat,chatDetailDTO);
+        chatDetailDTO.setMembers(chatRepository.getLittleUserByChatId(chatId));
+        return chatDetailDTO;
+    }
+
+    public List<Chat> getFriendsBy(Integer userId) {
+        return chatRepository.findFriendsByUserId(userId);
     }
 }

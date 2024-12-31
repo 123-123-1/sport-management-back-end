@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class ChatDto {
+public class ChatDTO {
     Integer userId;
     Integer chatId;
     String chatName;
