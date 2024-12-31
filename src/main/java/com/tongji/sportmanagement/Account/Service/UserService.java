@@ -1,13 +1,23 @@
 package com.tongji.sportmanagement.Account.Service;
 
+import com.tongji.sportmanagement.Account.DTO.RegisterRequestDTO;
+import com.tongji.sportmanagement.Account.Repository.UserRepository;
 import com.tongji.sportmanagement.DTO.ErrorMsg;
+import com.tongji.sportmanagement.Entity.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Service
 public class UserService {
 
     JwtService jwtService;
+
+    @Autowired
+    public UserRepository userRepository;
 
     public ResponseEntity<Object> login(String userName, String password) {
 //        try {
@@ -27,7 +37,6 @@ public class UserService {
 
 
         if(true){
-
             return ResponseEntity.status(200).body("success");
         }
         else {
@@ -37,4 +46,9 @@ public class UserService {
     }
 
 
+    public ResponseEntity<Object> register(RegisterRequestDTO data) {
+        User user = new User(data.getUserName(),data.getPassword(),data.getPhone(),data.getRealName(), LocalDateTime.now(),data.getPhoto());
+        userRepository.save(user);
+        return ResponseEntity.status(200).body("success");
+    }
 }
