@@ -25,6 +25,9 @@ public class Venue
   @Column(name = "name", length = 100)
   private String venueName;
 
+  @Column(name = "description", length = 255)
+  private String description;
+
   @Column(name = "location", length = 100)
   private String location;
 

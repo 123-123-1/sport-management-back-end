@@ -9,7 +9,7 @@ import lombok.Setter;
 
 enum AvailabilityState
 {
-  reservable, matching, full, closed
+  reserveable, matching, full, closed
 }
 
 @Entity
