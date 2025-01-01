@@ -1,10 +1,12 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Service;
 
+import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
 import com.tongji.sportmanagement.Common.DTO.ChatDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.ChatDetailDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendDeleteDTO;
 import com.tongji.sportmanagement.Common.DTO.InviteDTO;
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.LittleUserDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Chat;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatMember;
 import com.tongji.sportmanagement.SocializeSubsystem.Repository.ChatMemberRepository;
@@ -23,11 +25,13 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final ChatMemberRepository chatMemberRepository;
     private final MessageRepository messageRepository;
+    private final UserController userController;
 
-    public ChatService(ChatRepository chatRepository, ChatMemberRepository chatMemberRepository, MessageRepository messageRepository) {
+    public ChatService(ChatRepository chatRepository, ChatMemberRepository chatMemberRepository, MessageRepository messageRepository, UserController userController) {
         this.chatRepository = chatRepository;
         this.chatMemberRepository = chatMemberRepository;
         this.messageRepository = messageRepository;
+        this.userController = userController;
     }
 
     @Transactional
@@ -89,7 +93,18 @@ public class ChatService {
         }
         ChatDetailDTO chatDetailDTO=new ChatDetailDTO();
         BeanUtils.copyProperties(chat,chatDetailDTO);
-        chatDetailDTO.setMembers(chatRepository.getLittleUserByChatId(chatId));
+        var members=chatMemberRepository.findChatMembersByChatId(chatId);
+
+        chatDetailDTO.setMembers(members.stream().map(
+                member->{
+                    var m=new LittleUserDTO();
+                    m.setUserId(member.getUserId());
+                    var p=userController.getUserProfile(member.getUserId());
+                    m.setPhoto(p.getPhoto());
+                    m.setUserName(p.getUserName());
+                    return m;
+                }
+        ).toList());
         return chatDetailDTO;
     }
 
