@@ -18,4 +18,5 @@ public interface VenueRepository extends CrudRepository<Venue, Integer>
 
   @Query(value = "SELECT COUNT(*) FROM venue WHERE name LIKE %:venueName%", nativeQuery = true)
   public long getVenueNameCount(@Param("venueName") String venueName);
+  
 }

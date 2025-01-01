@@ -1,5 +1,8 @@
 package com.tongji.sportmanagement.VenueSubsystem.Controller;
 
+import java.time.Instant;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,7 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
+import com.tongji.sportmanagement.Common.DTO.VenueInitDTO;
+import com.tongji.sportmanagement.Common.DTO.VenueInitResponseDTO;
+import com.tongji.sportmanagement.VenueSubsystem.DTO.CourtResponseDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.PostCommentDTO;
+import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
+import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
+import com.tongji.sportmanagement.VenueSubsystem.Entity.Timeslot;
+import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
 import com.tongji.sportmanagement.VenueSubsystem.Service.CommentService;
 import com.tongji.sportmanagement.VenueSubsystem.Service.CourtService;
 import com.tongji.sportmanagement.VenueSubsystem.Service.TimeslotService;
@@ -92,10 +102,10 @@ public class VenueController
 
   @PostMapping("/comments")
   // 等待JWT相关功能
-  // public ResponseEntity<Object> postVenueComment(@RequestBody PostCommentDTO comment, @RequestAttribute int userId)
+  // public ResponseEntity<Object> postVenueComment(@RequestBody PostCommentDTO comment, @RequestAttribute Integer idFromToken)
   // {
   //   try{
-  //     return ResponseEntity.ok().body(commentService.postVenueComment(comment, userId));
+  //     return ResponseEntity.ok().body(commentService.postVenueComment(comment, idFromToken));
   //   }
   //   catch(Exception e){
   //     return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
@@ -106,6 +116,128 @@ public class VenueController
   {
     try{
       return ResponseEntity.ok().body(commentService.postVenueComment(comment, 1));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  // 以上为怡运动系统前后端接口
+  // --------------------------------------------------------------------------------------
+  // 以下为场地管理方对接怡运动系统接口
+
+  public ResponseEntity<Object> initVenue(VenueInitDTO initInfo)
+  {
+    try{
+      VenueInitResponseDTO result = venueService.createVenue(initInfo.getVenueInfo());
+      List<CourtResponseDTO> courts = courtService.createCourts(initInfo.getCourts(), result.getVenueId());
+      result.setCourts(courts);
+      return ResponseEntity.ok().body(result);
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(e.getMessage());
+    }
+  }
+
+  public ResponseEntity<Object> patchVenue(Venue venueInfo, Integer venueId)
+  {
+    try{
+      return ResponseEntity.ok().body(venueService.patchVenue(venueInfo, venueId));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(e.getMessage());
+    }
+  }
+
+  public ResponseEntity<Object> createCourt(Court courtInfo, Integer venueId)
+  {
+    try{
+      return ResponseEntity.ok().body(courtService.createCourt(courtInfo, venueId));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  public ResponseEntity<Object> patchCourt(Court courtInfo, Integer venueId)
+  {
+    try{
+      return ResponseEntity.ok().body(courtService.patchCourt(courtInfo, venueId));
+    }
+    catch(ServiceException e){
+      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  public ResponseEntity<Object> deleteCourt(Integer courtId, String courtName, Integer venueId)
+  {
+    try{
+      return ResponseEntity.ok().body(courtService.deleteCourt(courtId, courtName, venueId));
+    }
+    catch(ServiceException e){
+      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  public ResponseEntity<Object> createTimeslot(Timeslot timeslotInfo, Integer venueId)
+  {
+    try{
+      return ResponseEntity.ok().body(timeslotService.createTimeslot(timeslotInfo, venueId));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  public ResponseEntity<Object> deleteTimeslot(Integer timeslotId, Instant startTime, Instant endTime, Integer venueId)
+  {
+    try{
+      return ResponseEntity.ok().body(timeslotService.deleteTimeslot(timeslotId, startTime, endTime, venueId));
+    }
+    catch(ServiceException e){
+      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  public ResponseEntity<Object> createAvailability(CourtAvailability availability)
+  {
+    try{
+      return ResponseEntity.ok().body(timeslotService.createAvailability(availability));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  public ResponseEntity<Object> patchAvailability(CourtAvailability availability)
+  {
+    try{
+      return ResponseEntity.ok().body(timeslotService.patchAvailability(availability));
+    }
+    catch(ServiceException e){
+      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  public ResponseEntity<Object> deleteAvailability(Integer availabilityId, Integer courtId, Integer timeslotId)
+  {
+    try{
+      return ResponseEntity.ok().body(timeslotService.deleteAvailability(availabilityId, courtId, timeslotId));
+    }
+    catch(ServiceException e){
+      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
     }
     catch(Exception e){
       return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
