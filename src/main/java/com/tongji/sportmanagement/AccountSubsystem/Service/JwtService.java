@@ -26,7 +26,7 @@ public class JwtService {
 
     public static boolean verify(String token){
         try {
-            JWT.require(Algorithm.HMAC256("1234")).build().verify(token);
+            JWT.require(Algorithm.HMAC256("joy_sports")).build().verify(token);
             return true;
         }catch (Exception e){
             return false;
