@@ -2,7 +2,6 @@ package com.tongji.sportmanagement.GroupSubsystem.Service;
 
 
 import com.tongji.sportmanagement.Common.DTO.ChatDTO;
-import com.tongji.sportmanagement.GroupSubsystem.Controller.GroupController;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.CompleteGroupDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupDeleteDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupDetailDTO;
@@ -18,7 +17,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.List;
 
 @Service

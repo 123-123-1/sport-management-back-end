@@ -59,7 +59,7 @@ public class GroupApplicationService {
                     application.setApplicantId(userId);
                     application.setReviewerId(target);
                     application.setApplyInfo("用户"+target.toString()+"邀请你加入团体“"+group.getGroupName()+"”");
-                    groupRecordRepository.save(new GroupRecord(null,userId,target,group.getGroupId(),Instant.now(),"邀请加入团体"));
+                    groupRecordService.addRecord(userId,target,group.getGroupId(),"邀请加入团体");
                     return application;
                 }
         ).toList();
@@ -128,7 +128,7 @@ public class GroupApplicationService {
             application.setReviewerId(auditResultDTO.getReviewerId());
             groupApplicationRepository.save(application);
             if (application.getType().equals(GroupApplicationType.apply)) {
-                groupRecordRepository.save(new GroupRecord(null, application.getReviewerId(), application.getApplicantId(), group.getGroupId(), Instant.now(), "拒绝用户"+application.getApplicantId().toString()+"的加入申请"));
+                groupRecordService.addRecord(application.getReviewerId(), application.getApplicantId(), group.getGroupId(), "拒绝加入申请");
             }
         }
     }
@@ -143,20 +143,6 @@ public class GroupApplicationService {
         else{
             throw new IllegalArgumentException("没有权限邀请用户加入该团体");
         }
-    }
-
-    @Transactional
-    public void addApplication(GroupApplicationType type,String info,GroupApplicationState state,Integer applicant,Integer groupId,Integer reviewer){
-        GroupApplication application=new GroupApplication();
-        application.setGroupId(groupId);
-        application.setApplicantId(applicant);
-        application.setState(state);
-        application.setReviewerId(reviewer);
-        application.setType(type);
-        application.setApplyInfo(info);
-        application.setOperationTime(Instant.now());
-        application.setExpirationTime(Instant.now().plus(Duration.ofDays(3)));
-        groupApplicationRepository.save(application);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.tongji.sportmanagement.GroupSubsystem.Service;
 
 import com.tongji.sportmanagement.GroupSubsystem.Entity.GroupRecord;
+import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupMemberRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRecordRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,9 +14,11 @@ public class GroupRecordService {
 
 
     private final GroupRecordRepository groupRecordRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
-    public GroupRecordService(GroupRecordRepository groupRecordRepository) {
+    public GroupRecordService(GroupRecordRepository groupRecordRepository, GroupMemberRepository groupMemberRepository) {
         this.groupRecordRepository = groupRecordRepository;
+        this.groupMemberRepository = groupMemberRepository;
     }
 
     @Transactional
@@ -29,13 +32,15 @@ public class GroupRecordService {
           groupRecordRepository.save(groupRecord);
     }
 
-    @Transactional
-    public Integer deleteRecord(Integer operator) {
-        return  groupRecordRepository.deleteByOperatorId(operator);
-    }
 
     @Transactional
-    public List<GroupRecord> getRecord(Integer operator) {
-        return groupRecordRepository.findGroupRecordsByOperatorId(operator);
+    public List<GroupRecord> getRecord(Integer operator,Integer targetId, Integer groupId) {
+        if(groupMemberRepository.checkAuth(groupId,operator)) {
+            return groupRecordRepository.findRecords(targetId, groupId);
+        }
+        else{
+            throw  new IllegalArgumentException("没有权限查看团员记录");
+        }
     }
+
 }

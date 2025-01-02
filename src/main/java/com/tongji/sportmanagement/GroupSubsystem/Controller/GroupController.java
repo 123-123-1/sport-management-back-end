@@ -5,6 +5,7 @@ import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.*;
 import com.tongji.sportmanagement.GroupSubsystem.Service.GroupApplicationService;
 import com.tongji.sportmanagement.GroupSubsystem.Service.GroupMemberService;
+import com.tongji.sportmanagement.GroupSubsystem.Service.GroupRecordService;
 import com.tongji.sportmanagement.GroupSubsystem.Service.GroupService;
 import com.tongji.sportmanagement.Common.DTO.AuditResultDTO;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +18,13 @@ public class GroupController {
     private final GroupService groupService;
     private final GroupApplicationService groupApplicationService;
     private final GroupMemberService groupMemberService;
+    private final GroupRecordService groupRecordService;
 
-    public GroupController(GroupService groupService, GroupApplicationService groupApplicationService, GroupMemberService groupMemberService) {
+    public GroupController(GroupService groupService, GroupApplicationService groupApplicationService, GroupMemberService groupMemberService, GroupRecordService groupRecordService) {
         this.groupService = groupService;
         this.groupApplicationService = groupApplicationService;
         this.groupMemberService = groupMemberService;
+        this.groupRecordService = groupRecordService;
     }
 
     @PostMapping("")
@@ -135,15 +138,29 @@ public class GroupController {
         }
     }
 
-/*
+    @PatchMapping("/members")
+    public ResponseEntity<Object> setGroupMemberRole(RoleDTO roleDTO) {
+        try{
+            groupMemberService.setRole(roleDTO);
+            return ResponseEntity.status(200).body(ResultMsg.success("已成功设置用户权限"));
+        }
+        catch (Exception e) {
+            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/records")
+    public ResponseEntity<Object> getGroupRecords(Integer groupId,Integer targetId,Integer operatorId) {
+        try{
+            var records=groupRecordService.getRecord(operatorId,targetId,groupId);
+            return ResponseEntity.status(200).body(ResultData.success(records));
+        }
+        catch (Exception e) {
+            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
+    }
 
 
 
 
-    @GetMapping("/getGroupMemberRecord")
-    public ResponseEntity<ArrayList<GroupMemberRecord>> getGroupMemberRecord(String userID) {
-        var p= new ArrayList<GroupMemberRecord>();
-        p.add(new GroupMemberRecord(userID,null,null));
-        return ResponseEntity.status(200).body(p);
-    }*/
 }

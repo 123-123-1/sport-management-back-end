@@ -1,7 +1,9 @@
 package com.tongji.sportmanagement.GroupSubsystem.Repository;
 
 import com.tongji.sportmanagement.GroupSubsystem.Entity.GroupMember;
+import com.tongji.sportmanagement.GroupSubsystem.Entity.GroupMemberRole;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -20,4 +22,8 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Intege
     void deleteByGroupIdAndUserId(Integer groupId, Integer memberId);
 
     int countByGroupId(Integer groupId);
+
+    @Modifying
+    @Query("update GroupMember m set m.role=?3 where m.groupId=?1 and  m.userId=?2")
+    void updateGroupMemberByGroupIdAndUserIdAndRole(Integer groupId, Integer targetId, String role);
 }
