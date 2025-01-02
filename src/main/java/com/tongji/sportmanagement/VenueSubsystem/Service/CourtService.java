@@ -74,4 +74,13 @@ public class CourtService
     }
     return new ResultMsg("已成功删除场地", 1);
   }
+
+  public Court getCourtById(Integer courtId) throws Exception
+  {
+    Optional<Court> result = courtRepository.findById(courtId);
+    if(result.isEmpty()){
+      throw new ServiceException(404, "未找到场地");
+    }
+    return result.get();
+  }
 }

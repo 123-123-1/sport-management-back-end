@@ -111,11 +111,48 @@ public class VenueController
   //     return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
   //   }
   // }
-
   public ResponseEntity<Object> postVenueComment(@RequestBody PostCommentDTO comment)
   {
     try{
       return ResponseEntity.ok().body(commentService.postVenueComment(comment, 1));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  @GetMapping("/availabilities")
+  public ResponseEntity<Object> getVenueAvailability(@RequestParam Integer availabilityId)
+  {
+    try{
+      return ResponseEntity.ok().body(timeslotService.getAvailability(availabilityId));
+    }
+    catch(ServiceException e){
+      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  public ResponseEntity<Object> getAvalibilityByState(Integer timeslotId, String state)
+  {
+    try{
+      return ResponseEntity.ok().body(timeslotService.getAvailabilityByState(timeslotId, state));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  // @GetMapping("/courts")
+  public ResponseEntity<Object> getCourtById(@RequestParam Integer courtId)
+  {
+    try{
+      return ResponseEntity.ok().body(courtService.getCourtById(courtId));
+    }
+    catch(ServiceException e){
+      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
     }
     catch(Exception e){
       return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));

@@ -18,4 +18,7 @@ public interface CourtAvailabilityRepository extends CrudRepository<CourtAvailab
 
   @Query(value = "SELECT * FROM court_availability WHERE court_id = :courtId AND timeslot_id = :timeslotId", nativeQuery = true)
   Iterable<CourtAvailability> findAvailability(@Param("courtId") Integer courtId, @Param("timeslotId") Integer timeslotId);
+
+  @Query(value = "SELECT * FROM court_availability WHERE timeslot_id = :timeslotId AND state = :state", nativeQuery = true)
+  Iterable<CourtAvailability> getAvailabilityByState(@Param("timeslotId") Integer timeslotId, @Param("state") String state);
 }

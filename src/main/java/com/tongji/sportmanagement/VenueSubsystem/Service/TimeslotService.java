@@ -92,15 +92,17 @@ public class TimeslotService
     }
     else{
       List<CourtAvailability> targetAvailability = ((List<CourtAvailability>)courtAvailabilityRepository.findAvailability(availability.getCourtId(), availability.getTimeslotId()));
-      System.out.println("list:" + targetAvailability);
       if(targetAvailability.size() == 0){
         throw new ServiceException(404, "未找到预约项");
       }
       editedAvailability = targetAvailability.get(0);
     }
-    availability.setCourtId(null);
-    availability.setTimeslotId(null);
+    Integer timeslotId = editedAvailability.getTimeslotId();
+    Integer courtId = editedAvailability.getCourtId();
     SportManagementUtils.copyNotNullProperties(availability, editedAvailability);
+    // 避免更改这两个字段
+    editedAvailability.setTimeslotId(timeslotId);
+    editedAvailability.setCourtId(courtId);
     courtAvailabilityRepository.save(editedAvailability);
     return new ResultMsg("已编辑预约项", 1);
   }
@@ -122,5 +124,18 @@ public class TimeslotService
     else{
       throw new ServiceException(422, "未完整填写预约项信息");
     }
+  }
+
+  public CourtAvailability getAvailability(Integer availabilityId) throws Exception
+  {
+    Optional<CourtAvailability> result = courtAvailabilityRepository.findById(availabilityId);
+    if(!result.isPresent()){
+      throw new ServiceException(404, "未找到开放时间段");
+    }
+    return result.get();
+  }
+
+  public List<CourtAvailability> getAvailabilityByState(Integer timeslotId, String state){
+    return (List<CourtAvailability>)courtAvailabilityRepository.getAvailabilityByState(timeslotId, state);
   }
 }

@@ -13,8 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.tongji.sportmanagement.Common.DTO.VenueInitDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationRequestDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationResponseDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Controller.VenueController;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
@@ -27,6 +30,8 @@ public class ManagementController
 {
   @Autowired
   private VenueController venueController;
+  @Autowired
+  private RestTemplate restTemplate; // 用于向场地管理方发送预约请求
 
   @PostMapping("/initialization")
   public ResponseEntity<Object> initVenue(@RequestBody VenueInitDTO initInfo)
@@ -99,7 +104,7 @@ public class ManagementController
   // }
   public ResponseEntity<Object> createTimeslot(@RequestBody Timeslot timeslotInfo)
   {
-    return venueController.createTimeslot(timeslotInfo, 14);
+    return venueController.createTimeslot(timeslotInfo, 1);
   }
 
   @DeleteMapping("/timeslots")
@@ -139,5 +144,17 @@ public class ManagementController
 
   public ResponseEntity<Object> getTimeslotInfo(@RequestAttribute Integer idFromToken, String date){
     return venueController.getVenueTimeslots(idFromToken, date);
+  }
+
+  public ResponseEntity<ReservationResponseDTO> sendReservationRequest(ReservationRequestDTO requestDTO)
+  {
+    // 暂时发回本地进行测试
+    return restTemplate.postForEntity("http://localhost:8080/api/reservations/managermock", requestDTO, ReservationResponseDTO.class);
+  }
+
+  public ResponseEntity<ReservationResponseDTO> sendOccupyRequest(ReservationRequestDTO requestDTO)
+  {
+    // 暂时发回本地进行测试
+    return restTemplate.postForEntity("http://localhost:8080/api/reservations/managermock", requestDTO, ReservationResponseDTO.class);
   }
 }

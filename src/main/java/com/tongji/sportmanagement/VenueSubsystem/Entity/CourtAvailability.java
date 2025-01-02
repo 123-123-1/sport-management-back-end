@@ -7,11 +7,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-enum AvailabilityState
-{
-  reserveable, matching, full, closed
-}
-
 @Entity
 @Getter
 @Setter
@@ -32,7 +27,7 @@ public class CourtAvailability
   @Enumerated(EnumType.STRING)
   @ColumnDefault("closed")
   @Column(name = "state")
-  AvailabilityState state;
+  CourtAvailabilityState state;
 
   @Column(name = "price")
   Double price;
