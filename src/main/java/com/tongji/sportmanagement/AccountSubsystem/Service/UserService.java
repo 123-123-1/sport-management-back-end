@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -47,7 +48,7 @@ public class UserService {
         }
         User user = new User();
         BeanUtils.copyProperties(data, user);
-        user.setRegistrationDate(Instant.now());
+        user.setRegistrationDate(Instant.now().plus(Duration.ofHours(8)));
         userRepository.save(user);
         return ResponseEntity.status(200).body(new IdResponseDTO(user.getUserId()));
     }
