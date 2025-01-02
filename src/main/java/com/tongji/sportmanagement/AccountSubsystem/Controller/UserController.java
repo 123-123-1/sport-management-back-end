@@ -1,7 +1,6 @@
 package com.tongji.sportmanagement.AccountSubsystem.Controller;
 
-import com.tongji.sportmanagement.AccountSubsystem.DTO.LoginRequestDTO;
-import com.tongji.sportmanagement.AccountSubsystem.DTO.RegisterRequestDTO;
+import com.tongji.sportmanagement.AccountSubsystem.DTO.*;
 import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +25,21 @@ public class UserController {
         return userService.register(registerRequestDto);
     }
 
+    @GetMapping("/info")
+    public ResponseEntity<Object> getUserInfo(@RequestAttribute int idFromToken) {
+        return userService.getUserInfo(idFromToken);
+    }
+
+    @PatchMapping("/info")
+    public ResponseEntity<Object> updateUserInfo(@RequestAttribute int idFromToken, @RequestBody UserInfoUpdateDTO userInfoUpdateDTO) {
+        return userService.updateUserInfo(idFromToken, userInfoUpdateDTO);
+    }
+
+    @PatchMapping("/password")
+    public ResponseEntity<Object> updateUserPassword(@RequestAttribute int idFromToken, @RequestBody UpdatePwdDTO updatePwdDTO) {
+        return userService.updateUserPwd(idFromToken, updatePwdDTO);
+    }
+
     public UserProfileDTO getUserProfile(int userId) {
         return userService.getUserProfile(userId);
     }
@@ -37,6 +51,6 @@ public class UserController {
 
     @GetMapping("/authorTest") //header中携带token才能访问
     public String authorTest(@RequestAttribute int idFromToken) {
-        return "玩家" + idFromToken + ":原神，启动";
+        return "玩家" + idFromToken + ": 原神，启动!";
     }
 }
