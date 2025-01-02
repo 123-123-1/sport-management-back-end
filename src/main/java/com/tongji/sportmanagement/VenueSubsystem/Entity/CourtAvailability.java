@@ -19,6 +19,7 @@ enum AvailabilityState
 public class CourtAvailability
 {
   @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "availability_id", nullable = false)
   Integer availabilityId;
 

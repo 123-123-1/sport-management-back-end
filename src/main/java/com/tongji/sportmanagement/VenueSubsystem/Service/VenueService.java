@@ -8,7 +8,11 @@ import com.tongji.sportmanagement.VenueSubsystem.Repository.VenueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.tongji.sportmanagement.AccountSubsystem.Service.JwtService;
 import com.tongji.sportmanagement.Common.ServiceException;
+import com.tongji.sportmanagement.Common.SportManagementUtils;
+import com.tongji.sportmanagement.Common.DTO.ResultMsg;
+import com.tongji.sportmanagement.Common.DTO.VenueInitResponseDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueListDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
 
@@ -44,6 +48,28 @@ public class VenueService
       throw new ServiceException(404, "场馆不存在");
     }
     return result.get();
+  }
+
+  // 创建场馆
+  public VenueInitResponseDTO createVenue(Venue venueInfo)
+  {
+    venueRepository.save(venueInfo);
+    VenueInitResponseDTO result = new VenueInitResponseDTO(venueInfo.getVenueId(), null, null);
+    result.setToken(JwtService.getTokenById(venueInfo.getVenueId()).getToken());
+    return result;
+  }
+
+  public ResultMsg patchVenue(Venue venueInfo, Integer venueId) throws Exception
+  {
+    venueInfo.setVenueId(venueId);
+    Optional<Venue> venue = venueRepository.findById(venueId);
+    if(!venue.isPresent()){
+      throw new ServiceException(404, "未找到目标场馆");
+    }
+    Venue editedVenue = venue.get();
+    SportManagementUtils.copyNotNullProperties(venueInfo, editedVenue);
+    venueRepository.save(editedVenue);
+    return new ResultMsg("成功编辑场馆信息", 1);
   }
 }
 

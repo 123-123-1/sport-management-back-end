@@ -2,7 +2,9 @@ package com.tongji.sportmanagement.AccountSubsystem.Service;
 
 import com.tongji.sportmanagement.AccountSubsystem.DTO.LoginResponseDTO;
 import com.tongji.sportmanagement.AccountSubsystem.DTO.RegisterRequestDTO;
+import com.tongji.sportmanagement.AccountSubsystem.DTO.RegisterResponseDTO;
 import com.tongji.sportmanagement.AccountSubsystem.Repository.UserRepository;
+import com.tongji.sportmanagement.Common.Security.JwtTokenProvider;
 import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
 import com.tongji.sportmanagement.AccountSubsystem.Entity.User;
 import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
@@ -17,10 +19,14 @@ import java.util.Optional;
 @Service
 public class UserService {
 
-    JwtService jwtService;
+//    @Autowired
+//    JwtService jwtService;
+    @Autowired
+    JwtTokenProvider jwtTokenProvider;
 
     @Autowired
     public UserRepository userRepository;
+
 
     public ResponseEntity<Object> login(String userName, String password) {
         Optional<User> userOptional = userRepository.findByUserName(userName);
@@ -31,7 +37,8 @@ public class UserService {
         if(!user.getPassword().equals(password)) {
             return ResponseEntity.status(400).body(new ErrorMsg("密码错误"));
         }
-        LoginResponseDTO loginResponseDTO = JwtService.getTokenById(user.getUserId());
+//        LoginResponseDTO loginResponseDTO = JwtService.getTokenById(user.getUserId());
+        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(jwtTokenProvider.generateToken(user.getUserId()), jwtTokenProvider.getExpiryDate());
         return ResponseEntity.status(200).body(loginResponseDTO);
     }
 
@@ -44,7 +51,7 @@ public class UserService {
         BeanUtils.copyProperties(data, user);
         user.setRegistrationDate(Instant.now());
         userRepository.save(user);
-        return ResponseEntity.status(200).body("success");
+        return ResponseEntity.status(200).body(new RegisterResponseDTO(user.getUserId()));
     }
 
     public UserProfileDTO getUserProfile(int userId) {
