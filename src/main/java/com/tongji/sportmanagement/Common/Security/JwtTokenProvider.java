@@ -52,7 +52,7 @@ public class JwtTokenProvider {
     }
 
     // 生成永久有效的JWT令牌（没有过期时间）
-    private String generatePermanentToken(int id) {
+    public String generatePermanentToken(int id) {
         return Jwts.builder()
                 .claim("id", id)
                 .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()))  // 使用256位密钥进行签名

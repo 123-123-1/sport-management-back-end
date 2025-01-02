@@ -1,8 +1,6 @@
 package com.tongji.sportmanagement.AccountSubsystem.Service;
 
-import com.tongji.sportmanagement.AccountSubsystem.DTO.LoginResponseDTO;
-import com.tongji.sportmanagement.AccountSubsystem.DTO.RegisterRequestDTO;
-import com.tongji.sportmanagement.AccountSubsystem.DTO.RegisterResponseDTO;
+import com.tongji.sportmanagement.AccountSubsystem.DTO.*;
 import com.tongji.sportmanagement.AccountSubsystem.Repository.UserRepository;
 import com.tongji.sportmanagement.Common.Security.JwtTokenProvider;
 import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
@@ -51,7 +49,18 @@ public class UserService {
         BeanUtils.copyProperties(data, user);
         user.setRegistrationDate(Instant.now());
         userRepository.save(user);
-        return ResponseEntity.status(200).body(new RegisterResponseDTO(user.getUserId()));
+        return ResponseEntity.status(200).body(new IdResponseDTO(user.getUserId()));
+    }
+
+    public ResponseEntity<Object> getUserInfo(int userId) {
+        Optional<User> userOptional = userRepository.findByUserId(userId);
+        if(userOptional.isEmpty()) {
+            return ResponseEntity.status(404).body(new ErrorMsg("未查找到该用户"));
+        }
+        User user = userOptional.get();
+        UserInfoDetailDTO userInfoDetailDTO = new UserInfoDetailDTO();
+        BeanUtils.copyProperties(user, userInfoDetailDTO);
+        return ResponseEntity.status(200).body(userInfoDetailDTO);
     }
 
     public UserProfileDTO getUserProfile(int userId) {
@@ -63,5 +72,32 @@ public class UserService {
         User user = userOptional.get();
         BeanUtils.copyProperties(user, userProfileDTO);
         return userProfileDTO;
+    }
+
+    public ResponseEntity<Object> updateUserInfo(int userId, UserInfoUpdateDTO data) {
+        Optional<User> userOptional = userRepository.findByUserId(userId);
+        if(userOptional.isEmpty()) {
+            return ResponseEntity.status(400).body(new ErrorMsg("未查找到该用户"));
+        }
+        User user = userOptional.get();
+        BeanUtils.copyProperties(data, user);
+        userRepository.save(user);
+        UserInfoDetailDTO userInfoDetailDTO = new UserInfoDetailDTO();
+        BeanUtils.copyProperties(user, userInfoDetailDTO);
+        return ResponseEntity.status(200).body(userInfoDetailDTO);
+    }
+
+    public ResponseEntity<Object> updateUserPwd(int userId, UpdatePwdDTO updatePwdDTO) {
+        Optional<User> userOptional = userRepository.findByUserId(userId);
+        if(userOptional.isEmpty()) {
+            return ResponseEntity.status(400).body(new ErrorMsg("未查找到该用户"));
+        }
+        User user = userOptional.get();
+        if(!updatePwdDTO.getOldPwd().equals(user.getPassword())) {
+            return ResponseEntity.status(400).body(new ErrorMsg("用户密码错误"));
+        }
+        user.setPassword(updatePwdDTO.getNewPwd());
+        userRepository.save(user);
+        return ResponseEntity.status(200).body(new IdResponseDTO(user.getUserId()));
     }
 }

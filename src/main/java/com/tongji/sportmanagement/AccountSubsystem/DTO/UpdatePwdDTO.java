@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterResponseDTO {
-    int user_id;
+public class UpdatePwdDTO {
+    String oldPwd;
+    String newPwd;
 }
