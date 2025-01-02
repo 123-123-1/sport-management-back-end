@@ -128,7 +128,7 @@ public class GroupController {
     public ResponseEntity<Object> removeGroupMember(@RequestBody MemberDropDTO dropDTO) {
         try{
             groupMemberService.dropMember(dropDTO);
-            return ResponseEntity.status(200).body(ResultMsg.success("退出团体成功"));
+            return ResponseEntity.status(200).body(ResultMsg.success("将用户移出团体成功"));
         }
         catch (Exception e) {
             return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
