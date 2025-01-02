@@ -30,17 +30,23 @@ public class FriendApplicationService {
         this.chatService = chatService;
     }
 
+    @Transactional
     public void postFriendApplication(FriendApplicationDTO application) {
-          FriendApplication friendApplication = new FriendApplication();
-          BeanUtils.copyProperties(application,friendApplication);
-          friendApplication.setState(FriendApplicationState.waiting);
-          friendApplication.setOperationTime(Instant.now());
-          friendApplication.setExpirationTime(Instant.now().plus(Duration.ofDays(3)));
-          friendApplicationRepository.save(friendApplication);
+        if(!friendApplicationRepository.existsByApplicantIdAndReviewerId(application.getApplicantId(),application.getReviewerId())){
+            FriendApplication friendApplication = new FriendApplication();
+            BeanUtils.copyProperties(application, friendApplication);
+            friendApplication.setState(FriendApplicationState.waiting);
+            friendApplication.setOperationTime(Instant.now());
+            friendApplication.setExpirationTime(Instant.now().plus(Duration.ofDays(3)));
+            friendApplicationRepository.save(friendApplication);
+        }
+        else{
+            throw new IllegalArgumentException("无需再发送好友申请");
+        }
     }
     @Transactional
     public void auditFriendApplication(AuditResultDTO auditResultDTO) {
-        if (friendApplicationRepository.existsByApplicantIdAndReviewerId(auditResultDTO.getAuditObjectId(), auditResultDTO.getReviewerId())) {
+        if (friendApplicationRepository.existsByWaitingApplicationIdAndReviewerId(auditResultDTO.getAuditObjectId(), auditResultDTO.getReviewerId())) {
             if (auditResultDTO.isResult()) {
                  friendApplicationRepository.setState(auditResultDTO.getAuditObjectId(),FriendApplicationState.accepted);
                  Integer userId=friendApplicationRepository.getApplicantByApplicationId(auditResultDTO.getAuditObjectId());

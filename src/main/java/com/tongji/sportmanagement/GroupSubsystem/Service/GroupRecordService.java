@@ -23,15 +23,14 @@ public class GroupRecordService {
 
     @Transactional
     public void addRecord(Integer operator,Integer target,Integer groupId,String type) {
-          GroupRecord groupRecord = new GroupRecord();
-          groupRecord.setGroupId(groupId);
-          groupRecord.setTime(Instant.now());
-          groupRecord.setOperateType(type);
-          groupRecord.setOperatorId(operator);
-          groupRecord.setTargetId(target);
-          groupRecordRepository.save(groupRecord);
+        GroupRecord groupRecord = new GroupRecord();
+        groupRecord.setGroupId(groupId);
+        groupRecord.setTime(Instant.now());
+        groupRecord.setOperateType(type);
+        groupRecord.setOperatorId(operator);
+        groupRecord.setTargetId(target);
+        groupRecordRepository.save(groupRecord);
     }
-
 
     @Transactional
     public List<GroupRecord> getRecord(Integer operator,Integer targetId, Integer groupId) {

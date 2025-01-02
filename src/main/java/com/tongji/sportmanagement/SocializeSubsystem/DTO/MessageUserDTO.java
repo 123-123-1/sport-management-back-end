@@ -4,11 +4,13 @@ import com.tongji.sportmanagement.AccountSubsystem.Entity.User;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Message;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
 import java.time.Instant;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class MessageUserDTO {
     private Integer messageId;

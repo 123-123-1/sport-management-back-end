@@ -4,6 +4,7 @@ package com.tongji.sportmanagement.SocializeSubsystem.Repository;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.LittleUserDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Chat;
+import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -18,15 +19,18 @@ public interface ChatRepository  extends JpaRepository<Chat, Integer> {
 
    
 
-    @Query("select new com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendDTO(c.chatId, u.userId, u.userName, u.photo) " +
+    @Query("select cmm " +
             "from Chat c " +
-            "join ChatMember cm on c.chatId = cm.chatId " +
-            "join ChatMember cmm on c.chatId = cmm.chatId " +
-            "join User u on cmm.userId = u.userId " +
-            "where cm.userId = ?1 and c.type = 'friendChat' " +
-            "and cmm.userId != ?1")
-    List<FriendDTO> findFriendsByUserId(Integer userId);
+            "join ChatMember cm on c.chatId = cm.chatId and cm.userId=?1 and c.type='friendChat'" +
+            "join ChatMember cmm on c.chatId = cmm.chatId and cmm.userId!=?1")
+    List<ChatMember> findFriendsByUserId(Integer userId);
 
-    @Query("select  exists (select  c from Chat c join  ChatMember cm on cm.userId= ?1 and c.chatId=cm.chatId and c.type='friendChat'and c.chatId=?3 join ChatMember cm1 on cm1.userId=?2 and c.chatId=cm1.chatId)")
+    @Query("select exists(select c from Chat c where  c.chatId=?3 and c.type='friendChat') and exists(select cm2 from ChatMember cm1 join ChatMember cm2 on cm1.chatId=cm2.chatId   where cm1.chatId=?3 and cm1.userId=?1 and cm2.userId=?2)")
     boolean existFriendship(Integer userId, Integer friendId,Integer chatId);
+
+    @Query("SELECT  exists (select c from Chat c where c.chatId=?1 and  c.type='groupChat')")
+    boolean checkTypeGroupChat(Integer chatId);
+
+    @Query("select c from Chat c join ChatMember cm1  on (c.chatId= cm1.chatId and cm1.userId=?1) join ChatMember cm2 on (cm1.chatId=cm2.chatId and cm2.userId=?2) where c.type='friendChat'")
+    List<Chat> getFriendship(Integer userId, Integer inviteeId);
 }

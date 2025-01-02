@@ -58,7 +58,8 @@ public class GroupApplicationService {
                     application.setExpirationTime(Instant.now().plus(Duration.ofDays(3)));
                     application.setApplicantId(userId);
                     application.setReviewerId(target);
-                    application.setApplyInfo("用户"+target.toString()+"邀请你加入团体“"+group.getGroupName()+"”");
+
+                    application.setApplyInfo("用户“"+userController.getUserProfile(userId).getUserName()+"”邀请你加入团体“"+group.getGroupName()+"”");
                     groupRecordService.addRecord(userId,target,group.getGroupId(),"邀请加入团体");
                     return application;
                 }
@@ -97,7 +98,7 @@ public class GroupApplicationService {
         if (!application.getState().equals(GroupApplicationState.waiting)) {
             throw new RuntimeException("该申请已经处理过了");
         }
-        if (application.getType().equals(GroupApplicationType.apply) && !groupMemberRepository.checkAuth(application.getGroupId(), auditResultDTO.getAuditObjectId())) {
+        if (application.getType().equals(GroupApplicationType.apply) && !groupMemberRepository.checkAuth(application.getGroupId(), auditResultDTO.getReviewerId())) {
             throw new IllegalArgumentException("没有权限审核该申请");
         } else if (application.getType().equals(GroupApplicationType.invited) && !application.getReviewerId().equals(auditResultDTO.getReviewerId())) {
             throw new IllegalArgumentException("该申请的审核者有误");
@@ -114,8 +115,7 @@ public class GroupApplicationService {
             if (application.getType().equals(GroupApplicationType.apply)) {
                 groupMemberService.addMember(application.getGroupId(), application.getApplicantId());
                 socializeController.inviteIntoChat(new InviteDTO(group.getChatId(), auditResultDTO.getReviewerId(), application.getApplicantId()));
-                String type="同意用户"+application.getApplicantId().toString()+"加入申请";
-                groupRecordService.addRecord(application.getReviewerId(),application.getApplicantId() , group.getGroupId(),type);
+                groupRecordService.addRecord(application.getReviewerId(),application.getApplicantId() , group.getGroupId(),"同意加入申请");
                 groupRecordService.addRecord(application.getApplicantId(),  null, group.getGroupId(), "申请加入团体");
             }
             else if (application.getType().equals(GroupApplicationType.invited)) {
@@ -135,7 +135,7 @@ public class GroupApplicationService {
 
     @Transactional
     public void inviteMember(InviteGroupDTO inviteDTO,Integer invitor) {
-        if(groupMemberRepository.checkAuth(inviteDTO.getGroupId(),invitor)){
+        if(groupMemberRepository.checkAuth(inviteDTO.getGroupId(),invitor)&& socializeController.checkFriendship(invitor,inviteDTO.getInviteeId())){
             String info="用户"+ userController.getUserProfile(invitor).getUserName() +"邀请你加入团体"+groupRepository.findById(inviteDTO.getGroupId()).orElseThrow().getGroupName();
             groupApplicationRepository.save(new GroupApplication(null,GroupApplicationType.invited,info,GroupApplicationState.waiting,Instant.now(),Instant.now().plus(Duration.ofDays(3)),invitor,inviteDTO.getGroupId(),inviteDTO.getInviteeId()));
             groupRecordRepository.save(new GroupRecord(null,invitor,inviteDTO.getInviteeId(),inviteDTO.getGroupId(),Instant.now(),"邀请好友加入"));

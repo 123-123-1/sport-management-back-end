@@ -14,6 +14,6 @@ public interface GroupApplicationRepository extends JpaRepository<GroupApplicati
 
     void deleteByGroupId(Integer groupId);
 
-    @Query("select g from GroupApplication g join GroupMember  gm on g.groupId=gm.groupId and gm.role='leader' and gm.userId=?1")
+    @Query("select g from GroupApplication g join GroupMember  gm on g.groupId=gm.groupId and gm.role='leader' and gm.userId=?1 and g.type='apply'")
     List<GroupApplication> findAllByGroup(Integer userId);
 }

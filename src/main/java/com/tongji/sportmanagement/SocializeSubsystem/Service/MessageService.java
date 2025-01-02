@@ -1,6 +1,7 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Service;
 
 
+import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageDeleteDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageUserDTO;
@@ -20,10 +21,12 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
     private final ChatMemberRepository chatMemberRepository;
+    private final UserController userController;
 
-    public MessageService(MessageRepository messageRepository, ChatMemberRepository chatMemberRepository) {
+    public MessageService(MessageRepository messageRepository, ChatMemberRepository chatMemberRepository, UserController userController) {
         this.messageRepository = messageRepository;
         this.chatMemberRepository = chatMemberRepository;
+        this.userController = userController;
     }
 
     @Transactional
@@ -31,6 +34,7 @@ public class MessageService {
         if (chatMemberRepository.existsChatMemberByChatIdAndUserId(messageDto.getChatId(), messageDto.getUserId())) {
             Message message = new Message();
             BeanUtils.copyProperties(messageDto, message);
+            message.setTime(Instant.now());
             return messageRepository.save(message);
         }
         else{
@@ -40,13 +44,23 @@ public class MessageService {
 
     public List<MessageUserDTO> getChatHistory(Integer chatId, Integer userId) {
         if(chatMemberRepository.existsChatMemberByChatIdAndUserId(chatId,userId)){
-            return messageRepository.getHistoryByChatId(chatId);
+            var messages= messageRepository.getHistoryByChatId(chatId);
+            return messages.stream().map(
+                    message->{
+                        var newmessage=new MessageUserDTO();
+                        BeanUtils.copyProperties(message,newmessage);
+                        var user=userController.getUserProfile(message.getUserId());
+                        BeanUtils.copyProperties(user,newmessage);
+                        return newmessage;
+                    }
+            ).toList();
         }
         else{
             throw new RuntimeException(("该用户并非该群聊的成员"));
         }
     }
 
+    @Transactional
     public void deleteMsg(MessageDeleteDTO messageDeleteDto) {
         var i=messageRepository.deleteByMessageIdAndUserIdAndTime(messageDeleteDto.getMessageId(), messageDeleteDto.getUserId(),Instant.now().minus(Duration.ofMinutes(5)));
         if(i==0){

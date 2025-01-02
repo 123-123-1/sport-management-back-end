@@ -10,6 +10,7 @@ import com.tongji.sportmanagement.GroupSubsystem.Entity.*;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupMemberRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRecordRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRepository;
+import com.tongji.sportmanagement.SocializeSubsystem.Controller.SocializeController;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,13 +25,15 @@ public class GroupMemberService {
     private final GroupRepository groupRepository;
     private final UserController userController;
     private final GroupRecordService groupRecordService;
+    private final SocializeController socializeController;
 
-    public GroupMemberService(GroupMemberRepository groupMemberRepository, GroupRecordRepository groupRecordRepository, GroupRepository groupRepository, UserController userController, GroupRecordService groupRecordService) {
+    public GroupMemberService(GroupMemberRepository groupMemberRepository, GroupRecordRepository groupRecordRepository, GroupRepository groupRepository, UserController userController, GroupRecordService groupRecordService, SocializeController socializeController) {
         this.groupMemberRepository = groupMemberRepository;
         this.groupRecordRepository = groupRecordRepository;
         this.groupRepository = groupRepository;
         this.userController = userController;
         this.groupRecordService = groupRecordService;
+        this.socializeController = socializeController;
     }
 
 
@@ -38,6 +41,8 @@ public class GroupMemberService {
     public void quitGroup(MemberQuitDTO memberQuitDTO) {
         groupMemberRepository.deleteByGroupIdAndUserId(memberQuitDTO.getGroupId(),memberQuitDTO.getMemberId());
         groupRecordRepository.deleteByGroupIdAndOperatorId(memberQuitDTO.getGroupId(),memberQuitDTO.getMemberId());
+        var group=groupRepository.findById(memberQuitDTO.getGroupId()).orElseThrow();
+        socializeController.quitGroupsChat(group.getChatId(), memberQuitDTO.getMemberId());
         if(groupMemberRepository.countByGroupId(memberQuitDTO.getGroupId())==0){
             groupRepository.deleteById(memberQuitDTO.getGroupId());
         }
@@ -45,10 +50,17 @@ public class GroupMemberService {
 
     @Transactional
     public void dropMember(MemberDropDTO memberDropDTO) {
-        groupMemberRepository.deleteByGroupIdAndUserId(memberDropDTO.getGroupId(),memberDropDTO.getMemberId());
-        groupRecordRepository.deleteByGroupIdAndOperatorId(memberDropDTO.getGroupId(),memberDropDTO.getMemberId());
-        groupRecordService.addRecord(memberDropDTO.getOperatorId(), memberDropDTO.getMemberId(),
-                                   memberDropDTO.getGroupId(),"将成员移出团体");
+        if (groupMemberRepository.checkAuth(memberDropDTO.getGroupId(), memberDropDTO.getOperatorId())) {
+            groupMemberRepository.deleteByGroupIdAndUserId(memberDropDTO.getGroupId(), memberDropDTO.getMemberId());
+            groupRecordRepository.deleteByGroupIdAndOperatorId(memberDropDTO.getGroupId(), memberDropDTO.getMemberId());
+            groupRecordService.addRecord(memberDropDTO.getOperatorId(), memberDropDTO.getMemberId(),
+                    memberDropDTO.getGroupId(), "将成员移出团体");
+            var group=groupRepository.findById(memberDropDTO.getGroupId()).orElseThrow();
+            socializeController.quitGroupsChat(group.getChatId(), memberDropDTO.getMemberId());
+        }
+        else{
+            throw new IllegalArgumentException("没有权限将团员移出团体");
+        }
     }
 
     @Transactional

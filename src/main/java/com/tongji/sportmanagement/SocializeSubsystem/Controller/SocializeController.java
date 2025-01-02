@@ -103,7 +103,6 @@ public class SocializeController {
     @GetMapping("/messages")
     public ResponseEntity<Object> getChatHistory(Integer chatId,Integer userId) {
         try {
-            //********************************************************************
             //验证token
             List<MessageUserDTO> msgs=messageService.getChatHistory(chatId,userId);
             return ResponseEntity.status(200).body(ResultData.success(msgs));
@@ -127,7 +126,6 @@ public class SocializeController {
     @GetMapping("/friends")
     public ResponseEntity<Object> getFriends(Integer userId){
         try {
-            //***************************************************************
             //验证token
             var friends= chatService.getFriendsBy(userId);
             return ResponseEntity.status(200).body(ResultData.success(friends));
@@ -148,6 +146,7 @@ public class SocializeController {
             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
         }
     }
+
     @PatchMapping("/application")
     public ResponseEntity<ResultMsg> processFriendApplication(@RequestBody AuditResultDTO auditResultDTO) {
         try {
@@ -170,6 +169,7 @@ public class SocializeController {
             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
         }
     }
+
     @DeleteMapping("/friends")
     public ResponseEntity<Object> deleteFriend(@RequestBody FriendDeleteDTO friendDeleteDTO){
         try{
@@ -190,5 +190,18 @@ public class SocializeController {
         } catch (Exception e) {
             return -1;
         }
+    }
+
+    public boolean checkFriendship(Integer user1, Integer user2){
+        try{
+            return chatService.checkFriendship(user1,user2);
+        }
+        catch (Exception e){
+            return false;
+        }
+    }
+
+    public void quitGroupsChat(Integer chatId,Integer userId) {
+        chatService.quitChat(chatId,userId);
     }
 }
