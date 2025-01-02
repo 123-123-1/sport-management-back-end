@@ -1,6 +1,5 @@
 package com.tongji.sportmanagement.GroupSubsystem.Controller;
 
-import com.tongji.sportmanagement.Common.DTO.ResultData;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.*;
 import com.tongji.sportmanagement.GroupSubsystem.Service.GroupApplicationService;
@@ -43,7 +42,7 @@ public class GroupController {
     public ResponseEntity<Object> getGroups() {
         try{
             var groups=groupService.getGroups();
-            return ResponseEntity.status(200).body(ResultData.success(groups));
+            return ResponseEntity.status(200).body(groups);
         }
         catch (Exception e) {
             return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
@@ -54,7 +53,7 @@ public class GroupController {
     public ResponseEntity<Object> getGroupByID(@PathVariable Integer groupId) {
         try{
             var group=groupService.getGroupDetail(groupId);
-            return ResponseEntity.status(200).body(ResultData.success(group));
+            return ResponseEntity.status(200).body(group);
         }
         catch (Exception e) {
             return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
@@ -76,7 +75,7 @@ public class GroupController {
     public ResponseEntity<Object> getGroupApplication(Integer userId) {
         try{
             var applications= groupApplicationService.getGroupApplications(userId);
-            return ResponseEntity.status(200).body(ResultData.success(applications));
+            return ResponseEntity.status(200).body(applications);
         }
         catch (Exception e) {
             return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
@@ -139,7 +138,7 @@ public class GroupController {
     }
 
     @PatchMapping("/members")
-    public ResponseEntity<Object> setGroupMemberRole(RoleDTO roleDTO) {
+    public ResponseEntity<Object> setGroupMemberRole(@RequestBody RoleDTO roleDTO) {
         try{
             groupMemberService.setRole(roleDTO);
             return ResponseEntity.status(200).body(ResultMsg.success("已成功设置用户权限"));
@@ -153,7 +152,7 @@ public class GroupController {
     public ResponseEntity<Object> getGroupRecords(Integer groupId,Integer targetId,Integer operatorId) {
         try{
             var records=groupRecordService.getRecord(operatorId,targetId,groupId);
-            return ResponseEntity.status(200).body(ResultData.success(records));
+            return ResponseEntity.status(200).body(records);
         }
         catch (Exception e) {
             return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));

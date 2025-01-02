@@ -150,7 +150,14 @@ public class ChatService {
     }
 
     public boolean checkFriendship(Integer user1, Integer user2) {
-        var p= chatRepository.getFriendship(user1, user2);
-        return p!=null;
+        return chatRepository.getFriendship(user1, user2) != null;
+    }
+
+    public void quitGroupChat(Integer chatId, Integer userId) {
+        var p=chatMemberRepository.deleteByChatIdAndUserId(chatId, userId);
+        if(chatMemberRepository.countByChatId(chatId)==0){
+            messageRepository.deleteByChatId(chatId);
+            chatRepository.deleteById(chatId);
+        }
     }
 }

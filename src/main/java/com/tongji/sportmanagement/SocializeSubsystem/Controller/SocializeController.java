@@ -2,7 +2,6 @@ package com.tongji.sportmanagement.SocializeSubsystem.Controller;
 
 
 import com.tongji.sportmanagement.Common.DTO.*;
-
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.*;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatType;
 import com.tongji.sportmanagement.SocializeSubsystem.Service.ChatService;
@@ -34,7 +33,7 @@ public class SocializeController {
         try {
             //验证token
             var c=chatService.createChat(chat, ChatType.groupChat);
-            return ResponseEntity.status(200).body(ResultData.success(c));
+            return ResponseEntity.status(200).body(c);
 
         } catch (Exception e) {
             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
@@ -46,7 +45,7 @@ public class SocializeController {
         try{
             //验证token
             var chatList= chatService.getChatsByUserId(userId);
-            return ResponseEntity.status(200).body(ResultData.success(chatList));
+            return ResponseEntity.status(200).body(chatList);
         }
         catch (Exception e){
             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
@@ -81,7 +80,7 @@ public class SocializeController {
     public ResponseEntity<Object> getChatDetail(@PathVariable Integer chatId){
         try{
             var chat=chatService.getChatDetails(chatId);
-            return ResponseEntity.status(200).body(ResultData.success(chat));
+            return ResponseEntity.status(200).body(chat);
         }
         catch (Exception e){
             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
@@ -93,7 +92,7 @@ public class SocializeController {
         try{
             //验证token
             var message= messageService.sendMessage(messageDto);
-            return ResponseEntity.status(200).body(ResultData.success(message));
+            return ResponseEntity.status(200).body(message);
         }
         catch (Exception e){
             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
@@ -105,7 +104,7 @@ public class SocializeController {
         try {
             //验证token
             List<MessageUserDTO> msgs=messageService.getChatHistory(chatId,userId);
-            return ResponseEntity.status(200).body(ResultData.success(msgs));
+            return ResponseEntity.status(200).body(msgs);
         }
         catch (Exception e){
             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
@@ -128,7 +127,7 @@ public class SocializeController {
         try {
             //验证token
             var friends= chatService.getFriendsBy(userId);
-            return ResponseEntity.status(200).body(ResultData.success(friends));
+            return ResponseEntity.status(200).body(friends);
         }
         catch (Exception e){
             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
@@ -163,7 +162,7 @@ public class SocializeController {
     public ResponseEntity<Object> getFriendApplication(Integer userId){
         try {
             var applications=friendApplicationService.getAllFriendApplication(userId);
-            return ResponseEntity.status(200).body(ResultData.success(applications));
+            return ResponseEntity.status(200).body(applications);
         }
         catch (Exception e){
             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
@@ -202,6 +201,6 @@ public class SocializeController {
     }
 
     public void quitGroupsChat(Integer chatId,Integer userId) {
-        chatService.quitChat(chatId,userId);
+        chatService.quitGroupChat(chatId,userId);
     }
 }

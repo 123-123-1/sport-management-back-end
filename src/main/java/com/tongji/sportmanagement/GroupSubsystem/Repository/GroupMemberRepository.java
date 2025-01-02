@@ -25,5 +25,7 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Intege
 
     @Modifying
     @Query("update GroupMember m set m.role=?3 where m.groupId=?1 and  m.userId=?2")
-    void updateGroupMemberByGroupIdAndUserIdAndRole(Integer groupId, Integer targetId, String role);
+    void updateGroupMemberByGroupIdAndUserIdAndRole(Integer groupId, Integer targetId, GroupMemberRole role);
+
+    boolean existsByUserId(Integer memberId);
 }

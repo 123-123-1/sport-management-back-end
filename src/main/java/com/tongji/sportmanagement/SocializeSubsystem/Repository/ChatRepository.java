@@ -32,5 +32,5 @@ public interface ChatRepository  extends JpaRepository<Chat, Integer> {
     boolean checkTypeGroupChat(Integer chatId);
 
     @Query("select c from Chat c join ChatMember cm1  on (c.chatId= cm1.chatId and cm1.userId=?1) join ChatMember cm2 on (cm1.chatId=cm2.chatId and cm2.userId=?2) where c.type='friendChat'")
-    List<Chat> getFriendship(Integer userId, Integer inviteeId);
+    Chat getFriendship(Integer userId, Integer inviteeId);
 }

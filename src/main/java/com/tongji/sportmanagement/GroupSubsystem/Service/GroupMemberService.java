@@ -7,6 +7,7 @@ import com.tongji.sportmanagement.GroupSubsystem.DTO.MemberDropDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.MemberQuitDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.RoleDTO;
 import com.tongji.sportmanagement.GroupSubsystem.Entity.*;
+import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupApplicationRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupMemberRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRecordRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRepository;
@@ -26,19 +27,25 @@ public class GroupMemberService {
     private final UserController userController;
     private final GroupRecordService groupRecordService;
     private final SocializeController socializeController;
+    private final GroupApplicationRepository groupApplicationRepository;
 
-    public GroupMemberService(GroupMemberRepository groupMemberRepository, GroupRecordRepository groupRecordRepository, GroupRepository groupRepository, UserController userController, GroupRecordService groupRecordService, SocializeController socializeController) {
+    public GroupMemberService(GroupMemberRepository groupMemberRepository, GroupRecordRepository groupRecordRepository, GroupRepository groupRepository, UserController userController, GroupRecordService groupRecordService, SocializeController socializeController, GroupApplicationRepository groupApplicationRepository) {
         this.groupMemberRepository = groupMemberRepository;
         this.groupRecordRepository = groupRecordRepository;
         this.groupRepository = groupRepository;
         this.userController = userController;
         this.groupRecordService = groupRecordService;
         this.socializeController = socializeController;
+        this.groupApplicationRepository = groupApplicationRepository;
     }
 
 
     @Transactional
     public void quitGroup(MemberQuitDTO memberQuitDTO) {
+        if(!groupMemberRepository.existsByUserId(memberQuitDTO.getMemberId())){
+            throw new IllegalArgumentException("该用户没有加入团体");
+        }
+        groupApplicationRepository.deleteByUserId(memberQuitDTO.getMemberId());
         groupMemberRepository.deleteByGroupIdAndUserId(memberQuitDTO.getGroupId(),memberQuitDTO.getMemberId());
         groupRecordRepository.deleteByGroupIdAndOperatorId(memberQuitDTO.getGroupId(),memberQuitDTO.getMemberId());
         var group=groupRepository.findById(memberQuitDTO.getGroupId()).orElseThrow();
@@ -50,7 +57,12 @@ public class GroupMemberService {
 
     @Transactional
     public void dropMember(MemberDropDTO memberDropDTO) {
-        if (groupMemberRepository.checkAuth(memberDropDTO.getGroupId(), memberDropDTO.getOperatorId())) {
+        if(!groupMemberRepository.existsByUserId(memberDropDTO.getMemberId())){
+            throw new IllegalArgumentException("该用户没有加入团体");
+        }
+        if (groupMemberRepository.checkAuth(memberDropDTO.getGroupId(), memberDropDTO.getOperatorId())
+             && !groupMemberRepository.checkAuth(memberDropDTO.getGroupId(), memberDropDTO.getMemberId())) {
+            groupApplicationRepository.deleteByUserId(memberDropDTO.getMemberId());
             groupMemberRepository.deleteByGroupIdAndUserId(memberDropDTO.getGroupId(), memberDropDTO.getMemberId());
             groupRecordRepository.deleteByGroupIdAndOperatorId(memberDropDTO.getGroupId(), memberDropDTO.getMemberId());
             groupRecordService.addRecord(memberDropDTO.getOperatorId(), memberDropDTO.getMemberId(),
@@ -84,7 +96,7 @@ public class GroupMemberService {
     @Transactional
     public void setRole(RoleDTO roleDTO) {
         if(groupMemberRepository.checkAuth(roleDTO.getGroupId(),roleDTO.getOperatorId())){
-            groupMemberRepository.updateGroupMemberByGroupIdAndUserIdAndRole(roleDTO.getGroupId(),roleDTO.getTargetId(),roleDTO.getRole().name());
+            groupMemberRepository.updateGroupMemberByGroupIdAndUserIdAndRole(roleDTO.getGroupId(),roleDTO.getTargetId(),roleDTO.getRole());
             groupRecordService.addRecord(roleDTO.getOperatorId(), roleDTO.getTargetId(), roleDTO.getGroupId(),"设为管理员");
         }
         else{
