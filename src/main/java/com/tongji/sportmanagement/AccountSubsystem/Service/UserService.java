@@ -30,7 +30,7 @@ public class UserService {
     public ResponseEntity<Object> login(String userName, String password) {
         Optional<User> userOptional = userRepository.findByUserName(userName);
         if (userOptional.isEmpty()) {
-            return ResponseEntity.status(404).body(new ErrorMsg("找不到该用户"));
+            return ResponseEntity.status(400).body(new ErrorMsg("找不到该用户"));
         }
         User user = userOptional.get();
         if(!user.getPassword().equals(password)) {

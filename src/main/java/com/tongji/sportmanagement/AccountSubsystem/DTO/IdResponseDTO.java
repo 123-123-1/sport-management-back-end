@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class IdResponseDTO {
-    int user_id;
+    int userId;
 }
