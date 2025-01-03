@@ -23,7 +23,7 @@ public class Chat {
     private String chatName;
 
     @NotNull
-    @ColumnDefault("'groupChat'")
+    @ColumnDefault("'friendGroup'")
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     private ChatType type;

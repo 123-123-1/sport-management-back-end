@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface ChatRepository  extends JpaRepository<Chat, Integer> {
 
-    @Query("select c from Chat c join ChatMember cm on c.chatId=cm.chatId where cm.userId=?1 and c.type='groupChat'")
+    @Query("select c from Chat c join ChatMember cm on c.chatId=cm.chatId where cm.userId=?1 and c.type !='friendChat'")
     List<Chat> findChatsByUserId(Integer userId);
 
    
@@ -28,7 +28,7 @@ public interface ChatRepository  extends JpaRepository<Chat, Integer> {
     @Query("select exists(select c from Chat c where  c.chatId=?3 and c.type='friendChat') and exists(select cm2 from ChatMember cm1 join ChatMember cm2 on cm1.chatId=cm2.chatId   where cm1.chatId=?3 and cm1.userId=?1 and cm2.userId=?2)")
     boolean existFriendship(Integer userId, Integer friendId,Integer chatId);
 
-    @Query("SELECT  exists (select c from Chat c where c.chatId=?1 and  c.type='groupChat')")
+    @Query("SELECT  not exists (select c from Chat c where c.chatId=?1 and  c.type='friendChat')")
     boolean checkTypeGroupChat(Integer chatId);
 
     @Query("select c from Chat c join ChatMember cm1  on (c.chatId= cm1.chatId and cm1.userId=?1) join ChatMember cm2 on (cm1.chatId=cm2.chatId and cm2.userId=?2) where c.type='friendChat'")

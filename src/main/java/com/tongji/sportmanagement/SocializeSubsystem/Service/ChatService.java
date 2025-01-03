@@ -79,7 +79,7 @@ public class ChatService {
         if(friendShipId==null){
             throw new IllegalArgumentException("两人不是好友关系");
         }
-        if(!chatRepository.checkTypeGroupChat(inviteDto.getChatId())){
+        if(chatRepository.checkTypeGroupChat(inviteDto.getChatId())){
             throw new IllegalArgumentException("该群聊不支持邀请好友");
         }
         if(!chatMemberRepository.existsChatMemberByChatIdAndUserId(inviteDto.getChatId(),inviteDto.getUserId())){
@@ -160,7 +160,7 @@ public class ChatService {
 
     @Transactional
     public void inviteIntoGroupChat(Integer chatId, Integer userId) {
-        if(!chatRepository.checkTypeGroupChat(chatId)){
+        if(chatRepository.checkTypeGroupChat(chatId)){
             throw new IllegalArgumentException("该群聊不支持邀请好友");
         }
         if (!chatMemberRepository.existsChatMemberByChatIdAndUserId(chatId, userId)) {

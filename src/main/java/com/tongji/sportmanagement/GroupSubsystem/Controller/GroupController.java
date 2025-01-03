@@ -105,10 +105,10 @@ public class GroupController {
         }
     }
 
-    @PostMapping("/application/{userId}")
-    public ResponseEntity<Object> inviteMember(@PathVariable Integer userId, @RequestBody InviteGroupDTO inviteDTO) {
+    @PostMapping("/application/by")
+    public ResponseEntity<Object> inviteMember(@RequestAttribute Integer idFromToken, @RequestBody InviteGroupDTO inviteDTO) {
         try{
-            groupApplicationService.inviteMember(inviteDTO,userId);
+            groupApplicationService.inviteMember(inviteDTO,idFromToken);
             return ResponseEntity.status(200).body(ResultMsg.success("已经向该用户发送邀请"));
         }
         catch (Exception e) {
@@ -117,8 +117,9 @@ public class GroupController {
     }
 
     @PatchMapping("/application")
-    public ResponseEntity<Object> updateGroupApplication(@RequestBody AuditResultDTO auditResultDTO) {
+    public ResponseEntity<Object> updateGroupApplication(@RequestAttribute Integer idFromToken, @RequestBody AuditResultDTO auditResultDTO) {
         try{
+            auditResultDTO.setReviewerId(idFromToken);
             groupApplicationService.updateApplication(auditResultDTO);
             return ResponseEntity.status(200).body(ResultMsg.success("已经成功处理申请"));
         }
@@ -128,9 +129,9 @@ public class GroupController {
     }
 
     @DeleteMapping("/members")
-    public ResponseEntity<Object> deleteGroupMember(@RequestBody MemberQuitDTO quitDTO) {
+    public ResponseEntity<Object> deleteGroupMember(@RequestAttribute Integer idFromToken, Integer groupId) {
         try{
-            groupMemberService.quitGroup(quitDTO);
+            groupMemberService.quitGroup(idFromToken,groupId);
             return ResponseEntity.status(200).body(ResultMsg.success("退出团体成功"));
         }
         catch (Exception e) {
@@ -139,8 +140,9 @@ public class GroupController {
     }
 
     @DeleteMapping("/members/by")
-    public ResponseEntity<Object> removeGroupMember(@RequestBody MemberDropDTO dropDTO) {
+    public ResponseEntity<Object> removeGroupMember(@RequestAttribute Integer idFromToken, @RequestBody MemberDropDTO dropDTO) {
         try{
+            dropDTO.setOperatorId(idFromToken);
             groupMemberService.dropMember(dropDTO);
             return ResponseEntity.status(200).body(ResultMsg.success("将用户移出团体成功"));
         }
@@ -150,8 +152,9 @@ public class GroupController {
     }
 
     @PatchMapping("/members")
-    public ResponseEntity<Object> setGroupMemberRole(@RequestBody RoleDTO roleDTO) {
+    public ResponseEntity<Object> setGroupMemberRole(@RequestAttribute Integer idFromToken, @RequestBody RoleDTO roleDTO) {
         try{
+            roleDTO.setOperatorId(idFromToken);
             groupMemberService.setRole(roleDTO);
             return ResponseEntity.status(200).body(ResultMsg.success("已成功设置用户权限"));
         }
@@ -161,9 +164,9 @@ public class GroupController {
     }
 
     @GetMapping("/records")
-    public ResponseEntity<Object> getGroupRecords(Integer groupId,Integer targetId,Integer operatorId) {
+    public ResponseEntity<Object> getGroupRecords(Integer groupId,Integer targetId,@RequestAttribute Integer idFromToken) {
         try{
-            var records=groupRecordService.getRecord(operatorId,targetId,groupId);
+            var records=groupRecordService.getRecord(idFromToken,targetId,groupId);
             return ResponseEntity.status(200).body(records);
         }
         catch (Exception e) {

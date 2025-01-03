@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/socialize")
+@RequestMapping("/api/socialize")
 public class SocializeController {
 
     private final ChatService chatService;
@@ -31,7 +31,7 @@ public class SocializeController {
     public ResponseEntity<Object> createChat(@RequestAttribute Integer idFromToken, @RequestBody ChatDTO chat) {
         try {
             chat.setUserId(idFromToken);
-            var c=chatService.createChat(chat, ChatType.groupChat);
+            var c=chatService.createChat(chat, ChatType.friendGroup);
             return ResponseEntity.status(200).body(c);
 
         } catch (Exception e) {
@@ -176,7 +176,7 @@ public class SocializeController {
         }
     }
 
-    public Integer createChatId( ChatDTO chat) {
+    public Integer createGroupChatId( ChatDTO chat) {
         try {
             //验证token
             var c=chatService.createChat(chat, ChatType.groupChat);

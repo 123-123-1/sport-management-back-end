@@ -41,17 +41,17 @@ public class GroupMemberService {
 
 
     @Transactional
-    public void quitGroup(MemberQuitDTO memberQuitDTO) {
-        if(!groupMemberRepository.existsByUserId(memberQuitDTO.getMemberId())){
+    public void quitGroup(Integer groupId,Integer memberId) {
+        if(!groupMemberRepository.existsByUserId(memberId)) {
             throw new IllegalArgumentException("该用户没有加入团体");
         }
-        groupApplicationRepository.deleteByUserId(memberQuitDTO.getMemberId());
-        groupMemberRepository.deleteByGroupIdAndUserId(memberQuitDTO.getGroupId(),memberQuitDTO.getMemberId());
-        groupRecordRepository.deleteByGroupIdAndOperatorId(memberQuitDTO.getGroupId(),memberQuitDTO.getMemberId());
-        var group=groupRepository.findById(memberQuitDTO.getGroupId()).orElseThrow();
-        socializeController.quitGroupsChat(group.getChatId(), memberQuitDTO.getMemberId());
-        if(groupMemberRepository.countByGroupId(memberQuitDTO.getGroupId())==0){
-            groupRepository.deleteById(memberQuitDTO.getGroupId());
+        groupApplicationRepository.deleteByUserId(memberId);
+        groupMemberRepository.deleteByGroupIdAndUserId(groupId,memberId);
+        groupRecordRepository.deleteByGroupIdAndOperatorId(groupId,memberId);
+        var group=groupRepository.findById(groupId).orElseThrow();
+        socializeController.quitGroupsChat(group.getChatId(), memberId);
+        if(groupMemberRepository.countByGroupId(groupId)==0){
+            groupRepository.deleteById(groupId);
         }
     }
 
