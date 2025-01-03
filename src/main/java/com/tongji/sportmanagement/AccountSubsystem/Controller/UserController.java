@@ -55,6 +55,11 @@ public class UserController {
         return userService.getUserNotification(idFromToken);
     }
 
+    @PatchMapping("/newNotifications")
+    public ResponseEntity<Object> editUserNotifications(@RequestBody NotificationOperationDTO notificationOperationDTO) {
+        return userService.editUserNotification(notificationOperationDTO);
+    }
+
     @PostMapping("/newNotifications")
     public ResponseEntity<Object> sendUserNotifications(@RequestBody NotificationContentDTO notificationContentDTO) {
         System.out.println(notificationContentDTO.toString());
@@ -64,6 +69,8 @@ public class UserController {
     public UserProfileDTO getUserProfile(int userId) {
         return userService.getUserProfile(userId);
     }
+
+
 
     @GetMapping("/test")
     public String test() {

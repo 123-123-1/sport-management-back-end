@@ -161,4 +161,13 @@ public class UserService {
         notificationRepository.save(notification);
         return ResponseEntity.ok().body(new ResultMsg("消息发送成功", 1));
     }
+
+    public ResponseEntity<Object> editUserNotification(NotificationOperationDTO notificationOperationDTO) {
+//        Notification notification = (Notification) notificationRepository.findByNotificationId(notificationOperationDTO.getNotificationId());
+        Optional<Notification> optionalNotification = notificationRepository.findByNotificationId(notificationOperationDTO.getNotificationId());
+        Notification notification = optionalNotification.get();
+        notification.setState(NotificationState.valueOf(notificationOperationDTO.getOperation()));
+        notificationRepository.save(notification);
+        return ResponseEntity.ok().body(new ResultMsg("通知状态修改成功", 1));
+    }
 }
