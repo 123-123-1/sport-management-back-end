@@ -49,7 +49,7 @@ public class GroupController {
         }
     }
 
-    @GetMapping("/{groupId}")
+    @GetMapping("/byId/{groupId}")
     public ResponseEntity<Object> getGroupByID(@PathVariable Integer groupId) {
         try{
             var group=groupService.getGroupDetail(groupId);
@@ -60,7 +60,7 @@ public class GroupController {
         }
     }
 
-    @GetMapping("/{groupName}")
+    @GetMapping("/byName/{groupName}")
     public ResponseEntity<Object> getGroupByName(@PathVariable String groupName) {
         try{
             var group=groupService.getGroupByName(groupName);
