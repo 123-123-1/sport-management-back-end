@@ -188,7 +188,7 @@ public class ReservationService
     GroupDetailDTO groupDetail = (GroupDetailDTO)groupResponse.getBody();
     for (GroupMemberDetailDTO member : groupDetail.getMembers()) {
       if(userId != null && member.getUserId() == userId){
-        if(member.getRole() == "leader"){
+        if(member.getRole().equals("leader")){
           break;
         }
         else{

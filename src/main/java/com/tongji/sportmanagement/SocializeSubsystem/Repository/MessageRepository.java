@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface MessageRepository  extends JpaRepository<Message, Integer> {
 
-    @Query("select m from Message m where m.chatId=?1 order by m.time desc ")
+    @Query("select m from Message m where m.chatId=?1 order by m.time")
     List<Message> getHistoryByChatId(Integer chatId);
 
     @Modifying

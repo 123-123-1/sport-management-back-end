@@ -1,11 +1,14 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Service;
 
 
+import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
 import com.tongji.sportmanagement.AccountSubsystem.Entity.User;
 import com.tongji.sportmanagement.SocializeSubsystem.Repository.FriendApplicationRepository;
 
 import com.tongji.sportmanagement.Common.DTO.AuditResultDTO;
 import com.tongji.sportmanagement.Common.DTO.ChatDTO;
+import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.ApplicationResponseDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendApplicationDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatType;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.FriendApplication;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,10 +28,12 @@ public class FriendApplicationService {
 
     private final FriendApplicationRepository friendApplicationRepository;
     private final ChatService chatService;
+    private final UserController userController;
 
-    public FriendApplicationService(FriendApplicationRepository friendApplicationRepository, ChatService chatService) {
+    public FriendApplicationService(FriendApplicationRepository friendApplicationRepository, ChatService chatService, UserController userController) {
         this.friendApplicationRepository = friendApplicationRepository;
         this.chatService = chatService;
+        this.userController = userController;
     }
 
     @Transactional
@@ -62,7 +68,22 @@ public class FriendApplicationService {
         }
     }
 
-    public List<FriendApplication> getAllFriendApplication(Integer userId) {
-        return friendApplicationRepository.findFriendApplicationsByReviewerId(userId);
+    public List<ApplicationResponseDTO> getAllFriendApplication(Integer userId) {
+        List<FriendApplication> applications = (List<FriendApplication>) friendApplicationRepository.findFriendApplicationsByReviewerId(userId);
+        return applications.stream().map(application -> {
+            ApplicationResponseDTO m = new ApplicationResponseDTO();
+            m.setFriendApplicationId(application.getFriendApplicationId());
+            m.setOperationTime(application.getOperationTime());
+            m.setReviewerId(application.getReviewerId());
+            m.setExpirationTime(application.getExpirationTime());
+            m.setApplyInfo(application.getApplyInfo());
+            m.setApplicantId(application.getApplicantId());
+            m.setState(application.getState());
+            UserProfileDTO applicant = userController.getUserProfile(application.getApplicantId());
+            m.setApplicantName(applicant.getUserName());
+            UserProfileDTO reviewer = userController.getUserProfile(application.getReviewerId());
+            m.setReviewerName(reviewer.getUserName());
+            return m;
+        }).toList();
     }
 }
