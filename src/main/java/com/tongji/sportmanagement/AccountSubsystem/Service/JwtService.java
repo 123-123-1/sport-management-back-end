@@ -21,7 +21,7 @@ public class JwtService {
         return new LoginResponseDTO(JWT.create().withHeader(map)
                 .withClaim("userId", id)
                 .withExpiresAt(date)
-                .sign(Algorithm.HMAC256("joy_sports")), date.toInstant());
+                .sign(Algorithm.HMAC256("joy_sports")), date.toInstant(), -1, null);
     }
 
     public static boolean verify(String token){
