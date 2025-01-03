@@ -12,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
+import com.tongji.sportmanagement.AccountSubsystem.DTO.NotificationContentDTO;
 import com.tongji.sportmanagement.AccountSubsystem.DTO.UserInfoDetailDTO;
+import com.tongji.sportmanagement.AccountSubsystem.Entity.NotificationType;
 import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Controller.ManagementController;
@@ -350,6 +352,14 @@ public class ReservationService
     return new MatchResponseDTO(targetReservation, userResult, matchResult);
   }
 
+  private void sendReservationMessage(Integer reservationId, List<ReservationUserDTO> users)
+  {
+    String notificationContent = "您已成功预约场地，预约ID为：" + reservationId.toString() + "，请按时到场";
+    for(ReservationUserDTO user: users){
+      userController.sendUserNotifications(new NotificationContentDTO(NotificationType.reservation, "预约成功通知", notificationContent, user.getUserId()));
+    }
+  }
+
   // 个人预约交易函数
   @Transactional
   private IndividualResponseDTO individualReservationTransaction(IndividualRequestDTO reservationInfo, Integer userId) throws Exception
@@ -374,7 +384,9 @@ public class ReservationService
   {
     // 1-4. 执行预约交易操作
     IndividualResponseDTO saveResult = individualReservationTransaction(reservationInfo, userId);
-    // 5. 隐藏用户姓名后返回给前端
+    // 5. 发送通知
+    sendReservationMessage(saveResult.getReservationInfo().getReservationId(), saveResult.getUsers());
+    // 6. 隐藏用户姓名后返回给前端
     hideUserInfo(saveResult.getUsers());
     return saveResult;
   }
