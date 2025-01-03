@@ -46,7 +46,7 @@ public class GroupService {
     public void createGroup(CompleteGroupDTO completeGroup){
         Group group = new Group();
         //创建群聊
-        var chatId=socializeController.createGroupChatId(new ChatDTO(completeGroup.getCreatorId(),completeGroup.getGroupName(),null,List.of(completeGroup.getCreatorId())));
+        var chatId=socializeController.createChatId(new ChatDTO(completeGroup.getCreatorId(),completeGroup.getGroupName(),null,List.of(completeGroup.getCreatorId())),"groupChat");
         BeanUtils.copyProperties(completeGroup,group);
         group.setChatId(chatId);
         //创建团体

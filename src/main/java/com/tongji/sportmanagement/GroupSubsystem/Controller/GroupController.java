@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/groups")
+@RequestMapping("/api/groups")
 public class GroupController {
 
     private final GroupService groupService;
@@ -27,7 +27,7 @@ public class GroupController {
     }
 
     @PostMapping("")
-    public ResponseEntity<Object> createGroup(@RequestAttribute Integer idFromToken, @RequestBody CompleteGroupDTO completeGroup) {
+    public ResponseEntity<Object> createGroup(@RequestAttribute int idFromToken, @RequestBody CompleteGroupDTO completeGroup) {
         try {
             completeGroup.setCreatorId(idFromToken);
             groupService.createGroup(completeGroup);
@@ -72,7 +72,7 @@ public class GroupController {
     }
 
     @DeleteMapping("")
-    public ResponseEntity<Object> deleteGroup(@RequestAttribute Integer idFromToken ,Integer groupId) {
+    public ResponseEntity<Object> deleteGroup(@RequestAttribute int idFromToken ,Integer groupId) {
         try{
             groupService.deleteGroup(groupId,idFromToken);
             return ResponseEntity.status(200).body(ResultMsg.success("成功解散团体"));
@@ -83,7 +83,7 @@ public class GroupController {
     }
 
     @GetMapping("/application")
-    public ResponseEntity<Object> getGroupApplication(@RequestAttribute  Integer idFromToken) {
+    public ResponseEntity<Object> getGroupApplication(@RequestAttribute  int idFromToken) {
         try{
             var applications= groupApplicationService.getGroupApplications(idFromToken);
             return ResponseEntity.status(200).body(applications);
@@ -94,7 +94,7 @@ public class GroupController {
     }
 
     @PostMapping("/application")
-    public ResponseEntity<Object> sendGroupApplication(@RequestAttribute Integer idFromToken, @RequestBody GroupApplicationDTO groupApplicationDTO) {
+    public ResponseEntity<Object> sendGroupApplication(@RequestAttribute int idFromToken, @RequestBody GroupApplicationDTO groupApplicationDTO) {
         try{
             groupApplicationDTO.setApplicantId(idFromToken);
             groupApplicationService.sendApplicationIng(groupApplicationDTO);
@@ -106,7 +106,7 @@ public class GroupController {
     }
 
     @PostMapping("/application/by")
-    public ResponseEntity<Object> inviteMember(@RequestAttribute Integer idFromToken, @RequestBody InviteGroupDTO inviteDTO) {
+    public ResponseEntity<Object> inviteMember(@RequestAttribute int idFromToken, @RequestBody InviteGroupDTO inviteDTO) {
         try{
             groupApplicationService.inviteMember(inviteDTO,idFromToken);
             return ResponseEntity.status(200).body(ResultMsg.success("已经向该用户发送邀请"));
@@ -117,7 +117,7 @@ public class GroupController {
     }
 
     @PatchMapping("/application")
-    public ResponseEntity<Object> updateGroupApplication(@RequestAttribute Integer idFromToken, @RequestBody AuditResultDTO auditResultDTO) {
+    public ResponseEntity<Object> updateGroupApplication(@RequestAttribute int idFromToken, @RequestBody AuditResultDTO auditResultDTO) {
         try{
             auditResultDTO.setReviewerId(idFromToken);
             groupApplicationService.updateApplication(auditResultDTO);
@@ -129,7 +129,7 @@ public class GroupController {
     }
 
     @DeleteMapping("/members")
-    public ResponseEntity<Object> deleteGroupMember(@RequestAttribute Integer idFromToken, Integer groupId) {
+    public ResponseEntity<Object> deleteGroupMember(@RequestAttribute int idFromToken, Integer groupId) {
         try{
             groupMemberService.quitGroup(idFromToken,groupId);
             return ResponseEntity.status(200).body(ResultMsg.success("退出团体成功"));
@@ -140,7 +140,7 @@ public class GroupController {
     }
 
     @DeleteMapping("/members/by")
-    public ResponseEntity<Object> removeGroupMember(@RequestAttribute Integer idFromToken, @RequestBody MemberDropDTO dropDTO) {
+    public ResponseEntity<Object> removeGroupMember(@RequestAttribute int idFromToken, @RequestBody MemberDropDTO dropDTO) {
         try{
             dropDTO.setOperatorId(idFromToken);
             groupMemberService.dropMember(dropDTO);
@@ -152,7 +152,7 @@ public class GroupController {
     }
 
     @PatchMapping("/members")
-    public ResponseEntity<Object> setGroupMemberRole(@RequestAttribute Integer idFromToken, @RequestBody RoleDTO roleDTO) {
+    public ResponseEntity<Object> setGroupMemberRole(@RequestAttribute int idFromToken, @RequestBody RoleDTO roleDTO) {
         try{
             roleDTO.setOperatorId(idFromToken);
             groupMemberService.setRole(roleDTO);
@@ -164,7 +164,7 @@ public class GroupController {
     }
 
     @GetMapping("/records")
-    public ResponseEntity<Object> getGroupRecords(Integer groupId,Integer targetId,@RequestAttribute Integer idFromToken) {
+    public ResponseEntity<Object> getGroupRecords(Integer groupId,Integer targetId,@RequestAttribute int idFromToken) {
         try{
             var records=groupRecordService.getRecord(idFromToken,targetId,groupId);
             return ResponseEntity.status(200).body(records);
