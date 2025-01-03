@@ -149,12 +149,18 @@ public class ManagementController
   public ResponseEntity<ReservationResponseDTO> sendReservationRequest(ReservationRequestDTO requestDTO)
   {
     // 暂时发回本地进行测试
-    return restTemplate.postForEntity("http://localhost:8080/api/reservations/managermock", requestDTO, ReservationResponseDTO.class);
+    return restTemplate.postForEntity("http://localhost:8080/api/management/managermock", requestDTO, ReservationResponseDTO.class);
   }
 
   public ResponseEntity<ReservationResponseDTO> sendOccupyRequest(ReservationRequestDTO requestDTO)
   {
     // 暂时发回本地进行测试
-    return restTemplate.postForEntity("http://localhost:8080/api/reservations/managermock", requestDTO, ReservationResponseDTO.class);
+    return restTemplate.postForEntity("http://localhost:8080/api/management/managermock", requestDTO, ReservationResponseDTO.class);
+  }
+
+  @PostMapping("/managermock")
+  ResponseEntity<ReservationResponseDTO> managermock()
+  {
+    return ResponseEntity.ok().body(new ReservationResponseDTO(1, "预约冲突"));
   }
 }
