@@ -13,4 +13,6 @@ import java.util.Date;
 public class LoginResponseDTO {
     private String token;
     private Instant expiration_time;
+    private int userId;
+    private String userName;
 }
