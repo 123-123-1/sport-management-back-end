@@ -25,6 +25,16 @@ public class UserController {
         return userService.register(registerRequestDto);
     }
 
+    @GetMapping("/list")
+    public ResponseEntity<Object> getUserList() {
+        return userService.getUserList();
+    }
+
+    @GetMapping("/names")
+    public ResponseEntity<Object> getUserByName(@RequestParam String userName) {
+        return userService.getUsersByName(userName);
+    }
+
     @GetMapping("/info")
     public ResponseEntity<Object> getUserInfo(@RequestAttribute int idFromToken) {
         return userService.getUserInfo(idFromToken);

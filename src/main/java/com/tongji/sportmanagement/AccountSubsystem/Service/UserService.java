@@ -40,11 +40,11 @@ public class UserService {
     public ResponseEntity<Object> login(String userName, String password) {
         Optional<User> userOptional = userRepository.findByUserName(userName);
         if (userOptional.isEmpty()) {
-            return ResponseEntity.status(200).body(new ErrorMsg("找不到该用户"));
+            return ResponseEntity.status(400).body(new ErrorMsg("找不到该用户"));
         }
         User user = userOptional.get();
         if(!user.getPassword().equals(password)) {
-            return ResponseEntity.status(200).body(new ErrorMsg("密码错误"));
+            return ResponseEntity.status(400).body(new ErrorMsg("密码错误"));
         }
         LoginResponseDTO loginResponseDTO = new LoginResponseDTO(jwtTokenProvider.generateToken(user.getUserId()), jwtTokenProvider.getExpiryDate(), user.getUserId(), userName);
         return ResponseEntity.status(200).body(loginResponseDTO);
@@ -53,7 +53,7 @@ public class UserService {
 
     public ResponseEntity<Object> register(RegisterRequestDTO data) {
         if (userRepository.findByUserName(data.getUserName()).isPresent()) {
-            return ResponseEntity.status(200).body(new ErrorMsg("该用户已存在"));
+            return ResponseEntity.status(400).body(new ErrorMsg("该用户已存在"));
         }
         User user = new User();
         BeanUtils.copyProperties(data, user);
@@ -62,10 +62,38 @@ public class UserService {
         return ResponseEntity.status(200).body(new IdResponseDTO(user.getUserId()));
     }
 
+    public ResponseEntity<Object> getUserList() {
+        List<User> userOptional = (List<User>) userRepository.findAll();
+        if(userOptional.isEmpty()) {
+            return ResponseEntity.status(400).body("用户列表为空");
+        }
+        List<UserInfoDetailDTO> userInfoDetailDTOList = new ArrayList<>();
+        for(User user : userOptional) {
+            UserInfoDetailDTO userInfoDetailDTO = new UserInfoDetailDTO();
+            BeanUtils.copyProperties(user, userInfoDetailDTO);
+            userInfoDetailDTOList.add(userInfoDetailDTO);
+        }
+        return ResponseEntity.ok().body(userInfoDetailDTOList);
+    }
+
+    public ResponseEntity<Object> getUsersByName(String userName) {
+        List<User> userList = (List<User>) userRepository.findUsersByName(userName);
+        if(userList.isEmpty()) {
+            return ResponseEntity.status(400).body(new ResultMsg("未找到用户", 0));
+        }
+        List<UserInfoDetailDTO> userInfoDetailDTOList = new ArrayList<>();
+        for(User user : userList) {
+            UserInfoDetailDTO userInfoDetailDTO = new UserInfoDetailDTO();
+            BeanUtils.copyProperties(user, userInfoDetailDTO);
+            userInfoDetailDTOList.add(userInfoDetailDTO);
+        }
+        return ResponseEntity.ok().body(userInfoDetailDTOList);
+    }
+
     public ResponseEntity<Object> getUserInfo(int userId) {
         Optional<User> userOptional = userRepository.findByUserId(userId);
         if(userOptional.isEmpty()) {
-            return ResponseEntity.status(200).body(new ErrorMsg("未查找到该用户"));
+            return ResponseEntity.status(400).body(new ErrorMsg("未查找到该用户"));
         }
         User user = userOptional.get();
         UserInfoDetailDTO userInfoDetailDTO = new UserInfoDetailDTO();
@@ -87,7 +115,7 @@ public class UserService {
     public ResponseEntity<Object> updateUserInfo(int userId, UserInfoUpdateDTO data) {
         Optional<User> userOptional = userRepository.findByUserId(userId);
         if(userOptional.isEmpty()) {
-            return ResponseEntity.status(200).body(new ErrorMsg("未查找到该用户"));
+            return ResponseEntity.status(400).body(new ErrorMsg("未查找到该用户"));
         }
         User user = userOptional.get();
         BeanUtils.copyProperties(data, user);
@@ -100,11 +128,11 @@ public class UserService {
     public ResponseEntity<Object> updateUserPwd(int userId, UpdatePwdDTO updatePwdDTO) {
         Optional<User> userOptional = userRepository.findByUserId(userId);
         if(userOptional.isEmpty()) {
-            return ResponseEntity.status(200).body(new ErrorMsg("未查找到该用户"));
+            return ResponseEntity.status(400).body(new ErrorMsg("未查找到该用户"));
         }
         User user = userOptional.get();
         if(!updatePwdDTO.getOldPwd().equals(user.getPassword())) {
-            return ResponseEntity.status(200).body(new ErrorMsg("用户密码错误"));
+            return ResponseEntity.status(400).body(new ErrorMsg("用户密码错误"));
         }
         user.setPassword(updatePwdDTO.getNewPwd());
         userRepository.save(user);
@@ -114,7 +142,7 @@ public class UserService {
     public ResponseEntity<Object> getUserNotification(int userId) {
         List<Notification> notificationOptional = (List<Notification>) notificationRepository.findAllByUserId(userId);
         if(notificationOptional.isEmpty()) {
-            return ResponseEntity.status(200).body(new ErrorMsg("未查找到通知"));
+            return ResponseEntity.status(400).body(new ErrorMsg("未查找到通知"));
         }
         List<NotificationDetailDTO> notificationDetailDTO = new ArrayList<>();
         for(Notification notification : notificationOptional) {

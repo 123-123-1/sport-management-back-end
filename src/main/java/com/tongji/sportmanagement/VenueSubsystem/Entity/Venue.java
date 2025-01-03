@@ -19,7 +19,7 @@ public class Venue
 {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id", nullable = false)
+  @Column(name = "venue_id", nullable = false)
   private Integer venueId;
 
   @Column(name = "name", length = 100)
