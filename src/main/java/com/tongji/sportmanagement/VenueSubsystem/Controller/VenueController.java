@@ -146,10 +146,23 @@ public class VenueController
   }
 
   // @GetMapping("/courts")
-  public ResponseEntity<Object> getCourtById(@RequestParam Integer courtId)
+  public ResponseEntity<Object> getCourtById(Integer courtId)
   {
     try{
       return ResponseEntity.ok().body(courtService.getCourtById(courtId));
+    }
+    catch(ServiceException e){
+      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  public ResponseEntity<Object> getTimeslotById(Integer timeslotId)
+  {
+    try{
+      return ResponseEntity.ok().body(timeslotService.getTimeslotById(timeslotId));
     }
     catch(ServiceException e){
       return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));

@@ -79,6 +79,7 @@ public class CourtService
   {
     Optional<Court> result = courtRepository.findById(courtId);
     if(result.isEmpty()){
+      System.out.println("未找到场地：" + courtId);
       throw new ServiceException(404, "未找到场地");
     }
     return result.get();

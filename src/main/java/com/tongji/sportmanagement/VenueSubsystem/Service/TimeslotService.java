@@ -138,4 +138,13 @@ public class TimeslotService
   public List<CourtAvailability> getAvailabilityByState(Integer timeslotId, String state){
     return (List<CourtAvailability>)courtAvailabilityRepository.getAvailabilityByState(timeslotId, state);
   }
+
+  public Timeslot getTimeslotById(Integer timeslotId) throws Exception
+  {
+    Optional<Timeslot> timeslot = timeslotRepository.findById(timeslotId);
+    if(timeslot.isEmpty()){
+      throw new ServiceException(404, "未找到开放时间段");
+    }
+    return timeslot.get();
+  }
 }
