@@ -114,13 +114,13 @@ public class GroupApplicationService {
 
             if (application.getType().equals(GroupApplicationType.apply)) {
                 groupMemberService.addMember(application.getGroupId(), application.getApplicantId());
-                socializeController.inviteIntoChat(new InviteDTO(group.getChatId(), auditResultDTO.getReviewerId(), application.getApplicantId()));
+                socializeController.inviteIntoGroupChat(application.getApplicantId(),group.getChatId());
                 groupRecordService.addRecord(application.getReviewerId(),application.getApplicantId() , group.getGroupId(),"同意加入申请");
                 groupRecordService.addRecord(application.getApplicantId(),  null, group.getGroupId(), "申请加入团体");
             }
             else if (application.getType().equals(GroupApplicationType.invited)) {
                 groupMemberService.addMember(application.getGroupId(), application.getReviewerId());
-                socializeController.inviteIntoChat(new InviteDTO(group.getChatId(), application.getApplicantId(), application.getReviewerId()));
+                socializeController.inviteIntoGroupChat(application.getReviewerId(),group.getChatId());
                 groupRecordService.addRecord(application.getReviewerId(), null, group.getGroupId(),"受邀加入团体");
             }
         } else {

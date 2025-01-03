@@ -80,15 +80,20 @@ public class GroupService {
     }
 
     @Transactional
-    public void deleteGroup(GroupDeleteDTO deleteDTO){
-        if(groupMemberRepository.checkAuth(deleteDTO.getGroupId(),deleteDTO.getUserId())){
-            groupMemberRepository.deleteByGroupId(deleteDTO.getGroupId());
-            groupRecordRepository.deleteByGroupId(deleteDTO.getGroupId());
-            groupApplicationRepository.deleteByGroupId(deleteDTO.getGroupId());
-            groupRepository.deleteById(deleteDTO.getGroupId());
+    public void deleteGroup(Integer groupId,Integer userId){
+        if(groupMemberRepository.checkAuth(groupId,userId)){
+            groupMemberRepository.deleteByGroupId(groupId);
+            groupRecordRepository.deleteByGroupId(groupId);
+            groupApplicationRepository.deleteByGroupId(groupId);
+            groupRepository.deleteById(groupId);
         }
         else{
             throw new IllegalArgumentException("该用户没有权限解散团体");
         }
+    }
+
+    @Transactional
+    public List<Group> getGroupByName(String groupName) {
+        return groupRepository.findByName(groupName);
     }
 }
