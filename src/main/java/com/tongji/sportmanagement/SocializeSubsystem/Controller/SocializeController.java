@@ -26,12 +26,11 @@ public class SocializeController {
         this.friendApplicationService = friendApplicationService;
     }
 
-    //@RequestHeader("Authorization") String token,
 
     @PostMapping("/chats")
-    public ResponseEntity<Object> createChat( @RequestBody ChatDTO chat) {
+    public ResponseEntity<Object> createChat(@RequestAttribute Integer idFromToken, @RequestBody ChatDTO chat) {
         try {
-            //验证token
+            chat.setUserId(idFromToken);
             var c=chatService.createChat(chat, ChatType.groupChat);
             return ResponseEntity.status(200).body(c);
 
@@ -41,10 +40,9 @@ public class SocializeController {
     }
 
     @GetMapping("/chats")
-    public ResponseEntity<Object> getChatsByID(Integer userId){
+    public ResponseEntity<Object> getChatsByID(@RequestAttribute Integer idFromToken) {
         try{
-            //验证token
-            var chatList= chatService.getChatsByUserId(userId);
+            var chatList= chatService.getChatsByUserId(idFromToken);
             return ResponseEntity.status(200).body(chatList);
         }
         catch (Exception e){
@@ -53,10 +51,9 @@ public class SocializeController {
     }
 
     @DeleteMapping("/chats")
-    public ResponseEntity<Object> quitChat(@RequestBody QuitChatDTO quitChatDto){
+    public ResponseEntity<Object> quitChat(@RequestAttribute Integer userId, Integer chatId) {
          try{
-             //验证token
-             chatService.quitChat(quitChatDto.getChatId(),quitChatDto.getUserId());
+             chatService.quitChat(chatId,userId);
              return ResponseEntity.status(200).body(ResultMsg.success("已经成功退出群聊"));
          }
          catch (Exception e){
@@ -65,9 +62,9 @@ public class SocializeController {
     }
 
     @PatchMapping("/chats")
-    public ResponseEntity<Object> inviteIntoChat(@RequestBody InviteDTO inviteDto){
+    public ResponseEntity<Object> inviteIntoChat(@RequestAttribute Integer userId, @RequestBody InviteDTO inviteDto){
         try{
-            //验证token
+            inviteDto.setUserId(userId);
             chatService.inviteToChat(inviteDto);
             return ResponseEntity.status(200).body(ResultMsg.success("已经成功邀请该用户"));
         }
@@ -88,9 +85,9 @@ public class SocializeController {
     }
 
     @PostMapping("/messages")
-    public ResponseEntity<Object> sendMessage(@RequestBody MessageDTO messageDto){
+    public ResponseEntity<Object> sendMessage(@RequestAttribute Integer userId, @RequestBody MessageDTO messageDto){
         try{
-            //验证token
+            messageDto.setUserId(userId);
             var message= messageService.sendMessage(messageDto);
             return ResponseEntity.status(200).body(message);
         }
@@ -100,9 +97,8 @@ public class SocializeController {
     }
 
     @GetMapping("/messages")
-    public ResponseEntity<Object> getChatHistory(Integer chatId,Integer userId) {
+    public ResponseEntity<Object> getChatHistory(Integer chatId,@RequestAttribute Integer userId) {
         try {
-            //验证token
             List<MessageUserDTO> msgs=messageService.getChatHistory(chatId,userId);
             return ResponseEntity.status(200).body(msgs);
         }
@@ -112,9 +108,9 @@ public class SocializeController {
     }
 
     @DeleteMapping("/messages")
-    public ResponseEntity<Object> deleteMessage(@RequestBody MessageDeleteDTO messageDeleteDto) {
+    public ResponseEntity<Object> deleteMessage(@RequestAttribute Integer userId, Integer messageId) {
         try{
-            messageService.deleteMsg(messageDeleteDto);
+            messageService.deleteMsg(userId,messageId);
             return ResponseEntity.status(200).body(ResultMsg.success("消息撤回成功"));
         }
         catch (Exception e){
@@ -123,9 +119,8 @@ public class SocializeController {
     }
 
     @GetMapping("/friends")
-    public ResponseEntity<Object> getFriends(Integer userId){
+    public ResponseEntity<Object> getFriends(@RequestAttribute Integer userId){
         try {
-            //验证token
             var friends= chatService.getFriendsBy(userId);
             return ResponseEntity.status(200).body(friends);
         }
@@ -135,9 +130,9 @@ public class SocializeController {
     }
 
     @PostMapping("/application")
-    public ResponseEntity<ResultMsg> postFriendApplication(@RequestBody FriendApplicationDTO friendApplication){
+    public ResponseEntity<Object> postFriendApplication(@RequestAttribute Integer userId, @RequestBody FriendApplicationDTO friendApplication){
         try{
-            //验证token
+            friendApplication.setApplicantId(userId);
             friendApplicationService.postFriendApplication(friendApplication);
             return ResponseEntity.status(200).body(ResultMsg.success("好友申请已发送"));
         }
@@ -147,9 +142,9 @@ public class SocializeController {
     }
 
     @PatchMapping("/application")
-    public ResponseEntity<ResultMsg> processFriendApplication(@RequestBody AuditResultDTO auditResultDTO) {
+    public ResponseEntity<Object> processFriendApplication(@RequestAttribute Integer userId, @RequestBody AuditResultDTO auditResultDTO) {
         try {
-            //验证token
+            auditResultDTO.setReviewerId(userId);
             friendApplicationService.auditFriendApplication(auditResultDTO);
             return ResponseEntity.status(200).body(ResultMsg.success("好友申请处理成功"));
         }
@@ -159,7 +154,7 @@ public class SocializeController {
     }
 
     @GetMapping("/application")
-    public ResponseEntity<Object> getFriendApplication(Integer userId){
+    public ResponseEntity<Object> getFriendApplication(@RequestAttribute Integer userId){
         try {
             var applications=friendApplicationService.getAllFriendApplication(userId);
             return ResponseEntity.status(200).body(applications);
@@ -170,8 +165,9 @@ public class SocializeController {
     }
 
     @DeleteMapping("/friends")
-    public ResponseEntity<Object> deleteFriend(@RequestBody FriendDeleteDTO friendDeleteDTO){
+    public ResponseEntity<Object> deleteFriend(@RequestAttribute Integer userId, @RequestBody FriendDeleteDTO friendDeleteDTO){
         try{
+            friendDeleteDTO.setOperatorId(userId);
             chatService.deleteFriend(friendDeleteDTO);
             return ResponseEntity.status(200).body(ResultMsg.success("好友删除成功"));
         }
@@ -202,5 +198,9 @@ public class SocializeController {
 
     public void quitGroupsChat(Integer chatId,Integer userId) {
         chatService.quitGroupChat(chatId,userId);
+    }
+
+    public void inviteIntoGroupChat(Integer userId,Integer chatId) {
+        chatService.inviteIntoGroupChat(chatId,userId);
     }
 }

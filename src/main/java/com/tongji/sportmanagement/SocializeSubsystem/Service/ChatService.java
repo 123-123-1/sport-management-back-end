@@ -39,9 +39,6 @@ public class ChatService {
 
     @Transactional
     public Chat createChat(ChatDTO chatDto,ChatType chatType) {
-        if(!chatDto.getMembers().contains(chatDto.getUserId())){
-            throw new RuntimeException("群聊成员不包含发起人");
-        }
         Chat chat = new Chat();
         BeanUtils.copyProperties(chatDto, chat);
         chat.setType(chatType);
@@ -158,6 +155,22 @@ public class ChatService {
         if(chatMemberRepository.countByChatId(chatId)==0){
             messageRepository.deleteByChatId(chatId);
             chatRepository.deleteById(chatId);
+        }
+    }
+
+    @Transactional
+    public void inviteIntoGroupChat(Integer chatId, Integer userId) {
+        if(!chatRepository.checkTypeGroupChat(chatId)){
+            throw new IllegalArgumentException("该群聊不支持邀请好友");
+        }
+        if (!chatMemberRepository.existsChatMemberByChatIdAndUserId(chatId, userId)) {
+            ChatMember chatMember = new ChatMember();
+            chatMember.setChatId(chatId);
+            chatMember.setUserId(userId);
+            chatMemberRepository.save(chatMember);
+        }
+        else{
+            throw new RuntimeException("该用户已是群聊成员");
         }
     }
 }

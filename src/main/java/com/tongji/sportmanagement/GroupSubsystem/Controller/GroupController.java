@@ -27,9 +27,9 @@ public class GroupController {
     }
 
     @PostMapping("")
-    public ResponseEntity<Object> createGroup(@RequestBody CompleteGroupDTO completeGroup) {
+    public ResponseEntity<Object> createGroup(@RequestAttribute Integer idFromToken, @RequestBody CompleteGroupDTO completeGroup) {
         try {
-            //验证token
+            completeGroup.setCreatorId(idFromToken);
             groupService.createGroup(completeGroup);
             return ResponseEntity.status(200).body(ResultMsg.success("团体已经成功创建"));
         }
@@ -60,10 +60,21 @@ public class GroupController {
         }
     }
 
-    @DeleteMapping("")
-    public ResponseEntity<Object> deleteGroup(@RequestBody GroupDeleteDTO groupDeleteDTO) {
+    @GetMapping("/{groupName}")
+    public ResponseEntity<Object> getGroupByName(@PathVariable String groupName) {
         try{
-            groupService.deleteGroup(groupDeleteDTO);
+            var group=groupService.getGroupByName(groupName);
+            return ResponseEntity.status(200).body(group);
+        }
+        catch (Exception e) {
+            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("")
+    public ResponseEntity<Object> deleteGroup(@RequestAttribute Integer idFromToken ,Integer groupId) {
+        try{
+            groupService.deleteGroup(groupId,idFromToken);
             return ResponseEntity.status(200).body(ResultMsg.success("成功解散团体"));
         }
         catch (Exception e) {
@@ -72,9 +83,9 @@ public class GroupController {
     }
 
     @GetMapping("/application")
-    public ResponseEntity<Object> getGroupApplication(Integer userId) {
+    public ResponseEntity<Object> getGroupApplication(@RequestAttribute  Integer idFromToken) {
         try{
-            var applications= groupApplicationService.getGroupApplications(userId);
+            var applications= groupApplicationService.getGroupApplications(idFromToken);
             return ResponseEntity.status(200).body(applications);
         }
         catch (Exception e) {
@@ -83,8 +94,9 @@ public class GroupController {
     }
 
     @PostMapping("/application")
-    public ResponseEntity<Object> sendGroupApplication(@RequestBody GroupApplicationDTO groupApplicationDTO) {
+    public ResponseEntity<Object> sendGroupApplication(@RequestAttribute Integer idFromToken, @RequestBody GroupApplicationDTO groupApplicationDTO) {
         try{
+            groupApplicationDTO.setApplicantId(idFromToken);
             groupApplicationService.sendApplicationIng(groupApplicationDTO);
             return ResponseEntity.status(200).body(ResultMsg.success("已经发送团体加入申请"));
         }
