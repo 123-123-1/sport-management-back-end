@@ -62,6 +62,34 @@ public class UserService {
         return ResponseEntity.status(200).body(new IdResponseDTO(user.getUserId()));
     }
 
+    public ResponseEntity<Object> getUserList() {
+        List<User> userOptional = (List<User>) userRepository.findAll();
+        if(userOptional.isEmpty()) {
+            return ResponseEntity.ok().body("用户列表为空");
+        }
+        List<UserInfoDetailDTO> userInfoDetailDTOList = new ArrayList<>();
+        for(User user : userOptional) {
+            UserInfoDetailDTO userInfoDetailDTO = new UserInfoDetailDTO();
+            BeanUtils.copyProperties(user, userInfoDetailDTO);
+            userInfoDetailDTOList.add(userInfoDetailDTO);
+        }
+        return ResponseEntity.ok().body(userInfoDetailDTOList);
+    }
+
+    public ResponseEntity<Object> getUsersByName(String userName) {
+        List<User> userList = (List<User>) userRepository.findUsersByName(userName);
+        if(userList.isEmpty()) {
+            return ResponseEntity.ok().body(new ResultMsg("未找到用户", 0));
+        }
+        List<UserInfoDetailDTO> userInfoDetailDTOList = new ArrayList<>();
+        for(User user : userList) {
+            UserInfoDetailDTO userInfoDetailDTO = new UserInfoDetailDTO();
+            BeanUtils.copyProperties(user, userInfoDetailDTO);
+            userInfoDetailDTOList.add(userInfoDetailDTO);
+        }
+        return ResponseEntity.ok().body(userInfoDetailDTOList);
+    }
+
     public ResponseEntity<Object> getUserInfo(int userId) {
         Optional<User> userOptional = userRepository.findByUserId(userId);
         if(userOptional.isEmpty()) {
