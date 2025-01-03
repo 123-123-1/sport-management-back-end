@@ -65,7 +65,14 @@ public class SecurityConfig {
     // 在这里定义需要认证的api
     @Bean
     public List<String> authorizedRoutes() {
-        return List.of("/api/users/authorTest", "/api/users/info", "/api/users/password", "/api/reservations/**", "/api/users/notifications", "/api/socialize/**");
+        return List.of(
+            "/api/users/authorTest", 
+            "/api/users/info", 
+            "/api/users/password",
+            "/api/reservations/**", 
+            "/api/users/notifications",
+            "/api/socialize/**",
+            "/api/groups/**");
 //        return List.of();
     }
 

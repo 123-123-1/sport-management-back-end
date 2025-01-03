@@ -14,6 +14,8 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Intege
 
     List<GroupMember> findGroupMembersByGroupId(Integer groupId);
 
+    List<GroupMember> findGroupMembersByUserId(Integer userId);
+
     @Query("select exists( select g from GroupMember g where g.userId=?2 and g.groupId=?1 and g.role='leader')")
     boolean checkAuth(Integer groupId, Integer userId);
 

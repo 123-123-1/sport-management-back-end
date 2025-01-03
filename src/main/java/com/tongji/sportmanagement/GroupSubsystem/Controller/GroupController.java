@@ -49,6 +49,17 @@ public class GroupController {
         }
     }
 
+    @GetMapping("/byUser")
+    public ResponseEntity<Object> getGroupByUser(@RequestAttribute Integer idFromToken){
+        try{
+            var groups=groupService.getByUserId(idFromToken);
+            return ResponseEntity.status(200).body(groups);
+        }
+        catch (Exception e) {
+            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
+    }
+
     @GetMapping("/byId/{groupId}")
     public ResponseEntity<Object> getGroupByID(@PathVariable Integer groupId) {
         try{

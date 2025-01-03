@@ -2,6 +2,7 @@ package com.tongji.sportmanagement.GroupSubsystem.Service;
 
 import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupApplicationDTO;
+import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupApplicationResultDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.InviteGroupDTO;
 import com.tongji.sportmanagement.GroupSubsystem.Entity.*;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupApplicationRepository;
@@ -10,7 +11,10 @@ import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRecordRepositor
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRepository;
 import com.tongji.sportmanagement.Common.DTO.AuditResultDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Controller.SocializeController;
+import com.tongji.sportmanagement.SocializeSubsystem.DTO.ApplicationResponseDTO;
 import com.tongji.sportmanagement.Common.DTO.InviteDTO;
+import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -68,11 +73,28 @@ public class GroupApplicationService {
     }
 
     @Transactional
-    public List<GroupApplication> getGroupApplications(Integer userId) {
+    public List<GroupApplicationResultDTO> getGroupApplications(Integer userId) {
         var applications1= groupApplicationRepository.findAllByReviewerId(userId);
         var applications2= groupApplicationRepository.findAllByGroup(userId);
-        return Stream.concat(applications1.stream(), applications2.stream())
+        List<GroupApplication> result = Stream.concat(applications1.stream(), applications2.stream())
                 .collect(Collectors.toList());
+        return result.stream().map(application -> {
+            GroupApplicationResultDTO m = new GroupApplicationResultDTO();
+            m.setGroupApplicationId(application.getGroupApplicationId());
+            m.setOperationTime(application.getOperationTime());
+            m.setReviewerId(application.getReviewerId());
+            m.setExpirationTime(application.getExpirationTime());
+            m.setApplyInfo(application.getApplyInfo());
+            m.setApplicantId(application.getApplicantId());
+            m.setState(application.getState());
+            UserProfileDTO applicant = userController.getUserProfile(application.getApplicantId());
+            m.setApplicantName(applicant.getUserName());
+            UserProfileDTO reviewer = userController.getUserProfile(application.getReviewerId());
+            m.setReviewerName(reviewer.getUserName());
+            Optional<Group> group = groupRepository.findById(application.getGroupId());
+            m.setGroupName(group.get().getGroupName());
+            return m;
+        }).toList();
     }
 
     @Transactional

@@ -1,6 +1,7 @@
 package com.tongji.sportmanagement.GroupSubsystem.Service;
 
 
+import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.DTO.ChatDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.CompleteGroupDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupDetailDTO;
@@ -16,7 +17,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class GroupService {
@@ -48,6 +52,7 @@ public class GroupService {
         var chatId=socializeController.createChatId(new ChatDTO(completeGroup.getCreatorId(),completeGroup.getGroupName(),null,List.of(completeGroup.getCreatorId())),"groupChat");
         BeanUtils.copyProperties(completeGroup,group);
         group.setChatId(chatId);
+        group.setCreationTime(Instant.now());
         //创建团体
         var _group= groupRepository.save(group);
         //添加管理员
@@ -64,6 +69,19 @@ public class GroupService {
 
     public List<Group> getGroups(){
         return groupRepository.findAll();
+    }
+
+    public List<Group> getByUserId(Integer userId) throws Exception{
+        List<GroupMember> groupMembers = groupMemberRepository.findGroupMembersByUserId(userId);
+        List<Group> result = new ArrayList<Group>();
+        for(GroupMember groupMember: groupMembers){
+            Optional<Group> group = groupRepository.findById(groupMember.getGroupId());
+            if(group.isEmpty()){
+                throw new ServiceException(404, "未找到团体");
+            }
+            result.add(group.get());
+        }
+        return result;
     }
 
     @Transactional
