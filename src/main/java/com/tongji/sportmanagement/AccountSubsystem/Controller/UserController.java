@@ -40,6 +40,17 @@ public class UserController {
         return userService.updateUserPwd(idFromToken, updatePwdDTO);
     }
 
+    @GetMapping("/notifications")
+    public ResponseEntity<Object> getUserNotifications(@RequestAttribute int idFromToken) {
+        return userService.getUserNotification(idFromToken);
+    }
+
+    @PostMapping("/newNotifications")
+    public ResponseEntity<Object> sendUserNotifications(@RequestBody NotificationContentDTO notificationContentDTO) {
+        System.out.println(notificationContentDTO.toString());
+        return userService.sendUserNotification(notificationContentDTO);
+    }
+
     public UserProfileDTO getUserProfile(int userId) {
         return userService.getUserProfile(userId);
     }

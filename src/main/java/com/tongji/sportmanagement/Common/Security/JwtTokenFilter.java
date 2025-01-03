@@ -30,7 +30,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // if the request is not in the authorized routes, then let it pass
         String requestURI = request.getRequestURI();
         AntPathMatcher pathMatcher = new AntPathMatcher();
         boolean isAuthorized = authorizedRoutes.stream().anyMatch(route -> pathMatcher.match(route, requestURI));
@@ -39,13 +38,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        // check token, set authentication, and put id into request attribute
         String token = request.getHeader("Authorization");
 
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
 
-            if(invalidTokenManager.isTokenInvalid(token)) {
+            if (invalidTokenManager.isTokenInvalid(token)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
