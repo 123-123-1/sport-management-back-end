@@ -46,8 +46,7 @@ public class UserService {
         if(!user.getPassword().equals(password)) {
             return ResponseEntity.status(200).body(new ErrorMsg("密码错误"));
         }
-//        LoginResponseDTO loginResponseDTO = JwtService.getTokenById(user.getUserId());
-        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(jwtTokenProvider.generateToken(user.getUserId()), jwtTokenProvider.getExpiryDate());
+        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(jwtTokenProvider.generateToken(user.getUserId()), jwtTokenProvider.getExpiryDate(), user.getUserId(), userName);
         return ResponseEntity.status(200).body(loginResponseDTO);
     }
 
