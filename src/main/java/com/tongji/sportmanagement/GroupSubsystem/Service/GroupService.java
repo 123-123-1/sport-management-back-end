@@ -3,7 +3,6 @@ package com.tongji.sportmanagement.GroupSubsystem.Service;
 
 import com.tongji.sportmanagement.Common.DTO.ChatDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.CompleteGroupDTO;
-import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupDeleteDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupDetailDTO;
 import com.tongji.sportmanagement.GroupSubsystem.Entity.Group;
 import com.tongji.sportmanagement.GroupSubsystem.Entity.GroupMember;
