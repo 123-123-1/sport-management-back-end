@@ -1,7 +1,11 @@
 package com.tongji.sportmanagement.AccountSubsystem.Service;
 
 import com.tongji.sportmanagement.AccountSubsystem.DTO.*;
+import com.tongji.sportmanagement.AccountSubsystem.Entity.Notification;
+import com.tongji.sportmanagement.AccountSubsystem.Entity.NotificationState;
+import com.tongji.sportmanagement.AccountSubsystem.Repository.NotificationRepository;
 import com.tongji.sportmanagement.AccountSubsystem.Repository.UserRepository;
+import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.Common.Security.JwtTokenProvider;
 import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
 import com.tongji.sportmanagement.AccountSubsystem.Entity.User;
@@ -13,6 +17,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,15 +33,18 @@ public class UserService {
     @Autowired
     public UserRepository userRepository;
 
+    @Autowired
+    public NotificationRepository notificationRepository;
+
 
     public ResponseEntity<Object> login(String userName, String password) {
         Optional<User> userOptional = userRepository.findByUserName(userName);
         if (userOptional.isEmpty()) {
-            return ResponseEntity.status(400).body(new ErrorMsg("找不到该用户"));
+            return ResponseEntity.status(200).body(new ErrorMsg("找不到该用户"));
         }
         User user = userOptional.get();
         if(!user.getPassword().equals(password)) {
-            return ResponseEntity.status(400).body(new ErrorMsg("密码错误"));
+            return ResponseEntity.status(200).body(new ErrorMsg("密码错误"));
         }
 //        LoginResponseDTO loginResponseDTO = JwtService.getTokenById(user.getUserId());
         LoginResponseDTO loginResponseDTO = new LoginResponseDTO(jwtTokenProvider.generateToken(user.getUserId()), jwtTokenProvider.getExpiryDate());
@@ -44,7 +54,7 @@ public class UserService {
 
     public ResponseEntity<Object> register(RegisterRequestDTO data) {
         if (userRepository.findByUserName(data.getUserName()).isPresent()) {
-            return ResponseEntity.status(409).body(new ErrorMsg("该用户已存在"));
+            return ResponseEntity.status(200).body(new ErrorMsg("该用户已存在"));
         }
         User user = new User();
         BeanUtils.copyProperties(data, user);
@@ -56,7 +66,7 @@ public class UserService {
     public ResponseEntity<Object> getUserInfo(int userId) {
         Optional<User> userOptional = userRepository.findByUserId(userId);
         if(userOptional.isEmpty()) {
-            return ResponseEntity.status(404).body(new ErrorMsg("未查找到该用户"));
+            return ResponseEntity.status(200).body(new ErrorMsg("未查找到该用户"));
         }
         User user = userOptional.get();
         UserInfoDetailDTO userInfoDetailDTO = new UserInfoDetailDTO();
@@ -78,7 +88,7 @@ public class UserService {
     public ResponseEntity<Object> updateUserInfo(int userId, UserInfoUpdateDTO data) {
         Optional<User> userOptional = userRepository.findByUserId(userId);
         if(userOptional.isEmpty()) {
-            return ResponseEntity.status(400).body(new ErrorMsg("未查找到该用户"));
+            return ResponseEntity.status(200).body(new ErrorMsg("未查找到该用户"));
         }
         User user = userOptional.get();
         BeanUtils.copyProperties(data, user);
@@ -91,14 +101,37 @@ public class UserService {
     public ResponseEntity<Object> updateUserPwd(int userId, UpdatePwdDTO updatePwdDTO) {
         Optional<User> userOptional = userRepository.findByUserId(userId);
         if(userOptional.isEmpty()) {
-            return ResponseEntity.status(400).body(new ErrorMsg("未查找到该用户"));
+            return ResponseEntity.status(200).body(new ErrorMsg("未查找到该用户"));
         }
         User user = userOptional.get();
         if(!updatePwdDTO.getOldPwd().equals(user.getPassword())) {
-            return ResponseEntity.status(400).body(new ErrorMsg("用户密码错误"));
+            return ResponseEntity.status(200).body(new ErrorMsg("用户密码错误"));
         }
         user.setPassword(updatePwdDTO.getNewPwd());
         userRepository.save(user);
         return ResponseEntity.status(200).body(new IdResponseDTO(user.getUserId()));
+    }
+
+    public ResponseEntity<Object> getUserNotification(int userId) {
+        List<Notification> notificationOptional = (List<Notification>) notificationRepository.findAllByUserId(userId);
+        if(notificationOptional.isEmpty()) {
+            return ResponseEntity.status(200).body(new ErrorMsg("未查找到通知"));
+        }
+        List<NotificationDetailDTO> notificationDetailDTO = new ArrayList<>();
+        for(Notification notification : notificationOptional) {
+            NotificationDetailDTO dto = new NotificationDetailDTO();
+            BeanUtils.copyProperties(notification, dto);
+            notificationDetailDTO.add(dto);
+        }
+        return ResponseEntity.status(200).body(notificationDetailDTO);
+    }
+
+    public ResponseEntity<Object> sendUserNotification(NotificationContentDTO notificationContentDTO) {
+        Notification notification = new Notification();
+        BeanUtils.copyProperties(notificationContentDTO, notification);
+        notification.setTimestamp(Instant.now().plus(Duration.ofHours(8)));
+        notification.setState(NotificationState.valueOf("unread"));
+        notificationRepository.save(notification);
+        return ResponseEntity.ok().body(new ResultMsg("消息发送成功", 1));
     }
 }

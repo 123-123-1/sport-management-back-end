@@ -3,6 +3,7 @@ package com.tongji.sportmanagement.Common.Security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
@@ -35,14 +36,26 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf(CsrfConfigurer::disable).cors(cors -> cors.configurationSource(request -> {
-            var corsConfiguration = new CorsConfiguration();
-            corsConfiguration.setAllowedOrigins(List.of("*"));
-            corsConfiguration.setAllowedMethods(List.of("*"));
-            corsConfiguration.setAllowedHeaders(List.of("*"));
-            return corsConfiguration;
-        })).authorizeHttpRequests(authorize -> authorize.requestMatchers(authorizedRoutes().toArray(new String[0])).authenticated().anyRequest().permitAll()).formLogin(FormLoginConfigurer::disable).httpBasic(HttpBasicConfigurer::disable).addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class).build();
+        return http.csrf(CsrfConfigurer::disable)
+                .cors(cors -> cors.configurationSource(request -> {
+                    var corsConfiguration = new CorsConfiguration();
+                    corsConfiguration.setAllowedOrigins(List.of("*"));
+                    corsConfiguration.setAllowedMethods(List.of("*"));
+                    corsConfiguration.setAllowedHeaders(List.of("*"));
+                    return corsConfiguration;
+                }))
+                .authorizeHttpRequests(authorize -> authorize
+//                        .requestMatchers(HttpMethod.GET, "/api/users/notifications").authenticated()
+                        .requestMatchers(authorizedRoutes().toArray(new String[0])).authenticated()
+//                        .requestMatchers(HttpMethod.POST, "/api/users/notifications").permitAll()
+                        .anyRequest().permitAll()
+                )
+                .formLogin(FormLoginConfigurer::disable)
+                .httpBasic(HttpBasicConfigurer::disable)
+                .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
+
 
 //    @Bean
 //    public UserDetailsService userDetailsService() {
@@ -52,7 +65,7 @@ public class SecurityConfig {
     // 在这里定义需要认证的api
     @Bean
     public List<String> authorizedRoutes() {
-        return List.of("/api/users/authorTest", "/api/users/info", "/api/users/password", "/api/reservations/**");
+        return List.of("/api/users/authorTest", "/api/users/info", "/api/users/password", "/api/reservations/**", "/api/users/notifications", "/api/socialize/**");
 //        return List.of();
     }
 
