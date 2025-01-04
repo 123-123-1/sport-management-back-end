@@ -41,14 +41,14 @@ public class ManagementController
 
   @GetMapping("/venueinfo")
   // 等待JWT功能
-  // public ResponseEntity<Object> getVenueInfo(@RequestAttribute Integer idFromToken)
-  // {
-  //   return venueController.getVenueDetail(idFromToken);
-  // }
-  public ResponseEntity<Object> getVenueInfo()
+  public ResponseEntity<Object> getVenueInfo(@RequestAttribute Integer idFromToken)
   {
-    return venueController.getVenueDetail(14);
+    return venueController.getVenueDetail(idFromToken);
   }
+  // public ResponseEntity<Object> getVenueInfo()
+  // {
+  //   return venueController.getVenueDetail(14);
+  // }
 
   @PatchMapping("/venueinfo")
   // 等待JWT功能
@@ -63,61 +63,61 @@ public class ManagementController
 
   @PostMapping("/courts")
   // 等待JWT功能
-  // public ResponseEntity<Object> createCourt(@RequestBody Court courtInfo, @RequestAttribute Integer idFromToken)
-  // {
-  //   return venueController.createCourt(courtInfo, idFromToken);
-  // }
-  public ResponseEntity<Object> createCourt(@RequestBody Court courtInfo)
+  public ResponseEntity<Object> createCourt(@RequestBody Court courtInfo, @RequestAttribute Integer idFromToken)
   {
-    return venueController.createCourt(courtInfo, 14);
+    return venueController.createCourt(courtInfo, idFromToken);
   }
+  // public ResponseEntity<Object> createCourt(@RequestBody Court courtInfo)
+  // {
+  //   return venueController.createCourt(courtInfo, 14);
+  // }
 
   @PatchMapping("/courts")
   // 等待JWT功能
-  // public ResponseEntity<Object> patchCourt(@RequestBody Court courtInfo, @RequestAttribute Integer idFromToken)
-  // {
-  //   return venueController.patchCourt(courtInfo, idFromToken);
-  // }
-  public ResponseEntity<Object> patchCourt(@RequestBody Court courtInfo)
+  public ResponseEntity<Object> patchCourt(@RequestBody Court courtInfo, @RequestAttribute Integer idFromToken)
   {
-    return venueController.patchCourt(courtInfo, 14);
+    return venueController.patchCourt(courtInfo, idFromToken);
   }
+  // public ResponseEntity<Object> patchCourt(@RequestBody Court courtInfo)
+  // {
+  //   return venueController.patchCourt(courtInfo, 14);
+  // }
 
   @DeleteMapping("/courts")
   // 等待JWT功能
-  // public ResponseEntity<Object> deleteCourt(@RequestParam(required = false) Integer courtId,
-  // @RequestParam(required = false) String courtName, @RequestAttribute Integer idFromToken)
-  // {
-  //   return venueController.deleteCourt(courtId, courtName, idFromToken);
-  // }
   public ResponseEntity<Object> deleteCourt(@RequestParam(required = false) Integer courtId,
-  @RequestParam(required = false) String courtName)
+  @RequestParam(required = false) String courtName, @RequestAttribute Integer idFromToken)
   {
-    return venueController.deleteCourt(courtId, courtName, 14);
+    return venueController.deleteCourt(courtId, courtName, idFromToken);
   }
+  // public ResponseEntity<Object> deleteCourt(@RequestParam(required = false) Integer courtId,
+  // @RequestParam(required = false) String courtName)
+  // {
+  //   return venueController.deleteCourt(courtId, courtName, 14);
+  // }
 
   @PostMapping("/timeslots")
   // 等待JWT
-  // public ResponseEntity<Object> createTimeslot(@RequestBody Timeslot timeslotInfo, @RequestAttribute Integer idFromToken)
-  // {
-  //   return venueController.createTimeslot(timeslotInfo, idFromToken);
-  // }
-  public ResponseEntity<Object> createTimeslot(@RequestBody Timeslot timeslotInfo)
+  public ResponseEntity<Object> createTimeslot(@RequestBody Timeslot timeslotInfo, @RequestAttribute Integer idFromToken)
   {
-    return venueController.createTimeslot(timeslotInfo, 1);
+    return venueController.createTimeslot(timeslotInfo, idFromToken);
   }
+  // public ResponseEntity<Object> createTimeslot(@RequestBody Timeslot timeslotInfo)
+  // {
+  //   return venueController.createTimeslot(timeslotInfo, 1);
+  // }
 
   @DeleteMapping("/timeslots")
   // 等待JWT
-  // public ResponseEntity<Object> deleteTimeslot(@RequestParam(required = false) Integer timeslotId, 
-  // @RequestParam(required = false) Instant startTime, @RequestParam(required = false) Instant endTime,
-  // @RequestAttribute Integer venueId){
-  //   return venueController.deleteTimeslot(timeslotId, startTime, endTime, venueId);
-  // }
   public ResponseEntity<Object> deleteTimeslot(@RequestParam(required = false) Integer timeslotId, 
-  @RequestParam(required = false) Instant startTime, @RequestParam(required = false) Instant endTime){
-    return venueController.deleteTimeslot(timeslotId, startTime, endTime, 14);
+  @RequestParam(required = false) Instant startTime, @RequestParam(required = false) Instant endTime,
+  @RequestAttribute Integer venueId){
+    return venueController.deleteTimeslot(timeslotId, startTime, endTime, venueId);
   }
+  // public ResponseEntity<Object> deleteTimeslot(@RequestParam(required = false) Integer timeslotId, 
+  // @RequestParam(required = false) Instant startTime, @RequestParam(required = false) Instant endTime){
+  //   return venueController.deleteTimeslot(timeslotId, startTime, endTime, 14);
+  // }
 
   @PostMapping("/availabilities")
   public ResponseEntity<Object> createAvailability(@RequestBody CourtAvailability availability)
