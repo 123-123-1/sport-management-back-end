@@ -17,6 +17,7 @@ import com.tongji.sportmanagement.ReservationSubsystem.DTO.GroupRequestDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.IndividualRequestDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.MatchRequestDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.Service.ReservationService;
+import com.tongji.sportmanagement.ReservationSubsystem.Service.ViolationService;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -24,6 +25,9 @@ public class ReservationController
 {
   @Autowired
   private ReservationService reservationService;
+
+  @Autowired
+  private ViolationService violationService;
 
   @PostMapping("/individual")
   ResponseEntity<Object> individualReservation(@RequestBody IndividualRequestDTO reservationInfo, @RequestAttribute Integer idFromToken)
@@ -112,6 +116,20 @@ public class ReservationController
   {
     try{
       return ResponseEntity.ok().body(reservationService.getReservationDetail(reservationId, idFromToken));
+    }
+    catch(ServiceException e){
+      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  @GetMapping("/violations")
+  ResponseEntity<Object> getUserReservation(@RequestAttribute Integer idFromToken)
+  {
+    try{
+      return ResponseEntity.ok().body(violationService.getUserViolation(idFromToken));
     }
     catch(ServiceException e){
       return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
