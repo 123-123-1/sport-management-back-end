@@ -76,9 +76,10 @@ public class GroupApplicationService {
     public List<GroupApplicationResultDTO> getGroupApplications(Integer userId) {
         var applications1= groupApplicationRepository.findAllByReviewerId(userId);
         var applications2= groupApplicationRepository.findAllByGroup(userId);
-        List<GroupApplication> result = Stream.concat(applications1.stream(), applications2.stream())
+        List<GroupApplication> applications = Stream.concat(applications1.stream(), applications2.stream())
                 .collect(Collectors.toList());
-        return result.stream().map(application -> {
+        // var applications = groupApplicationRepository.findAllByGroup(userId);
+        return applications.stream().map(application -> {
             GroupApplicationResultDTO m = new GroupApplicationResultDTO();
             m.setGroupApplicationId(application.getGroupApplicationId());
             m.setOperationTime(application.getOperationTime());
@@ -89,9 +90,12 @@ public class GroupApplicationService {
             m.setState(application.getState());
             UserProfileDTO applicant = userController.getUserProfile(application.getApplicantId());
             m.setApplicantName(applicant.getUserName());
-            UserProfileDTO reviewer = userController.getUserProfile(application.getReviewerId());
-            m.setReviewerName(reviewer.getUserName());
+            if(application.getReviewerId() != null){
+                UserProfileDTO reviewer = userController.getUserProfile(application.getReviewerId());
+                m.setReviewerName(reviewer.getUserName());
+            }
             Optional<Group> group = groupRepository.findById(application.getGroupId());
+            m.setGroupId(application.getGroupId());
             m.setGroupName(group.get().getGroupName());
             return m;
         }).toList();

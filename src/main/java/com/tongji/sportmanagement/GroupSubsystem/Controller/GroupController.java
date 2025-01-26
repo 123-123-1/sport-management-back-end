@@ -60,6 +60,17 @@ public class GroupController {
         }
     }
 
+    @GetMapping("/leadergroups")
+    public ResponseEntity<Object> getUserLeaderGroup(@RequestAttribute Integer idFromToken){
+        try{
+            var groups=groupService.getByUserIdFiltered(idFromToken);
+            return ResponseEntity.status(200).body(groups);
+        }
+        catch (Exception e) {
+            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
+        }
+    }
+
     @GetMapping("/byId/{groupId}")
     public ResponseEntity<Object> getGroupByID(@PathVariable Integer groupId) {
         try{
@@ -151,8 +162,11 @@ public class GroupController {
     }
 
     @DeleteMapping("/members/by")
-    public ResponseEntity<Object> removeGroupMember(@RequestAttribute int idFromToken, @RequestBody MemberDropDTO dropDTO) {
+    public ResponseEntity<Object> removeGroupMember(@RequestAttribute int idFromToken, @RequestParam Integer groupId, @RequestParam Integer memberId) {
         try{
+            MemberDropDTO dropDTO = new MemberDropDTO();
+            dropDTO.setGroupId(groupId);
+            dropDTO.setMemberId(memberId);
             dropDTO.setOperatorId(idFromToken);
             groupMemberService.dropMember(dropDTO);
             return ResponseEntity.status(200).body(ResultMsg.success("将用户移出团体成功"));

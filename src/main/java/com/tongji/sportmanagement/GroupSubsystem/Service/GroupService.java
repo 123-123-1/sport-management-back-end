@@ -84,6 +84,17 @@ public class GroupService {
         return result;
     }
 
+    public List<Group> getByUserIdFiltered(Integer userId) throws Exception {
+        List<Group> groups = getByUserId(userId);
+        List<Group> result = new ArrayList<Group>();
+        for (Group group : groups) {
+            if(groupMemberRepository.checkAuth(group.getGroupId(), userId)){
+                result.add(group);
+            }
+        }
+        return result;
+    }
+
     @Transactional
     public GroupDetailDTO getGroupDetail(Integer groupId){
         Group group = groupRepository.findById(groupId).orElse(null);
