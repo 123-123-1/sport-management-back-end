@@ -5,7 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
-import java.util.Date;
+
+import com.tongji.sportmanagement.AccountSubsystem.Entity.UserType;;
 
 @Data
 @AllArgsConstructor
@@ -15,4 +16,6 @@ public class LoginResponseDTO {
     private Instant expiration_time;
     private int userId;
     private String userName;
+    private String userAvatar;
+    private UserType userType;
 }

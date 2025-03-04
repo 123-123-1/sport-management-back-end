@@ -3,16 +3,15 @@ package com.tongji.sportmanagement.VenueSubsystem.Entity;
 import org.hibernate.annotations.ColumnDefault;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-enum VenueState
-{
-  open, closed
-};
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "venue")
 public class Venue
@@ -39,7 +38,9 @@ public class Venue
   @Column(name = "contact_number")
   private String contactNumber;
 
-  @Column(name = "image")
-  private String image;
+  // @Column(name = "image")
+  // private String image;
 
+  @Column(name = "manager_id")
+  private Integer managerId;
 }

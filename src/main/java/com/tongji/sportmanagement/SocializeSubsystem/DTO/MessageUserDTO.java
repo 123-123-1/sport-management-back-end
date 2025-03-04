@@ -18,12 +18,10 @@ public class MessageUserDTO {
     private String content;
     private Integer userId;
     private String userName;
-    private String photo;
 
     public MessageUserDTO(Message message, User user) {
         BeanUtils.copyProperties(message, this);
         this.userName=user.getUserName();
         this.userId=user.getUserId();
-        this.photo=user.getPhoto();
     }
 }

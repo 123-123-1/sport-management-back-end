@@ -31,7 +31,7 @@ public class User {
     @Column(name = "registration_date")
     private Instant registrationDate;
 
-    @Column(name = "photo", length = 100)
-    private String photo;
-
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_type")
+    UserType userType;
 }

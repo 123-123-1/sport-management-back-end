@@ -2,10 +2,14 @@ package com.tongji.sportmanagement.AccountSubsystem.Controller;
 
 import com.tongji.sportmanagement.AccountSubsystem.DTO.*;
 import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
+import com.tongji.sportmanagement.Common.ServiceException;
+import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
 import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -17,12 +21,28 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody LoginRequestDTO loginRequestDto) {
-        return userService.login(loginRequestDto.getUserName(), loginRequestDto.getPassword());
+        try{
+            return ResponseEntity.ok().body(userService.login(loginRequestDto.getUserName(), loginRequestDto.getPassword()));
+        }
+        catch(ServiceException e){
+            return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+        }
+        catch(Exception e){
+            return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+        }
     }
 
     @PostMapping("/registration")
     public ResponseEntity<Object> register(@RequestBody RegisterRequestDTO registerRequestDto) {
-        return userService.register(registerRequestDto);
+        try{
+            return ResponseEntity.ok().body(userService.register(registerRequestDto));
+        }
+        catch(ServiceException e){
+            return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+        }
+        catch(Exception e){
+            return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+        }
     }
 
     @GetMapping("/list")
@@ -37,7 +57,15 @@ public class UserController {
 
     @GetMapping("/info")
     public ResponseEntity<Object> getUserInfo(@RequestAttribute int idFromToken) {
-        return userService.getUserInfo(idFromToken);
+        try{
+            return ResponseEntity.ok().body(userService.getUserInfo(idFromToken));
+        }
+        catch(ServiceException e){
+            return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+        }
+        catch(Exception e){
+            return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+        }
     }
 
     @PatchMapping("/info")
@@ -50,20 +78,29 @@ public class UserController {
         return userService.updateUserPwd(idFromToken, updatePwdDTO);
     }
 
+    @PostMapping("/avatar")
+    public ResponseEntity<Object> updateUserAvatar(@RequestAttribute int idFromToken, @RequestParam("avatar") MultipartFile avatar){
+        return userService.updateUserAvatar(idFromToken, avatar);
+    }
+
     @GetMapping("/notifications")
-    public ResponseEntity<Object> getUserNotifications(@RequestAttribute int idFromToken) {
+    public ResponseEntity<Object> getUserNotification(@RequestAttribute int idFromToken) {
         return userService.getUserNotification(idFromToken);
     }
 
     @PatchMapping("/newNotifications")
-    public ResponseEntity<Object> editUserNotifications(@RequestBody NotificationOperationDTO notificationOperationDTO) {
+    public ResponseEntity<Object> editUserNotification(@RequestBody NotificationOperationDTO notificationOperationDTO) {
         return userService.editUserNotification(notificationOperationDTO);
     }
 
     @PostMapping("/newNotifications")
-    public ResponseEntity<Object> sendUserNotifications(@RequestBody NotificationContentDTO notificationContentDTO) {
-        System.out.println(notificationContentDTO.toString());
-        return userService.sendUserNotification(notificationContentDTO);
+    public ResponseEntity<Object> sendUserNotification(@RequestBody NotificationContentDTO notificationContentDTO) {
+        try{
+            return ResponseEntity.ok().body(userService.sendUserNotification(notificationContentDTO));
+        }
+        catch(Exception e){
+            return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+        }
     }
 
     public UserProfileDTO getUserProfile(int userId) {

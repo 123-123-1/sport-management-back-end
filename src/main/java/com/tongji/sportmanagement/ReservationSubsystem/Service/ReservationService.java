@@ -11,18 +11,18 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
 import com.tongji.sportmanagement.AccountSubsystem.DTO.NotificationContentDTO;
 import com.tongji.sportmanagement.AccountSubsystem.DTO.UserInfoDetailDTO;
 import com.tongji.sportmanagement.AccountSubsystem.Entity.NotificationType;
+import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Controller.ManagementController;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationRequestDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationResponseDTO;
-import com.tongji.sportmanagement.GroupSubsystem.Controller.GroupController;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupDetailDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupMemberDetailDTO;
+import com.tongji.sportmanagement.GroupSubsystem.Service.GroupService;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.GroupRequestDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.GroupResponseDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.IndividualRequestDTO;
@@ -46,12 +46,14 @@ import com.tongji.sportmanagement.ReservationSubsystem.Repository.MatchReservati
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.ReservationRecordRepository;
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.ReservationRepository;
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.UserReservationRepository;
-import com.tongji.sportmanagement.VenueSubsystem.Controller.VenueController;
+import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueDetailDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailabilityState;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Timeslot;
-import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
+import com.tongji.sportmanagement.VenueSubsystem.Service.CourtService;
+import com.tongji.sportmanagement.VenueSubsystem.Service.TimeslotService;
+import com.tongji.sportmanagement.VenueSubsystem.Service.VenueService;
 
 import jakarta.transaction.Transactional;
 
@@ -71,11 +73,15 @@ public class ReservationService
   @Autowired
   private ManagementController managementController; // 用于向场地管理方发送与接收预约信息
   @Autowired
-  private VenueController venueController; // 用于获取预约时间段信息
+  private VenueService venueService; // 用于获取场馆信息
   @Autowired
-  private UserController userController; // 用于获取用户信息
+  private TimeslotService timeslotService; // 用于获取开放时间信息
   @Autowired
-  private GroupController groupController;
+  private CourtService courtService; // 用于获取场地信息
+  @Autowired
+  private UserService userService; // 用于获取用户信息
+  @Autowired
+  private GroupService groupService; // 用于获取团体信息
 
   // ---------- 工具函数：用于封装预约流程 ----------
   private <T> boolean isValidRequest(ResponseEntity<T> response, Class<?> expectClass)
@@ -156,25 +162,11 @@ public class ReservationService
     return new IndividualResponseDTO(reservation, result);
   }
 
-  // 查找可预约项信息
-  private CourtAvailability findAvailability(Integer availabilityId) throws Exception
-  {
-    ResponseEntity<Object> availabilityResponse = venueController.getVenueAvailability(availabilityId);
-    if(!isValidRequest(availabilityResponse, CourtAvailability.class)){
-      throw new ServiceException(availabilityResponse.getStatusCode().value(), "获取可预约项失败");
-    }
-    return (CourtAvailability)availabilityResponse.getBody();
-  }
-
   // 获取预约用户的详细信息
   private void getReservationUserInfo(List<ReservationUserDTO> users) throws Exception
   {
     for (int i = 0; i < users.size(); i++) {
-      ResponseEntity<Object> userInfoResponse = userController.getUserInfo(users.get(i).getUserId());
-      if(!isValidRequest(userInfoResponse, UserInfoDetailDTO.class)){
-        throw new ServiceException(404, "未找到用户信息");
-      }
-      UserInfoDetailDTO userInfo = (UserInfoDetailDTO) userInfoResponse.getBody();
+      UserInfoDetailDTO userInfo = userService.getUserInfo(users.get(i).getUserId());
       users.set(i, new ReservationUserDTO(null, userInfo.getUserId(), userInfo.getUserName(), userInfo.getPhoto(),
         userInfo.getRealName(), userInfo.getPhone()));
     }
@@ -183,11 +175,7 @@ public class ReservationService
   // 获取预约团体的详细信息并检查用户权限
   private ReservationGroupDTO getReservationGroup(Integer groupId, Integer userId) throws Exception
   {
-    ResponseEntity<Object> groupResponse = groupController.getGroupByID(groupId);
-    if(!isValidRequest(groupResponse, GroupDetailDTO.class)){
-      throw new ServiceException(404, "未找到团体信息");
-    }
-    GroupDetailDTO groupDetail = (GroupDetailDTO)groupResponse.getBody();
+    GroupDetailDTO groupDetail = groupService.getGroupDetail(groupId);
     for (GroupMemberDetailDTO member : groupDetail.getMembers()) {
       if(userId != null && member.getUserId() == userId){
         if(member.getRole().equals("leader")){
@@ -203,19 +191,11 @@ public class ReservationService
 
   private List<Integer> findCourtByType(Integer venueId, String courtType) throws Exception
   {
-    ResponseEntity<Object> courtResponse = venueController.getVenueCourts(venueId);
-    if(!isValidRequest(courtResponse, List.class)){
-      throw new ServiceException(404, "未找到场地信息");
-    }
-    List<?> venueCourts = (List<?>)courtResponse.getBody();
+    List<Court> venueCourts = courtService.getVenueCourts(venueId);
     List<Integer> eligibleCourts = new ArrayList<Integer>();
-    for (Object object : venueCourts) {
-      if(!(object instanceof Court)){
-        throw new ServiceException(500, "获取场地信息错误");
-      }
-      Court curCourt = (Court)object;
-      if(curCourt.getType().equals(courtType)){
-        eligibleCourts.add(curCourt.getCourtId());
+    for (Court court : venueCourts) {
+      if(court.getType().equals(courtType)){
+        eligibleCourts.add(court.getCourtId());
       }
     }
     return eligibleCourts;
@@ -223,52 +203,14 @@ public class ReservationService
 
   private List<CourtAvailability> getAvailabilityByState(Integer timeslotId, List<Integer> courts, String state) throws Exception
   {
-    ResponseEntity<Object> availabilityResponse = venueController.getAvalibilityByState(timeslotId, state);
-    if(!isValidRequest(availabilityResponse, List.class)){
-      throw new ServiceException(404, "未找到场地信息");
-    }
-    List<?> availabilities = (List<?>)availabilityResponse.getBody();
+    List<CourtAvailability> availabilities = timeslotService.getAvailabilityByState(timeslotId, state);
     List<CourtAvailability> eligibleAvailabilities = new ArrayList<CourtAvailability>();
-    for (Object object : availabilities) {
-      if(!(object instanceof CourtAvailability)){
-        throw new ServiceException(500, "获取预约项错误");
-      }
-      CourtAvailability curAvailability = (CourtAvailability)object;
-      if(courts.contains(curAvailability.getCourtId())){
-        eligibleAvailabilities.add(curAvailability);
+    for (CourtAvailability availability : availabilities) {
+      if(courts.contains(availability.getCourtId())){
+        eligibleAvailabilities.add(availability);
       }
     }
     return eligibleAvailabilities;
-  }
-
-  // 根据场地ID查找场地
-  private Court getCourtById(Integer courtId) throws Exception
-  {
-    ResponseEntity<Object> courtResponse = venueController.getCourtById(courtId);
-    if(!isValidRequest(courtResponse, Court.class)){
-      throw new ServiceException(404, "未找到场地信息");
-    }
-    return (Court)courtResponse.getBody();
-  }
-
-  // 根据时间段ID查找时间段
-  private Timeslot getTimeslotById(Integer timeslotId) throws Exception
-  {
-    ResponseEntity<Object> timeslotResponse = venueController.getTimeslotById(timeslotId);
-    if(!isValidRequest(timeslotResponse, Timeslot.class)){
-      throw new ServiceException(404, "未找到场地信息");
-    }
-    return (Timeslot)timeslotResponse.getBody();
-  }
-
-  // 根据场地ID查找场地
-  private Venue getVenueById(Integer venueId) throws Exception
-  {
-    ResponseEntity<Object> venueResponse = venueController.getVenueDetail(venueId);
-    if(!isValidRequest(venueResponse, Venue.class)){
-      throw new ServiceException(404, "未找到场地信息");
-    }
-    return (Venue) venueResponse.getBody();
   }
 
   // 寻找拼场场地的函数
@@ -292,7 +234,7 @@ public class ReservationService
       if(matchReservation.isEmpty()){
         throw new ServiceException(500, "未找到对应的拼场预约");
       }
-      Court court = getCourtById(availability.getCourtId());
+      Court court = courtService.getCourtById(availability.getCourtId());
       if(matchReservation.get().getReservedCount() + reserveCount <= court.getCapacity()){
         return resultReservation;
       }
@@ -321,7 +263,8 @@ public class ReservationService
     matchReservationRepository.save(matchResult);
     // 5. 更新开放时间段为拼场状态
     courtAvailability.setState(CourtAvailabilityState.matching);
-    venueController.patchAvailability(courtAvailability);
+    // venueController.patchAvailability(courtAvailability);
+    timeslotService.patchAvailability(courtAvailability);
     // 6. 获取预约用户信息
     getReservationUserInfo(saveResult.getUsers());
     // 7. 向场地管理方申请拼场占用
@@ -356,7 +299,7 @@ public class ReservationService
   {
     String notificationContent = "您已成功预约场地，预约ID为：" + reservationId.toString() + "，请按时到场";
     for(ReservationUserDTO user: users){
-      userController.sendUserNotifications(new NotificationContentDTO(NotificationType.reservation, "预约成功通知", notificationContent, user.getUserId()));
+      userService.sendUserNotification(new NotificationContentDTO(NotificationType.reservation, "预约成功通知", notificationContent, user.getUserId()));
     }
   }
 
@@ -366,7 +309,7 @@ public class ReservationService
   {
     // 该函数为transaction函数，抛出异常即表示预约失败，所有操作均会撤销
     // 1. 找到可预约项
-    CourtAvailability targetAvailability = findAvailability(reservationInfo.getAvailabilityId());
+    CourtAvailability targetAvailability = timeslotService.getAvailability(reservationInfo.getAvailabilityId());
     // 2. 插入预约项目
     IndividualResponseDTO saveResult = saveReservation(ReservationType.individual, reservationInfo.getAvailabilityId(),
     reservationInfo.getUsers(), ReservationState.reserved);
@@ -374,7 +317,7 @@ public class ReservationService
     getReservationUserInfo(saveResult.getUsers());
     // 4. 更新场地可用状态
     targetAvailability.setState(CourtAvailabilityState.full);
-    venueController.patchAvailability(targetAvailability);
+    timeslotService.patchAvailability(targetAvailability);
     // 5. 向场地管理方发送预约请求
     reservationManagerConfirm(new ReservationRequestDTO(saveResult.getReservationInfo().getReservationId(), targetAvailability, saveResult.getUsers()));
     return saveResult;
@@ -397,7 +340,7 @@ public class ReservationService
   {
     // 该函数为transaction函数，抛出异常即表示预约失败，所有操作均会撤销
     // 1. 找到可预约项
-    CourtAvailability targetAvailability = findAvailability(reservationInfo.getAvailabilityId());
+    CourtAvailability targetAvailability = timeslotService.getAvailability(reservationInfo.getAvailabilityId());
     // 2. 插入预约项目
     IndividualResponseDTO saveResult = saveReservation(ReservationType.group, reservationInfo.getAvailabilityId(),
     reservationInfo.getUsers(), ReservationState.reserved);
@@ -406,7 +349,7 @@ public class ReservationService
     groupReservationRepository.save(groupReservation);
     // 4. 更新场地可用状态
     targetAvailability.setState(CourtAvailabilityState.full);
-    venueController.patchAvailability(targetAvailability);
+    timeslotService.patchAvailability(targetAvailability);
     // 5. 获取预约的用户信息
     getReservationUserInfo(saveResult.getUsers());
     // 6. 获取预约的团体信息
@@ -458,14 +401,14 @@ public class ReservationService
     for(UserReservation userReservation: userReservations){
       Reservation reservation = userReservation.getReservation();
       // 3. 找到可预约项
-      CourtAvailability availability = findAvailability(reservation.getAvailabilityId());
+      CourtAvailability availability = timeslotService.getAvailability(reservation.getAvailabilityId());
       System.out.println(availability.getCourtId());
       // 4. 找到场地
-      Court court = getCourtById(availability.getCourtId());
+      Court court = courtService.getCourtById(availability.getCourtId());
       // 5. 找到场馆信息
-      Venue venue = getVenueById(court.getVenueId());
+      VenueDetailDTO venue = venueService.getVenueDetail(court.getVenueId());
       // 6. 找到可用时间段信息
-      Timeslot timeslot = getTimeslotById(availability.getTimeslotId());
+      Timeslot timeslot = timeslotService.getTimeslotById(availability.getTimeslotId());
       // 7. 拼合预约信息
       result.add(new ReservationMetaDTO(reservation.getReservationId(), venue.getVenueName(), court.getCourtName(),
       timeslot.getStartTime(), timeslot.getEndTime(), reservation.getType(), userReservation.getState()));
@@ -487,17 +430,17 @@ public class ReservationService
     basicInfo.setReservationId(reservationId);
     basicInfo.setType(reservation.getType());
     // (2) 获取预约项
-    CourtAvailability availability = findAvailability(reservation.getAvailabilityId());
+    CourtAvailability availability = timeslotService.getAvailability(reservation.getAvailabilityId());
     // (3) 获取场地信息
-    Court court = getCourtById(availability.getCourtId());
+    Court court = courtService.getCourtById(availability.getCourtId());
     basicInfo.setCourtId(court.getCourtId());
     basicInfo.setCourtName(court.getCourtName());
     // (4) 获取开放时间段
-    Timeslot timeslot = getTimeslotById(availability.getTimeslotId());
+    Timeslot timeslot = timeslotService.getTimeslotById(availability.getTimeslotId());
     basicInfo.setStartTime(timeslot.getStartTime());
     basicInfo.setEndTime(timeslot.getEndTime());
     // (5) 获取场馆信息
-    Venue venue = getVenueById(court.getVenueId());
+    VenueDetailDTO venue = venueService.getVenueDetail(court.getVenueId());
     basicInfo.setVenueId(venue.getVenueId());
     basicInfo.setVenueName(venue.getVenueName());
     // (6) 获取团体信息
@@ -524,7 +467,7 @@ public class ReservationService
     List<UserReservation> userReservations = (List<UserReservation>)userReservationRepository.findAllByReservationId(reservationId);
     List<ReservationUserDTO> userInfo = new ArrayList<ReservationUserDTO>();
     for(UserReservation userReservation : userReservations){
-      UserProfileDTO userProfile = userController.getUserProfile(userReservation.getUserId());
+      UserProfileDTO userProfile = userService.getUserProfile(userReservation.getUserId());
       userInfo.add(new ReservationUserDTO(userReservation.getUserReservationId(), userReservation.getUserId(),
       userProfile.getUserName(), userProfile.getPhoto(), null, null));
       if(userReservation.getUserId() == userId){
