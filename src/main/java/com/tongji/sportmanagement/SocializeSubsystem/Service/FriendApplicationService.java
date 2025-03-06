@@ -1,8 +1,6 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Service;
 
-
-import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
-import com.tongji.sportmanagement.AccountSubsystem.Entity.User;
+import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.SocializeSubsystem.Repository.FriendApplicationRepository;
 
 import com.tongji.sportmanagement.Common.DTO.AuditResultDTO;
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,12 +25,12 @@ public class FriendApplicationService {
 
     private final FriendApplicationRepository friendApplicationRepository;
     private final ChatService chatService;
-    private final UserController userController;
+    private final UserService userService;
 
-    public FriendApplicationService(FriendApplicationRepository friendApplicationRepository, ChatService chatService, UserController userController) {
+    public FriendApplicationService(FriendApplicationRepository friendApplicationRepository, ChatService chatService, UserService userService) {
         this.friendApplicationRepository = friendApplicationRepository;
         this.chatService = chatService;
-        this.userController = userController;
+        this.userService = userService;
     }
 
     @Transactional
@@ -54,13 +51,13 @@ public class FriendApplicationService {
     public void auditFriendApplication(AuditResultDTO auditResultDTO) {
         if (friendApplicationRepository.existsByWaitingApplicationIdAndReviewerId(auditResultDTO.getAuditObjectId(), auditResultDTO.getReviewerId())) {
             if (auditResultDTO.isResult()) {
-                 friendApplicationRepository.setState(auditResultDTO.getAuditObjectId(),FriendApplicationState.accepted);
-                 Integer userId=friendApplicationRepository.getApplicantByApplicationId(auditResultDTO.getAuditObjectId());
-                 List<Integer> members=List.of(userId,auditResultDTO.getReviewerId());
-                 chatService.createChat(new ChatDTO(auditResultDTO.getReviewerId(),null,null,members), ChatType.friendChat);
+                friendApplicationRepository.setState(auditResultDTO.getAuditObjectId(),FriendApplicationState.accepted);
+                Integer userId=friendApplicationRepository.getApplicantByApplicationId(auditResultDTO.getAuditObjectId());
+                List<Integer> members=List.of(userId,auditResultDTO.getReviewerId());
+                chatService.createChat(new ChatDTO(auditResultDTO.getReviewerId(),null,null,members), ChatType.friendChat);
             }
             else {
-                 friendApplicationRepository.setState(auditResultDTO.getAuditObjectId(),FriendApplicationState.rejected);
+                friendApplicationRepository.setState(auditResultDTO.getAuditObjectId(),FriendApplicationState.rejected);
             }
         }
         else{
@@ -79,9 +76,9 @@ public class FriendApplicationService {
             m.setApplyInfo(application.getApplyInfo());
             m.setApplicantId(application.getApplicantId());
             m.setState(application.getState());
-            UserProfileDTO applicant = userController.getUserProfile(application.getApplicantId());
+            UserProfileDTO applicant = userService.getUserProfile(application.getApplicantId());
             m.setApplicantName(applicant.getUserName());
-            UserProfileDTO reviewer = userController.getUserProfile(application.getReviewerId());
+            UserProfileDTO reviewer = userService.getUserProfile(application.getReviewerId());
             m.setReviewerName(reviewer.getUserName());
             return m;
         }).toList();

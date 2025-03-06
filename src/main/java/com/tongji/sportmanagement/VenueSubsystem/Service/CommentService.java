@@ -7,7 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
+import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.CommentItemDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.PostCommentDTO;
@@ -24,17 +24,17 @@ public class CommentService
   final int pageCommentCount = 10; // 一页评论的数量
 
   @Autowired
-  private UserController userController;
+  private UserService userService;
 
   public VenueCommentDTO getVenueComments(int venueId, long page)
   {
     // 1. 获取所有用户评论
     long offset = (page - 1) * pageCommentCount;
-    List<VenueComment> comments = (List<VenueComment>)commentRepositiory.findCommentByVenueId(venueId, offset, pageCommentCount);
+    List<VenueComment> comments = commentRepositiory.findCommentByVenueId(venueId, offset, pageCommentCount);
     // 2. 获取评论的所有用户信息
     List<CommentItemDTO> userComments = new ArrayList<CommentItemDTO>();
     for (VenueComment comment : comments) {
-      userComments.add(new CommentItemDTO(comment, userController.getUserProfile(comment.getUserId())));
+      userComments.add(new CommentItemDTO(comment, userService.getUserProfile(comment.getUserId())));
     }
     // 3. 生成查询结果
     VenueCommentDTO result = new VenueCommentDTO();

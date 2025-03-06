@@ -10,7 +10,6 @@ import com.tongji.sportmanagement.Common.Security.JwtTokenProvider;
 import com.tongji.sportmanagement.VenueSubsystem.Service.VenueService;
 import com.tongji.sportmanagement.Common.OssService;
 import com.tongji.sportmanagement.Common.ServiceException;
-import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
 import com.tongji.sportmanagement.AccountSubsystem.Entity.User;
 import com.tongji.sportmanagement.AccountSubsystem.Entity.UserType;
 import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
@@ -20,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -84,14 +82,14 @@ public class UserService {
         }
 
         // 设置默认头像
-        ossService.copyDefault(getAvatarName(user.getUserId()));
+        ossService.copyDefault("default_avatar", getAvatarName(user.getUserId()));
         return new RegisterResponseDTO(user.getUserId(), user.getUserName());
     }
 
-    public ResponseEntity<Object> getUserList() {
+    public List<UserInfoDetailDTO> getUserList() throws Exception {
         List<User> userOptional = (List<User>) userRepository.findAll();
         if(userOptional.isEmpty()) {
-            return ResponseEntity.status(400).body("用户列表为空");
+            throw new ServiceException(400, "用户列表为空");
         }
         List<UserInfoDetailDTO> userInfoDetailDTOList = new ArrayList<>();
         for(User user : userOptional) {
@@ -99,13 +97,13 @@ public class UserService {
             BeanUtils.copyProperties(user, userInfoDetailDTO);
             userInfoDetailDTOList.add(userInfoDetailDTO);
         }
-        return ResponseEntity.ok().body(userInfoDetailDTOList);
+        return userInfoDetailDTOList;
     }
 
-    public ResponseEntity<Object> getUsersByName(String userName) {
+    public List<UserInfoDetailDTO> getUsersByName(String userName) throws Exception {
         List<User> userList = (List<User>) userRepository.findUsersByName(userName);
         if(userList.isEmpty()) {
-            return ResponseEntity.status(400).body(new ResultMsg("未找到用户", 0));
+            throw new ServiceException(400, "未找到用户");
         }
         List<UserInfoDetailDTO> userInfoDetailDTOList = new ArrayList<>();
         for(User user : userList) {
@@ -113,7 +111,7 @@ public class UserService {
             BeanUtils.copyProperties(user, userInfoDetailDTO);
             userInfoDetailDTOList.add(userInfoDetailDTO);
         }
-        return ResponseEntity.ok().body(userInfoDetailDTOList);
+        return userInfoDetailDTOList;
     }
 
     public UserInfoDetailDTO getUserInfo(int userId) throws Exception {
@@ -140,37 +138,37 @@ public class UserService {
         return userProfileDTO;
     }
 
-    public ResponseEntity<Object> updateUserInfo(int userId, UserInfoUpdateDTO data) {
+    public UserInfoDetailDTO updateUserInfo(int userId, UserInfoUpdateDTO data) throws Exception {
         Optional<User> userOptional = userRepository.findByUserId(userId);
         if(userOptional.isEmpty()) {
-            return ResponseEntity.status(400).body(new ErrorMsg("未查找到该用户"));
+            throw new ServiceException(400, "未查找到该用户");
         }
         User user = userOptional.get();
         BeanUtils.copyProperties(data, user);
         userRepository.save(user);
         UserInfoDetailDTO userInfoDetailDTO = new UserInfoDetailDTO();
         BeanUtils.copyProperties(user, userInfoDetailDTO);
-        return ResponseEntity.status(200).body(userInfoDetailDTO);
+        return userInfoDetailDTO;
     }
 
-    public ResponseEntity<Object> updateUserPwd(int userId, UpdatePwdDTO updatePwdDTO) {
+    public IdResponseDTO updateUserPwd(int userId, UpdatePwdDTO updatePwdDTO) throws Exception {
         Optional<User> userOptional = userRepository.findByUserId(userId);
         if(userOptional.isEmpty()) {
-            return ResponseEntity.status(400).body(new ErrorMsg("未查找到该用户"));
+            throw new ServiceException(400, "未查找到该用户");
         }
         User user = userOptional.get();
         if(!updatePwdDTO.getOldPwd().equals(user.getPassword())) {
-            return ResponseEntity.status(400).body(new ErrorMsg("用户密码错误"));
+            throw new ServiceException(400, "用户密码错误");
         }
         user.setPassword(updatePwdDTO.getNewPwd());
         userRepository.save(user);
-        return ResponseEntity.status(200).body(new IdResponseDTO(user.getUserId()));
+        return new IdResponseDTO(user.getUserId());
     }
 
-    public ResponseEntity<Object> getUserNotification(int userId) {
+    public List<NotificationDetailDTO> getUserNotification(int userId) throws Exception {
         List<Notification> notificationOptional = (List<Notification>) notificationRepository.findAllByUserId(userId);
         if(notificationOptional.isEmpty()) {
-            return ResponseEntity.status(400).body(new ErrorMsg("未查找到通知"));
+            throw new ServiceException(400, "未找到通知");
         }
         List<NotificationDetailDTO> notificationDetailDTO = new ArrayList<>();
         for(Notification notification : notificationOptional) {
@@ -178,7 +176,7 @@ public class UserService {
             BeanUtils.copyProperties(notification, dto);
             notificationDetailDTO.add(dto);
         }
-        return ResponseEntity.status(200).body(notificationDetailDTO);
+        return notificationDetailDTO;
     }
 
     public ResultMsg sendUserNotification(NotificationContentDTO notificationContentDTO) {
@@ -199,16 +197,11 @@ public class UserService {
         return ResponseEntity.ok().body(new ResultMsg("通知状态修改成功", 1));
     }
 
-    public ResponseEntity<Object> updateUserAvatar(int userId, MultipartFile avatar){
-        try{
-            String avatarName = "avatar_" + userId;
-            ossService.deleteFile(avatarName);
-            ossService.uploadFile(avatar.getInputStream(), avatarName);
-            return ResponseEntity.ok().body(new ResultMsg(ossService.getFileLink(avatarName), 1));
-        }
-        catch(IOException e){
-            return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-        }
+    public ResultMsg updateUserAvatar(int userId, MultipartFile avatar) throws Exception {
+        String avatarName = "avatar_" + userId;
+        ossService.deleteFile(avatarName);
+        ossService.uploadFile(avatar.getInputStream(), avatarName);
+        return new ResultMsg(ossService.getFileLink(avatarName), 1);
     }
 
     String getAvatarName(int userId){

@@ -1,6 +1,6 @@
 package com.tongji.sportmanagement.GroupSubsystem.Service;
 
-import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
+import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupApplicationDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupApplicationResultDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.InviteGroupDTO;
@@ -10,9 +10,7 @@ import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupMemberRepositor
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRecordRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRepository;
 import com.tongji.sportmanagement.Common.DTO.AuditResultDTO;
-import com.tongji.sportmanagement.SocializeSubsystem.Controller.SocializeController;
-import com.tongji.sportmanagement.SocializeSubsystem.DTO.ApplicationResponseDTO;
-import com.tongji.sportmanagement.Common.DTO.InviteDTO;
+import com.tongji.sportmanagement.SocializeSubsystem.Service.ChatService;
 import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
 
 import org.springframework.beans.BeanUtils;
@@ -30,25 +28,24 @@ import java.util.stream.Stream;
 @Service
 public class GroupApplicationService {
 
-
     private final GroupApplicationRepository groupApplicationRepository;
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
-    private final SocializeController socializeController;
     private final GroupRecordRepository groupRecordRepository;
     private final GroupMemberService groupMemberService;
-    private final UserController userController;
     private final GroupRecordService groupRecordService;
+    private final ChatService chatService;
+    private final UserService userService;
 
-    public GroupApplicationService(GroupApplicationRepository groupApplicationRepository, GroupRepository groupRepository, GroupMemberRepository groupMemberRepository, SocializeController socializeController, GroupRecordRepository groupRecordRepository, GroupMemberService groupMemberService, UserController userController, GroupRecordService groupRecordService) {
+    public GroupApplicationService(GroupApplicationRepository groupApplicationRepository, GroupRepository groupRepository, GroupMemberRepository groupMemberRepository, GroupRecordRepository groupRecordRepository, GroupMemberService groupMemberService, GroupRecordService groupRecordService, UserService userService, ChatService chatService) {
         this.groupApplicationRepository = groupApplicationRepository;
         this.groupRepository = groupRepository;
         this.groupMemberRepository = groupMemberRepository;
-        this.socializeController = socializeController;
         this.groupRecordRepository = groupRecordRepository;
         this.groupMemberService = groupMemberService;
-        this.userController = userController;
         this.groupRecordService = groupRecordService;
+        this.userService = userService;
+        this.chatService = chatService;
     }
 
     @Transactional
@@ -64,7 +61,7 @@ public class GroupApplicationService {
                     application.setApplicantId(userId);
                     application.setReviewerId(target);
 
-                    application.setApplyInfo("用户“"+userController.getUserProfile(userId).getUserName()+"”邀请你加入团体“"+group.getGroupName()+"”");
+                    application.setApplyInfo("用户“"+userService.getUserProfile(userId).getUserName()+"”邀请你加入团体“"+group.getGroupName()+"”");
                     groupRecordService.addRecord(userId,target,group.getGroupId(),"邀请加入团体");
                     return application;
                 }
@@ -88,10 +85,10 @@ public class GroupApplicationService {
             m.setApplyInfo(application.getApplyInfo());
             m.setApplicantId(application.getApplicantId());
             m.setState(application.getState());
-            UserProfileDTO applicant = userController.getUserProfile(application.getApplicantId());
+            UserProfileDTO applicant = userService.getUserProfile(application.getApplicantId());
             m.setApplicantName(applicant.getUserName());
             if(application.getReviewerId() != null){
-                UserProfileDTO reviewer = userController.getUserProfile(application.getReviewerId());
+                UserProfileDTO reviewer = userService.getUserProfile(application.getReviewerId());
                 m.setReviewerName(reviewer.getUserName());
             }
             Optional<Group> group = groupRepository.findById(application.getGroupId());
@@ -140,13 +137,14 @@ public class GroupApplicationService {
 
             if (application.getType().equals(GroupApplicationType.apply)) {
                 groupMemberService.addMember(application.getGroupId(), application.getApplicantId());
-                socializeController.inviteIntoGroupChat(application.getApplicantId(),group.getChatId());
+                chatService.inviteIntoGroupChat(application.getApplicantId(),group.getChatId());
+                
                 groupRecordService.addRecord(application.getReviewerId(),application.getApplicantId() , group.getGroupId(),"同意加入申请");
                 groupRecordService.addRecord(application.getApplicantId(),  null, group.getGroupId(), "申请加入团体");
             }
             else if (application.getType().equals(GroupApplicationType.invited)) {
                 groupMemberService.addMember(application.getGroupId(), application.getReviewerId());
-                socializeController.inviteIntoGroupChat(application.getReviewerId(),group.getChatId());
+                chatService.inviteIntoGroupChat(application.getReviewerId(),group.getChatId());
                 groupRecordService.addRecord(application.getReviewerId(), null, group.getGroupId(),"受邀加入团体");
             }
         } else {
@@ -161,8 +159,8 @@ public class GroupApplicationService {
 
     @Transactional
     public void inviteMember(InviteGroupDTO inviteDTO,Integer invitor) {
-        if(groupMemberRepository.checkAuth(inviteDTO.getGroupId(),invitor)&& socializeController.checkFriendship(invitor,inviteDTO.getInviteeId())){
-            String info="用户"+ userController.getUserProfile(invitor).getUserName() +"邀请你加入团体"+groupRepository.findById(inviteDTO.getGroupId()).orElseThrow().getGroupName();
+        if(groupMemberRepository.checkAuth(inviteDTO.getGroupId(),invitor)&& chatService.checkFriendship(invitor,inviteDTO.getInviteeId())){
+            String info="用户"+ userService.getUserProfile(invitor).getUserName() +"邀请你加入团体"+groupRepository.findById(inviteDTO.getGroupId()).orElseThrow().getGroupName();
             groupApplicationRepository.save(new GroupApplication(null,GroupApplicationType.invited,info,GroupApplicationState.waiting,Instant.now(),Instant.now().plus(Duration.ofDays(3)),invitor,inviteDTO.getGroupId(),inviteDTO.getInviteeId()));
             groupRecordRepository.save(new GroupRecord(null,invitor,inviteDTO.getInviteeId(),inviteDTO.getGroupId(),Instant.now(),"邀请好友加入"));
         }

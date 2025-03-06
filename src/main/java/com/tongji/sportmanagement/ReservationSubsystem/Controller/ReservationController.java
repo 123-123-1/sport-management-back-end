@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
-import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationResponseDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.GroupRequestDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.IndividualRequestDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.MatchRequestDTO;
@@ -42,22 +41,8 @@ public class ReservationController
       return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
     }
   }
-  // @PostMapping("/individual")
-  // ResponseEntity<Object> individualReservation(@RequestBody IndividualRequestDTO reservationInfo)
-  // {
-  //   try{
-  //     return ResponseEntity.ok().body(reservationService.individualReservation(reservationInfo, 1));
-  //   }
-  //   catch(ServiceException e){
-  //     return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-  //   }
-  //   catch(Exception e){
-  //     return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-  //   }
-  // }
 
   @PostMapping("/group")
-  // 等待JWT功能
   ResponseEntity<Object> groupReservation(@RequestBody GroupRequestDTO reservationInfo, @RequestAttribute Integer idFromToken)
   {
     try{
@@ -70,18 +55,6 @@ public class ReservationController
       return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
     }
   }
-  // ResponseEntity<Object> groupReservation(@RequestBody GroupRequestDTO reservationInfo)
-  // {
-  //   try{
-  //     return ResponseEntity.ok().body(reservationService.groupReservation(reservationInfo, 1));
-  //   }
-  //   catch(ServiceException e){
-  //     return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-  //   }
-  //   catch(Exception e){
-  //     return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-  //   }
-  // }
 
   @PostMapping("/match")
   ResponseEntity<Object> matchReservation(@RequestBody MatchRequestDTO reservationInfo)

@@ -4,7 +4,6 @@ import com.tongji.sportmanagement.AccountSubsystem.DTO.*;
 import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
-import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -47,12 +46,28 @@ public class UserController {
 
     @GetMapping("/list")
     public ResponseEntity<Object> getUserList() {
-        return userService.getUserList();
+        try{
+            return ResponseEntity.ok().body(userService.getUserList());
+        }
+        catch(ServiceException e){
+            return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+        }
+        catch(Exception e){
+            return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+        }
     }
 
     @GetMapping("/names")
     public ResponseEntity<Object> getUserByName(@RequestParam String userName) {
-        return userService.getUsersByName(userName);
+        try{
+            return ResponseEntity.ok().body(userService.getUsersByName(userName));
+        }
+        catch(ServiceException e){
+            return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+        }
+        catch(Exception e){
+            return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+        }
     }
 
     @GetMapping("/info")
@@ -70,22 +85,51 @@ public class UserController {
 
     @PatchMapping("/info")
     public ResponseEntity<Object> updateUserInfo(@RequestAttribute int idFromToken, @RequestBody UserInfoUpdateDTO userInfoUpdateDTO) {
-        return userService.updateUserInfo(idFromToken, userInfoUpdateDTO);
+        try{
+            return ResponseEntity.ok().body(userService.updateUserInfo(idFromToken, userInfoUpdateDTO));
+        }
+        catch(ServiceException e){
+            return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+        }
+        catch(Exception e){
+            return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+        }
     }
 
     @PatchMapping("/password")
     public ResponseEntity<Object> updateUserPassword(@RequestAttribute int idFromToken, @RequestBody UpdatePwdDTO updatePwdDTO) {
-        return userService.updateUserPwd(idFromToken, updatePwdDTO);
+        try{
+            return ResponseEntity.ok().body(userService.updateUserPwd(idFromToken, updatePwdDTO));
+        }
+        catch(ServiceException e){
+            return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+        }
+        catch(Exception e){
+            return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+        }
     }
 
     @PostMapping("/avatar")
     public ResponseEntity<Object> updateUserAvatar(@RequestAttribute int idFromToken, @RequestParam("avatar") MultipartFile avatar){
-        return userService.updateUserAvatar(idFromToken, avatar);
+        try{
+            return ResponseEntity.ok().body(userService.updateUserAvatar(idFromToken, avatar));
+        }
+        catch(Exception e){
+            return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+        }
     }
 
     @GetMapping("/notifications")
     public ResponseEntity<Object> getUserNotification(@RequestAttribute int idFromToken) {
-        return userService.getUserNotification(idFromToken);
+        try{
+            return ResponseEntity.ok().body(userService.getUserNotification(idFromToken));
+        }
+        catch(ServiceException e){
+            return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+        }
+        catch(Exception e){
+            return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+        }
     }
 
     @PatchMapping("/newNotifications")
@@ -102,12 +146,6 @@ public class UserController {
             return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
         }
     }
-
-    public UserProfileDTO getUserProfile(int userId) {
-        return userService.getUserProfile(userId);
-    }
-
-
 
     @GetMapping("/test")
     public String test() {

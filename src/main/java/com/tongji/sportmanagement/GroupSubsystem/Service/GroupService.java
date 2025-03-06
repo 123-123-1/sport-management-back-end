@@ -12,7 +12,9 @@ import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupApplicationRepo
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupMemberRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRecordRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRepository;
-import com.tongji.sportmanagement.SocializeSubsystem.Controller.SocializeController;
+import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatType;
+import com.tongji.sportmanagement.SocializeSubsystem.Service.ChatService;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,27 +33,27 @@ public class GroupService {
     private final GroupRecordRepository groupRecordRepository;
     private final GroupApplicationRepository groupApplicationRepository;
     private final GroupRecordService groupRecordService;
-    private final SocializeController socializeController;
     private final GroupMemberService groupMemberService;
+    private final ChatService chatService;
 
-    public GroupService(GroupRepository groupRepository, GroupMemberRepository groupMemberRepository, GroupApplicationService groupApplicationService, GroupRecordRepository groupRecordRepository, GroupApplicationRepository groupApplicationRepository, GroupRecordService groupRecordService, SocializeController socializeController, GroupMemberService groupMemberService) {
+    public GroupService(GroupRepository groupRepository, GroupMemberRepository groupMemberRepository, GroupApplicationService groupApplicationService, GroupRecordRepository groupRecordRepository, GroupApplicationRepository groupApplicationRepository, GroupRecordService groupRecordService, GroupMemberService groupMemberService, ChatService chatService) {
         this.groupRepository = groupRepository;
         this.groupMemberRepository = groupMemberRepository;
         this.groupApplicationService = groupApplicationService;
         this.groupRecordRepository = groupRecordRepository;
         this.groupApplicationRepository = groupApplicationRepository;
         this.groupRecordService = groupRecordService;
-        this.socializeController = socializeController;
         this.groupMemberService = groupMemberService;
+        this.chatService = chatService;
     }
 
     @Transactional
     public void createGroup(CompleteGroupDTO completeGroup){
         Group group = new Group();
         //创建群聊
-        var chatId=socializeController.createChatId(new ChatDTO(completeGroup.getCreatorId(),completeGroup.getGroupName(),null,List.of(completeGroup.getCreatorId())),"groupChat");
+        var chat=chatService.createChat(new ChatDTO(completeGroup.getCreatorId(),completeGroup.getGroupName(),null,List.of(completeGroup.getCreatorId())),ChatType.groupChat);
         BeanUtils.copyProperties(completeGroup,group);
-        group.setChatId(chatId);
+        group.setChatId(chat.getChatId());
         group.setCreationTime(Instant.now());
         //创建团体
         var _group= groupRepository.save(group);

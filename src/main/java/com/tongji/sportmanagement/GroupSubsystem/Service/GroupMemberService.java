@@ -1,21 +1,19 @@
 package com.tongji.sportmanagement.GroupSubsystem.Service;
 
-
-import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
+import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupMemberDetailDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.MemberDropDTO;
-import com.tongji.sportmanagement.GroupSubsystem.DTO.MemberQuitDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.RoleDTO;
 import com.tongji.sportmanagement.GroupSubsystem.Entity.*;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupApplicationRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupMemberRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRecordRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRepository;
-import com.tongji.sportmanagement.SocializeSubsystem.Controller.SocializeController;
+import com.tongji.sportmanagement.SocializeSubsystem.Service.ChatService;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -24,19 +22,19 @@ public class GroupMemberService {
     private final GroupMemberRepository groupMemberRepository;
     private final GroupRecordRepository groupRecordRepository;
     private final GroupRepository groupRepository;
-    private final UserController userController;
     private final GroupRecordService groupRecordService;
-    private final SocializeController socializeController;
     private final GroupApplicationRepository groupApplicationRepository;
+    private final ChatService chatService;
+    private final UserService userService;
 
-    public GroupMemberService(GroupMemberRepository groupMemberRepository, GroupRecordRepository groupRecordRepository, GroupRepository groupRepository, UserController userController, GroupRecordService groupRecordService, SocializeController socializeController, GroupApplicationRepository groupApplicationRepository) {
+    public GroupMemberService(GroupMemberRepository groupMemberRepository, GroupRecordRepository groupRecordRepository, GroupRepository groupRepository, GroupRecordService groupRecordService, GroupApplicationRepository groupApplicationRepository, UserService userService, ChatService chatService) {
         this.groupMemberRepository = groupMemberRepository;
         this.groupRecordRepository = groupRecordRepository;
         this.groupRepository = groupRepository;
-        this.userController = userController;
         this.groupRecordService = groupRecordService;
-        this.socializeController = socializeController;
         this.groupApplicationRepository = groupApplicationRepository;
+        this.userService = userService;
+        this.chatService = chatService;
     }
 
 
@@ -49,7 +47,7 @@ public class GroupMemberService {
         groupMemberRepository.deleteByGroupIdAndUserId(groupId,memberId);
         groupRecordRepository.deleteByGroupIdAndOperatorId(groupId,memberId);
         var group=groupRepository.findById(groupId).orElseThrow();
-        socializeController.quitGroupsChat(group.getChatId(), memberId);
+        chatService.quitGroupChat(group.getChatId(), memberId);
         if(groupMemberRepository.countByGroupId(groupId)==0){
             groupRepository.deleteById(groupId);
         }
@@ -68,7 +66,7 @@ public class GroupMemberService {
             groupRecordService.addRecord(memberDropDTO.getOperatorId(), memberDropDTO.getMemberId(),
                     memberDropDTO.getGroupId(), "将成员移出团体");
             var group=groupRepository.findById(memberDropDTO.getGroupId()).orElseThrow();
-            socializeController.quitGroupsChat(group.getChatId(), memberDropDTO.getMemberId());
+            chatService.quitGroupChat(group.getChatId(), memberDropDTO.getMemberId());
         }
         else{
             throw new IllegalArgumentException("没有权限将团员移出团体");
@@ -87,7 +85,7 @@ public class GroupMemberService {
             var memberdetail=new GroupMemberDetailDTO();
             memberdetail.setRole(member.getRole().name());
             memberdetail.setUserId(member.getUserId());
-            var user=userController.getUserProfile(member.getUserId());
+            var user=userService.getUserProfile(member.getUserId());
             memberdetail.setUserName(user.getUserName());
             memberdetail.setPhoto(user.getPhoto());
             return memberdetail;

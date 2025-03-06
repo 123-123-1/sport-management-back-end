@@ -1,7 +1,6 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Service;
 
-
-import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
+import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageUserDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Message;
@@ -20,12 +19,12 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
     private final ChatMemberRepository chatMemberRepository;
-    private final UserController userController;
+    private final UserService userService;
 
-    public MessageService(MessageRepository messageRepository, ChatMemberRepository chatMemberRepository, UserController userController) {
+    public MessageService(MessageRepository messageRepository, ChatMemberRepository chatMemberRepository, UserService userService) {
         this.messageRepository = messageRepository;
         this.chatMemberRepository = chatMemberRepository;
-        this.userController = userController;
+        this.userService = userService;
     }
 
     @Transactional
@@ -48,7 +47,7 @@ public class MessageService {
                     message->{
                         var newmessage=new MessageUserDTO();
                         BeanUtils.copyProperties(message,newmessage);
-                        var user=userController.getUserProfile(message.getUserId());
+                        var user=userService.getUserProfile(message.getUserId());
                         BeanUtils.copyProperties(user,newmessage);
                         return newmessage;
                     }

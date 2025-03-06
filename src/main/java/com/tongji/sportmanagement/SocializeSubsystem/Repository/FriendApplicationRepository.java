@@ -1,6 +1,5 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Repository;
 
-import com.tongji.sportmanagement.AccountSubsystem.Entity.User;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.FriendApplication;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.FriendApplicationState;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,6 +1,6 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Service;
 
-import com.tongji.sportmanagement.AccountSubsystem.Controller.UserController;
+import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.Common.DTO.ChatDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.ChatDetailDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendDTO;
@@ -26,15 +26,15 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final ChatMemberRepository chatMemberRepository;
     private final MessageRepository messageRepository;
-    private final UserController userController;
     private final FriendApplicationRepository friendApplicationRepository;
+    private final UserService userService;
 
-    public ChatService(ChatRepository chatRepository, ChatMemberRepository chatMemberRepository, MessageRepository messageRepository, UserController userController, FriendApplicationRepository friendApplicationRepository) {
+    public ChatService(ChatRepository chatRepository, ChatMemberRepository chatMemberRepository, MessageRepository messageRepository, FriendApplicationRepository friendApplicationRepository, UserService userService) {
         this.chatRepository = chatRepository;
         this.chatMemberRepository = chatMemberRepository;
         this.messageRepository = messageRepository;
-        this.userController = userController;
         this.friendApplicationRepository = friendApplicationRepository;
+        this.userService = userService;
     }
 
     @Transactional
@@ -109,7 +109,7 @@ public class ChatService {
                 member->{
                     var m=new LittleUserDTO();
                     m.setUserId(member.getUserId());
-                    var p=userController.getUserProfile(member.getUserId());
+                    var p=userService.getUserProfile(member.getUserId());
                     m.setPhoto(p.getPhoto());
                     m.setUserName(p.getUserName());
                     return m;
@@ -125,7 +125,7 @@ public class ChatService {
                 chat->{
                     var friend=new FriendDTO();
                     BeanUtils.copyProperties(chat,friend);
-                    var user=userController.getUserProfile(chat.getUserId());
+                    var user=userService.getUserProfile(chat.getUserId());
                     BeanUtils.copyProperties(user,friend);
                     return friend;
                 }
@@ -151,7 +151,7 @@ public class ChatService {
     }
 
     public void quitGroupChat(Integer chatId, Integer userId) {
-        var p=chatMemberRepository.deleteByChatIdAndUserId(chatId, userId);
+        chatMemberRepository.deleteByChatIdAndUserId(chatId, userId);
         if(chatMemberRepository.countByChatId(chatId)==0){
             messageRepository.deleteByChatId(chatId);
             chatRepository.deleteById(chatId);

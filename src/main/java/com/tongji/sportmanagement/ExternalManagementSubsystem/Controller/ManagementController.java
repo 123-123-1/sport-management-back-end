@@ -1,7 +1,5 @@
 package com.tongji.sportmanagement.ExternalManagementSubsystem.Controller;
 
-import java.time.Instant;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,16 +12,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
-import com.tongji.sportmanagement.Common.DTO.VenueInitDTO;
+// import com.tongji.sportmanagement.Common.DTO.VenueInitDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationRequestDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationResponseDTO;
-import com.tongji.sportmanagement.VenueSubsystem.Controller.VenueController;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
-import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
-import com.tongji.sportmanagement.VenueSubsystem.Entity.Timeslot;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
 import com.tongji.sportmanagement.VenueSubsystem.Service.CourtService;
 import com.tongji.sportmanagement.VenueSubsystem.Service.VenueService;
@@ -75,6 +71,17 @@ public class ManagementController
     }
   }
 
+  @PostMapping("/venueimage")
+  public ResponseEntity<Object> updateVenueImage(@RequestParam("image") MultipartFile image, @RequestAttribute Integer idFromToken)
+  {
+    try{
+      return ResponseEntity.ok().body(venueService.updateVenueImage(image, idFromToken));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
   @PostMapping("/courts")
   public ResponseEntity<Object> createCourt(@RequestBody Court courtInfo, @RequestAttribute Integer idFromToken)
   {
@@ -101,7 +108,6 @@ public class ManagementController
   }
 
   @DeleteMapping("/courts")
-  // 等待JWT功能
   public ResponseEntity<Object> deleteCourt(@RequestParam(required = false) Integer courtId,
   @RequestParam(required = false) String courtName, @RequestAttribute Integer idFromToken)
   {

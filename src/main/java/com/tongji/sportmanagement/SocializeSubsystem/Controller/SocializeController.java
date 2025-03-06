@@ -186,21 +186,4 @@ public class SocializeController {
             return -1;
         }
     }
-
-    public boolean checkFriendship(Integer user1, Integer user2){
-        try{
-            return chatService.checkFriendship(user1,user2);
-        }
-        catch (Exception e){
-            return false;
-        }
-    }
-
-    public void quitGroupsChat(Integer chatId,Integer userId) {
-        chatService.quitGroupChat(chatId,userId);
-    }
-
-    public void inviteIntoGroupChat(Integer userId,Integer chatId) {
-        chatService.inviteIntoGroupChat(chatId,userId);
-    }
 }

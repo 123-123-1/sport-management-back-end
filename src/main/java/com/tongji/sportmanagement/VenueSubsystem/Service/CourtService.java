@@ -13,6 +13,7 @@ import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.CourtResponseDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
+import com.tongji.sportmanagement.VenueSubsystem.Repository.CourtAvailabilityRepository;
 import com.tongji.sportmanagement.VenueSubsystem.Repository.CourtRepository;
 import com.tongji.sportmanagement.VenueSubsystem.Repository.VenueRepository;
 
@@ -23,6 +24,8 @@ public class CourtService
   private CourtRepository courtRepository;
   @Autowired
   private VenueRepository venueRepository;
+  @Autowired
+  private CourtAvailabilityRepository courtAvailabilityRepository;
 
   // 根据场馆ID获取场馆的所有场地
   public List<Court> getVenueCourts(int venueId)
@@ -70,10 +73,8 @@ public class CourtService
 
   public ResultMsg deleteCourt(Integer courtId, String courtName, Integer managerId) throws Exception
   {
-    if(courtId != null){
-      courtRepository.deleteById(courtId);
-    }
-    else{
+    Integer targetId = courtId;
+    if(targetId == null){
       if(courtName == null || managerId == null){
         throw new ServiceException(422, "场地名称和管理员ID不能为空");
       }
@@ -81,12 +82,16 @@ public class CourtService
       if(targetVenue.isEmpty()){
         throw new ServiceException(404, "未找到用户管理的场地");
       }
-      Optional<Integer> targetId = courtRepository.findVenueCourt(courtName, targetVenue.get().getVenueId());
-      if(!targetId.isPresent()){
+      Optional<Integer> optionalId = courtRepository.findVenueCourt(courtName, targetVenue.get().getVenueId());
+      if(optionalId.isEmpty()){
         throw new ServiceException(404, "未找到对应场地");
       }
-      courtRepository.deleteById(targetId.get());
+      targetId = optionalId.get();
     }
+    if(courtAvailabilityRepository.hasCourtAvailability(targetId) != 0){
+      throw new ServiceException(422, "删除场地失败：该场地有关联的开放时间段");
+    }
+    courtRepository.deleteById(targetId);
     return new ResultMsg("已成功删除场地", 1);
   }
 

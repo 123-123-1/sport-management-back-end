@@ -59,8 +59,8 @@ public class OssService
     return url.toString();
   }
 
-  public void copyDefault(String newName){
-    CopyObjectRequest request = new CopyObjectRequest(bucketName, "default_avatar", bucketName, newName);
+  public void copyDefault(String sourceName, String newName){
+    CopyObjectRequest request = new CopyObjectRequest(bucketName, sourceName, bucketName, newName);
     ossClient.copyObject(request);
   }
 
