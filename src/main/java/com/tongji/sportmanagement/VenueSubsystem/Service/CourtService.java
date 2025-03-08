@@ -30,7 +30,7 @@ public class CourtService
   // 根据场馆ID获取场馆的所有场地
   public List<Court> getVenueCourts(int venueId)
   {
-    return (List<Court>)courtRepository.findAllByVenueId(venueId);
+    return courtRepository.findAllByVenueId(venueId);
   }
 
   // 批量创建场馆的场地
@@ -99,7 +99,6 @@ public class CourtService
   {
     Optional<Court> result = courtRepository.findById(courtId);
     if(result.isEmpty()){
-      System.out.println("未找到场地：" + courtId);
       throw new ServiceException(404, "未找到场地");
     }
     return result.get();

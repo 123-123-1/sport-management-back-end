@@ -16,9 +16,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.AvailabilityConfigInfoDTO;
 // import com.tongji.sportmanagement.Common.DTO.VenueInitDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationRequestDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationResponseDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.Service.AvailabilityConfigService;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
 import com.tongji.sportmanagement.VenueSubsystem.Service.CourtService;
@@ -28,14 +30,14 @@ import com.tongji.sportmanagement.VenueSubsystem.Service.VenueService;
 @RequestMapping("/api/management")
 public class ManagementController
 {
-  // @Autowired
-  // private VenueController venueController;
   @Autowired
   private VenueService venueService;
   @Autowired
   private RestTemplate restTemplate; // 用于向场地管理方发送预约请求
   @Autowired
   private CourtService courtService;
+  @Autowired
+  private AvailabilityConfigService availabilityConfigService;
 
   // @PostMapping("/initialization")
   // public ResponseEntity<Object> initVenue(@RequestBody VenueInitDTO initInfo)
@@ -116,6 +118,42 @@ public class ManagementController
     }
     catch(ServiceException e){
       return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  @PostMapping("/availability-config")
+  public ResponseEntity<Object> createAvailabilityConfig(@RequestBody AvailabilityConfigInfoDTO configInfo)
+  {
+    try{
+      return ResponseEntity.ok().body(availabilityConfigService.createAvailabilityConfig(configInfo));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  @GetMapping("/availability-config")
+  public ResponseEntity<Object> getAvailabilityConfig(@RequestAttribute Integer idFromToken)
+  {
+    try{
+      return ResponseEntity.ok().body(availabilityConfigService.getAvailabilityConfig(idFromToken));
+    }
+    catch(ServiceException e){
+      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
+    }
+    catch(Exception e){
+      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
+    }
+  }
+
+  @PatchMapping("/availability-config")
+  public ResponseEntity<Object> patchAvailabilityConfig(@RequestBody AvailabilityConfigInfoDTO configInfo)
+  {
+    try{
+      return ResponseEntity.ok().body(availabilityConfigService.patchAvailabilityConfig(configInfo));
     }
     catch(Exception e){
       return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
