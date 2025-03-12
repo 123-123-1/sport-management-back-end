@@ -2,11 +2,15 @@ package com.tongji.sportmanagement.GroupSubsystem.Controller;
 
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.*;
+import com.tongji.sportmanagement.GroupSubsystem.Entity.Group;
 import com.tongji.sportmanagement.GroupSubsystem.Service.GroupApplicationService;
 import com.tongji.sportmanagement.GroupSubsystem.Service.GroupMemberService;
 import com.tongji.sportmanagement.GroupSubsystem.Service.GroupRecordService;
 import com.tongji.sportmanagement.GroupSubsystem.Service.GroupService;
 import com.tongji.sportmanagement.Common.DTO.AuditResultDTO;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,179 +31,78 @@ public class GroupController {
     }
 
     @PostMapping("")
-    public ResponseEntity<Object> createGroup(@RequestAttribute int idFromToken, @RequestBody CompleteGroupDTO completeGroup) {
-        try {
-            completeGroup.setCreatorId(idFromToken);
-            groupService.createGroup(completeGroup);
-            return ResponseEntity.status(200).body(ResultMsg.success("团体已经成功创建"));
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<ResultMsg> createGroup(@RequestAttribute int idFromToken, @RequestBody CompleteGroupDTO completeGroup) {
+        return ResponseEntity.ok().body(groupService.createGroup(completeGroup, idFromToken));
     }
 
     @GetMapping("")
-    public ResponseEntity<Object> getGroups() {
-        try{
-            var groups=groupService.getGroups();
-            return ResponseEntity.status(200).body(groups);
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<List<Group>> getGroups() {
+        return ResponseEntity.ok().body(groupService.getGroups());
     }
 
     @GetMapping("/byUser")
-    public ResponseEntity<Object> getGroupByUser(@RequestAttribute Integer idFromToken){
-        try{
-            var groups=groupService.getByUserId(idFromToken);
-            return ResponseEntity.status(200).body(groups);
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<List<Group>> getGroupByUser(@RequestAttribute Integer idFromToken) throws Exception {
+        return ResponseEntity.ok().body(groupService.getByUserId(idFromToken));
     }
 
     @GetMapping("/leadergroups")
-    public ResponseEntity<Object> getUserLeaderGroup(@RequestAttribute Integer idFromToken){
-        try{
-            var groups=groupService.getByUserIdFiltered(idFromToken);
-            return ResponseEntity.status(200).body(groups);
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<List<Group>> getUserLeaderGroup(@RequestAttribute Integer idFromToken) throws Exception {
+        return ResponseEntity.ok().body(groupService.getByUserIdFiltered(idFromToken));
     }
 
     @GetMapping("/byId/{groupId}")
-    public ResponseEntity<Object> getGroupByID(@PathVariable Integer groupId) {
-        try{
-            var group=groupService.getGroupDetail(groupId);
-            return ResponseEntity.status(200).body(group);
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<GroupDetailDTO> getGroupByID(@PathVariable Integer groupId) {
+        return ResponseEntity.ok().body(groupService.getGroupDetail(groupId));
     }
 
     @GetMapping("/byName/{groupName}")
-    public ResponseEntity<Object> getGroupByName(@PathVariable String groupName) {
-        try{
-            var group=groupService.getGroupByName(groupName);
-            return ResponseEntity.status(200).body(group);
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<List<Group>> getGroupByName(@PathVariable String groupName) {
+        return ResponseEntity.ok().body(groupService.getGroupByName(groupName));
     }
 
     @DeleteMapping("")
-    public ResponseEntity<Object> deleteGroup(@RequestAttribute int idFromToken ,Integer groupId) {
-        try{
-            groupService.deleteGroup(groupId,idFromToken);
-            return ResponseEntity.status(200).body(ResultMsg.success("成功解散团体"));
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<ResultMsg> deleteGroup(@RequestAttribute int idFromToken ,Integer groupId) {
+        return ResponseEntity.ok().body(groupService.deleteGroup(groupId, idFromToken));
     }
 
     @GetMapping("/application")
-    public ResponseEntity<Object> getGroupApplication(@RequestAttribute  int idFromToken) {
-        try{
-            var applications= groupApplicationService.getGroupApplications(idFromToken);
-            return ResponseEntity.status(200).body(applications);
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<List<GroupApplicationResultDTO>> getGroupApplication(@RequestAttribute  int idFromToken) {
+        return ResponseEntity.ok().body(groupApplicationService.getGroupApplications(idFromToken));
     }
 
     @PostMapping("/application")
-    public ResponseEntity<Object> sendGroupApplication(@RequestAttribute int idFromToken, @RequestBody GroupApplicationDTO groupApplicationDTO) {
-        try{
-            groupApplicationDTO.setApplicantId(idFromToken);
-            groupApplicationService.sendApplicationIng(groupApplicationDTO);
-            return ResponseEntity.status(200).body(ResultMsg.success("已经发送团体加入申请"));
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<ResultMsg> sendGroupApplication(@RequestAttribute int idFromToken, @RequestBody GroupApplicationDTO groupApplicationDTO) {
+        return ResponseEntity.ok().body(groupApplicationService.sendApplicationIng(groupApplicationDTO, idFromToken));
     }
 
     @PostMapping("/application/by")
-    public ResponseEntity<Object> inviteMember(@RequestAttribute int idFromToken, @RequestBody InviteGroupDTO inviteDTO) {
-        try{
-            groupApplicationService.inviteMember(inviteDTO,idFromToken);
-            return ResponseEntity.status(200).body(ResultMsg.success("已经向该用户发送邀请"));
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<ResultMsg> inviteMember(@RequestAttribute int idFromToken, @RequestBody InviteGroupDTO inviteDTO) {
+        return ResponseEntity.ok().body(groupApplicationService.inviteMember(inviteDTO, idFromToken));
     }
 
     @PatchMapping("/application")
-    public ResponseEntity<Object> updateGroupApplication(@RequestAttribute int idFromToken, @RequestBody AuditResultDTO auditResultDTO) {
-        try{
-            auditResultDTO.setReviewerId(idFromToken);
-            groupApplicationService.updateApplication(auditResultDTO);
-            return ResponseEntity.status(200).body(ResultMsg.success("已经成功处理申请"));
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<ResultMsg> updateGroupApplication(@RequestAttribute int idFromToken, @RequestBody AuditResultDTO auditResultDTO) {
+        return ResponseEntity.ok().body(groupApplicationService.updateApplication(auditResultDTO, idFromToken));
     }
 
     @DeleteMapping("/members")
-    public ResponseEntity<Object> deleteGroupMember(@RequestAttribute int idFromToken, Integer groupId) {
-        try{
-            groupMemberService.quitGroup(idFromToken,groupId);
-            return ResponseEntity.status(200).body(ResultMsg.success("退出团体成功"));
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<ResultMsg> deleteGroupMember(@RequestAttribute int idFromToken, Integer groupId) {
+        return ResponseEntity.ok().body(groupMemberService.quitGroup(idFromToken,groupId));
     }
 
     @DeleteMapping("/members/by")
     public ResponseEntity<Object> removeGroupMember(@RequestAttribute int idFromToken, @RequestParam Integer groupId, @RequestParam Integer memberId) {
-        try{
-            MemberDropDTO dropDTO = new MemberDropDTO();
-            dropDTO.setGroupId(groupId);
-            dropDTO.setMemberId(memberId);
-            dropDTO.setOperatorId(idFromToken);
-            groupMemberService.dropMember(dropDTO);
-            return ResponseEntity.status(200).body(ResultMsg.success("将用户移出团体成功"));
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+        return ResponseEntity.ok().body( groupMemberService.dropMember(groupId, memberId, idFromToken));
     }
 
     @PatchMapping("/members")
     public ResponseEntity<Object> setGroupMemberRole(@RequestAttribute int idFromToken, @RequestBody RoleDTO roleDTO) {
-        try{
-            roleDTO.setOperatorId(idFromToken);
-            groupMemberService.setRole(roleDTO);
-            return ResponseEntity.status(200).body(ResultMsg.success("已成功设置用户权限"));
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+        return ResponseEntity.ok().body(groupMemberService.setRole(roleDTO, idFromToken));
     }
 
     @GetMapping("/records")
     public ResponseEntity<Object> getGroupRecords(Integer groupId,Integer targetId,@RequestAttribute int idFromToken) {
-        try{
-            var records=groupRecordService.getRecord(idFromToken,targetId,groupId);
-            return ResponseEntity.status(200).body(records);
-        }
-        catch (Exception e) {
-            return  ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+        return ResponseEntity.ok().body(groupRecordService.getRecord(idFromToken, targetId, groupId));
     }
-
-
-
 
 }

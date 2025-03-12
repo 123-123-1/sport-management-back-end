@@ -6,6 +6,7 @@ import com.tongji.sportmanagement.SocializeSubsystem.DTO.ChatDetailDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendDeleteDTO;
 import com.tongji.sportmanagement.Common.DTO.InviteDTO;
+import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.LittleUserDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Chat;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatMember;
@@ -37,6 +38,11 @@ public class ChatService {
         this.userService = userService;
     }
 
+    public Chat createChat(ChatDTO chatDto,ChatType chatType, Integer userId) {
+        chatDto.setUserId(userId);
+        return createChat(chatDto, chatType);
+    }
+
     @Transactional
     public Chat createChat(ChatDTO chatDto,ChatType chatType) {
         Chat chat = new Chat();
@@ -62,7 +68,7 @@ public class ChatService {
     }
 
     @Transactional
-    public void quitChat(Integer chatId, Integer userId) {
+    public ResultMsg quitChat(Integer chatId, Integer userId) {
         var p=chatMemberRepository.deleteByChatIdAndUserId(chatId, userId);
         if(p==0){
             throw new RuntimeException("该用户没有加入该群聊");
@@ -71,10 +77,12 @@ public class ChatService {
             messageRepository.deleteByChatId(chatId);
             chatRepository.deleteById(chatId);
         }
+        return ResultMsg.success("已经成功退出群聊");
     }
 
     @Transactional
-    public void inviteToChat(InviteDTO inviteDto) {
+    public ResultMsg inviteToChat(InviteDTO inviteDto, Integer userId) {
+        inviteDto.setUserId(userId);
         var friendShipId=chatRepository.getFriendship(inviteDto.getUserId(),inviteDto.getInviteeId());
         if(friendShipId==null){
             throw new IllegalArgumentException("两人不是好友关系");
@@ -94,6 +102,7 @@ public class ChatService {
         else{
             throw new RuntimeException("该用户已是群聊成员");
         }
+        return ResultMsg.success("已经成功邀请该用户");
     }
 
     public ChatDetailDTO getChatDetails(Integer chatId) {
@@ -133,7 +142,8 @@ public class ChatService {
     }
 
     @Transactional
-    public void deleteFriend(FriendDeleteDTO ff) {
+    public ResultMsg deleteFriend(FriendDeleteDTO ff, Integer operatorId) {
+        ff.setOperatorId(operatorId);
         if(chatRepository.existFriendship(ff.getOperatorId(),ff.getTargetId(),ff.getChatId())){
              chatMemberRepository.deleteByUserIdAndChatId(ff.getOperatorId(), ff.getChatId());
              chatMemberRepository.deleteByUserIdAndChatId(ff.getTargetId(), ff.getChatId());
@@ -144,6 +154,7 @@ public class ChatService {
         else{
             throw new IllegalArgumentException("删除的好友关系不存在");
         }
+        return ResultMsg.success("好友删除成功");
     }
 
     public boolean checkFriendship(Integer user1, Integer user2) {

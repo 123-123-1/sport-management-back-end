@@ -1,6 +1,7 @@
 package com.tongji.sportmanagement.SocializeSubsystem.Service;
 
 import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
+import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.MessageUserDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.Message;
@@ -28,7 +29,8 @@ public class MessageService {
     }
 
     @Transactional
-    public Message sendMessage(MessageDTO messageDto) {
+    public Message sendMessage(MessageDTO messageDto, Integer userId) {
+        messageDto.setUserId(userId);
         if (chatMemberRepository.existsChatMemberByChatIdAndUserId(messageDto.getChatId(), messageDto.getUserId())) {
             Message message = new Message();
             BeanUtils.copyProperties(messageDto, message);
@@ -59,10 +61,11 @@ public class MessageService {
     }
 
     @Transactional
-    public void deleteMsg(Integer userId,Integer messageId) {
+    public ResultMsg deleteMsg(Integer userId,Integer messageId) {
         var i=messageRepository.deleteByMessageIdAndUserIdAndTime(messageId, userId,Instant.now().minus(Duration.ofMinutes(5)));
         if(i==0){
            throw new RuntimeException("撤回该信息失败");
         }
+        return ResultMsg.success("消息撤回成功");
     }
 }

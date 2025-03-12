@@ -10,6 +10,7 @@ import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupMemberRepositor
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRecordRepository;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupRepository;
 import com.tongji.sportmanagement.Common.DTO.AuditResultDTO;
+import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.SocializeSubsystem.Service.ChatService;
 import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
 
@@ -99,7 +100,8 @@ public class GroupApplicationService {
     }
 
     @Transactional
-    public void sendApplicationIng(GroupApplicationDTO groupApplicationDTO) {
+    public ResultMsg sendApplicationIng(GroupApplicationDTO groupApplicationDTO, Integer applicantId) {
+        groupApplicationDTO.setApplicantId(applicantId);
         GroupApplication groupApplication = new GroupApplication();
         BeanUtils.copyProperties(groupApplicationDTO, groupApplication);
         groupApplication.setType(GroupApplicationType.apply);
@@ -107,10 +109,12 @@ public class GroupApplicationService {
         groupApplication.setExpirationTime(Instant.now().plus(Duration.ofDays(3)));
         groupApplication.setState(GroupApplicationState.waiting);
         groupApplicationRepository.save(groupApplication);
+        return ResultMsg.success("已经发送团体加入申请");
     }
 
     @Transactional
-    public void updateApplication(AuditResultDTO auditResultDTO) {
+    public ResultMsg updateApplication(AuditResultDTO auditResultDTO, Integer reviewerId) {
+        auditResultDTO.setReviewerId(reviewerId);
         var application = groupApplicationRepository.findById(auditResultDTO.getAuditObjectId()).orElse(null);
         if (application == null) {
             throw new IllegalArgumentException("未找到该申请");
@@ -155,18 +159,18 @@ public class GroupApplicationService {
                 groupRecordService.addRecord(application.getReviewerId(), application.getApplicantId(), group.getGroupId(), "拒绝加入申请");
             }
         }
+        return ResultMsg.success("已经成功处理申请");
     }
 
     @Transactional
-    public void inviteMember(InviteGroupDTO inviteDTO,Integer invitor) {
-        if(groupMemberRepository.checkAuth(inviteDTO.getGroupId(),invitor)&& chatService.checkFriendship(invitor,inviteDTO.getInviteeId())){
-            String info="用户"+ userService.getUserProfile(invitor).getUserName() +"邀请你加入团体"+groupRepository.findById(inviteDTO.getGroupId()).orElseThrow().getGroupName();
-            groupApplicationRepository.save(new GroupApplication(null,GroupApplicationType.invited,info,GroupApplicationState.waiting,Instant.now(),Instant.now().plus(Duration.ofDays(3)),invitor,inviteDTO.getGroupId(),inviteDTO.getInviteeId()));
-            groupRecordRepository.save(new GroupRecord(null,invitor,inviteDTO.getInviteeId(),inviteDTO.getGroupId(),Instant.now(),"邀请好友加入"));
-        }
-        else{
+    public ResultMsg inviteMember(InviteGroupDTO inviteDTO,Integer invitor) {
+        if(!groupMemberRepository.checkAuth(inviteDTO.getGroupId(),invitor)&& chatService.checkFriendship(invitor,inviteDTO.getInviteeId())){
             throw new IllegalArgumentException("没有权限邀请用户加入该团体");
         }
+        String info="用户"+ userService.getUserProfile(invitor).getUserName() +"邀请你加入团体"+groupRepository.findById(inviteDTO.getGroupId()).orElseThrow().getGroupName();
+        groupApplicationRepository.save(new GroupApplication(null,GroupApplicationType.invited,info,GroupApplicationState.waiting,Instant.now(),Instant.now().plus(Duration.ofDays(3)),invitor,inviteDTO.getGroupId(),inviteDTO.getInviteeId()));
+        groupRecordRepository.save(new GroupRecord(null,invitor,inviteDTO.getInviteeId(),inviteDTO.getGroupId(),Instant.now(),"邀请好友加入"));
+        return ResultMsg.success("已经向该用户发送邀请");
     }
 
 }

@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tongji.sportmanagement.Common.ServiceException;
-import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.GroupRequestDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.IndividualRequestDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.MatchRequestDTO;
@@ -29,86 +27,38 @@ public class ReservationController
   private ViolationService violationService;
 
   @PostMapping("/individual")
-  ResponseEntity<Object> individualReservation(@RequestBody IndividualRequestDTO reservationInfo, @RequestAttribute Integer idFromToken)
+  ResponseEntity<Object> individualReservation(@RequestBody IndividualRequestDTO reservationInfo, @RequestAttribute Integer idFromToken) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(reservationService.individualReservation(reservationInfo, idFromToken));
-    }
-    catch(ServiceException e){
-      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(reservationService.individualReservation(reservationInfo, idFromToken));
   }
 
   @PostMapping("/group")
-  ResponseEntity<Object> groupReservation(@RequestBody GroupRequestDTO reservationInfo, @RequestAttribute Integer idFromToken)
+  ResponseEntity<Object> groupReservation(@RequestBody GroupRequestDTO reservationInfo, @RequestAttribute Integer idFromToken) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(reservationService.groupReservation(reservationInfo, idFromToken));
-    }
-    catch(ServiceException e){
-      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(reservationService.groupReservation(reservationInfo, idFromToken));
   }
 
   @PostMapping("/match")
-  ResponseEntity<Object> matchReservation(@RequestBody MatchRequestDTO reservationInfo)
+  ResponseEntity<Object> matchReservation(@RequestBody MatchRequestDTO reservationInfo) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(reservationService.matchReservation(reservationInfo));
-    }
-    catch(ServiceException e){
-      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(reservationService.matchReservation(reservationInfo));
   }
 
   @GetMapping("/list")
-  ResponseEntity<Object> getReservationList(@RequestAttribute Integer idFromToken)
+  ResponseEntity<Object> getReservationList(@RequestAttribute Integer idFromToken) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(reservationService.getUserReservations(idFromToken));
-    }
-    catch(ServiceException e){
-      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(reservationService.getUserReservations(idFromToken));
   }
 
   @GetMapping("/detail")
-  ResponseEntity<Object> getReservationDetail(@RequestParam Integer reservationId, @RequestAttribute Integer idFromToken)
+  ResponseEntity<Object> getReservationDetail(@RequestParam Integer reservationId, @RequestAttribute Integer idFromToken) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(reservationService.getReservationDetail(reservationId, idFromToken));
-    }
-    catch(ServiceException e){
-      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(reservationService.getReservationDetail(reservationId, idFromToken));
   }
 
   @GetMapping("/violations")
-  ResponseEntity<Object> getUserReservation(@RequestAttribute Integer idFromToken)
+  ResponseEntity<Object> getUserReservation(@RequestAttribute Integer idFromToken) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(violationService.getUserViolation(idFromToken));
-    }
-    catch(ServiceException e){
-      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(violationService.getUserViolation(idFromToken));
   }
 }

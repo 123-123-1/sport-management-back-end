@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tongji.sportmanagement.Common.ServiceException;
-import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.PostCommentDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Service.CommentService;
 import com.tongji.sportmanagement.VenueSubsystem.Service.CourtService;
@@ -35,83 +33,42 @@ public class VenueController
   @GetMapping("/list")
   public ResponseEntity<Object> getVenueList(@RequestParam int page, @RequestParam String name)
   {
-    try{
-      return ResponseEntity.ok().body(venueService.getAllVenues(page, name));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(venueService.getAllVenues(page, name));
   }
 
   @GetMapping("/detail")
-  public ResponseEntity<Object> getVenueDetail(@RequestParam int venueId)
+  public ResponseEntity<Object> getVenueDetail(@RequestParam int venueId) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(venueService.getVenueDetail(venueId));
-    }
-    catch(ServiceException e){
-      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(venueService.getVenueDetail(venueId));
   }
 
   @GetMapping("/courts")
   public ResponseEntity<Object> getVenueCourts(@RequestParam int venueId)
   {
-    try{
-      return ResponseEntity.ok().body(courtService.getVenueCourts(venueId));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(courtService.getVenueCourts(venueId));
   }
 
   @GetMapping("/timeslots")
   public ResponseEntity<Object> getVenueTimeslots(@RequestParam int venueId, @RequestParam String date)
   {
-    try{
-      return ResponseEntity.ok().body(timeslotService.getVenueTimeslots(venueId, date));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(timeslotService.getVenueTimeslots(venueId, date));
   }
 
   @GetMapping("/comments")
   public ResponseEntity<Object> getVenueComments(@RequestParam int venueId, @RequestParam long page)
   {
-    try{
-      return ResponseEntity.ok().body(commentService.getVenueComments(venueId, page));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(commentService.getVenueComments(venueId, page));
   }
 
   @PostMapping("/comments")
   public ResponseEntity<Object> postVenueComment(@RequestBody PostCommentDTO comment, @RequestAttribute Integer idFromToken)
   {
-    try{
-      return ResponseEntity.ok().body(commentService.postVenueComment(comment, idFromToken));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(commentService.postVenueComment(comment, idFromToken));
   }
 
   @GetMapping("/availabilities")
-  public ResponseEntity<Object> getVenueAvailability(@RequestParam Integer availabilityId)
+  public ResponseEntity<Object> getVenueAvailability(@RequestParam Integer availabilityId) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(timeslotService.getAvailability(availabilityId));
-    }
-    catch(ServiceException e){
-      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(timeslotService.getAvailability(availabilityId));
   }
 }

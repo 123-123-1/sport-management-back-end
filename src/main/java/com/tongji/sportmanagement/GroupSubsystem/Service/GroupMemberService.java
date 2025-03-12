@@ -1,8 +1,8 @@
 package com.tongji.sportmanagement.GroupSubsystem.Service;
 
 import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
+import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupMemberDetailDTO;
-import com.tongji.sportmanagement.GroupSubsystem.DTO.MemberDropDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.RoleDTO;
 import com.tongji.sportmanagement.GroupSubsystem.Entity.*;
 import com.tongji.sportmanagement.GroupSubsystem.Repository.GroupApplicationRepository;
@@ -39,7 +39,7 @@ public class GroupMemberService {
 
 
     @Transactional
-    public void quitGroup(Integer groupId,Integer memberId) {
+    public ResultMsg quitGroup(Integer groupId,Integer memberId) {
         if(!groupMemberRepository.existsByUserId(memberId)) {
             throw new IllegalArgumentException("该用户没有加入团体");
         }
@@ -51,26 +51,25 @@ public class GroupMemberService {
         if(groupMemberRepository.countByGroupId(groupId)==0){
             groupRepository.deleteById(groupId);
         }
+        return ResultMsg.success("退出团体成功");
     }
 
     @Transactional
-    public void dropMember(MemberDropDTO memberDropDTO) {
-        if(!groupMemberRepository.existsByUserId(memberDropDTO.getMemberId())){
+    public ResultMsg dropMember(Integer groupId, Integer memberId, Integer operatorId) {
+        if(!groupMemberRepository.existsByUserId(memberId)){
             throw new IllegalArgumentException("该用户没有加入团体");
         }
-        if (groupMemberRepository.checkAuth(memberDropDTO.getGroupId(), memberDropDTO.getOperatorId())
-             && !groupMemberRepository.checkAuth(memberDropDTO.getGroupId(), memberDropDTO.getMemberId())) {
-            groupApplicationRepository.deleteByUserId(memberDropDTO.getMemberId());
-            groupMemberRepository.deleteByGroupIdAndUserId(memberDropDTO.getGroupId(), memberDropDTO.getMemberId());
-            groupRecordRepository.deleteByGroupIdAndOperatorId(memberDropDTO.getGroupId(), memberDropDTO.getMemberId());
-            groupRecordService.addRecord(memberDropDTO.getOperatorId(), memberDropDTO.getMemberId(),
-                    memberDropDTO.getGroupId(), "将成员移出团体");
-            var group=groupRepository.findById(memberDropDTO.getGroupId()).orElseThrow();
-            chatService.quitGroupChat(group.getChatId(), memberDropDTO.getMemberId());
+        if (!groupMemberRepository.checkAuth(groupId, operatorId)
+             || groupMemberRepository.checkAuth(groupId, memberId)) {
+                throw new IllegalArgumentException("没有权限将团员移出团体");
         }
-        else{
-            throw new IllegalArgumentException("没有权限将团员移出团体");
-        }
+        groupApplicationRepository.deleteByUserId(memberId);
+        groupMemberRepository.deleteByGroupIdAndUserId(groupId, memberId);
+        groupRecordRepository.deleteByGroupIdAndOperatorId(groupId, memberId);
+        groupRecordService.addRecord(operatorId, memberId, groupId, "将成员移出团体");
+        var group=groupRepository.findById(groupId).orElseThrow();
+        chatService.quitGroupChat(group.getChatId(), memberId);
+        return ResultMsg.success("将用户移出团体成功");
     }
 
     @Transactional
@@ -92,13 +91,14 @@ public class GroupMemberService {
         }).toList();
     }
     @Transactional
-    public void setRole(RoleDTO roleDTO) {
-        if(groupMemberRepository.checkAuth(roleDTO.getGroupId(),roleDTO.getOperatorId())){
-            groupMemberRepository.updateGroupMemberByGroupIdAndUserIdAndRole(roleDTO.getGroupId(),roleDTO.getTargetId(),roleDTO.getRole());
-            groupRecordService.addRecord(roleDTO.getOperatorId(), roleDTO.getTargetId(), roleDTO.getGroupId(),"设为管理员");
-        }
-        else{
+    public ResultMsg setRole(RoleDTO roleDTO, Integer operatorId) {
+        roleDTO.setOperatorId(operatorId);
+        
+        if(!groupMemberRepository.checkAuth(roleDTO.getGroupId(),roleDTO.getOperatorId())){
             throw new IllegalArgumentException("没有权限进行该操作");
         }
+        groupMemberRepository.updateGroupMemberByGroupIdAndUserIdAndRole(roleDTO.getGroupId(),roleDTO.getTargetId(),roleDTO.getRole());
+        groupRecordService.addRecord(roleDTO.getOperatorId(), roleDTO.getTargetId(), roleDTO.getGroupId(),"设为管理员");
+        return ResultMsg.success("已成功设置用户权限");
     }
 }

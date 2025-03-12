@@ -2,9 +2,10 @@ package com.tongji.sportmanagement.SocializeSubsystem.Service;
 
 import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.SocializeSubsystem.Repository.FriendApplicationRepository;
-
+import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.DTO.AuditResultDTO;
 import com.tongji.sportmanagement.Common.DTO.ChatDTO;
+import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.ApplicationResponseDTO;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.FriendApplicationDTO;
@@ -34,7 +35,8 @@ public class FriendApplicationService {
     }
 
     @Transactional
-    public void postFriendApplication(FriendApplicationDTO application) {
+    public ResultMsg postFriendApplication(FriendApplicationDTO application, Integer applicantId) {
+        application.setApplicantId(applicantId);
         if(!friendApplicationRepository.existsByApplicantIdAndReviewerId(application.getApplicantId(),application.getReviewerId())){
             FriendApplication friendApplication = new FriendApplication();
             BeanUtils.copyProperties(application, friendApplication);
@@ -46,23 +48,24 @@ public class FriendApplicationService {
         else{
             throw new IllegalArgumentException("无需再发送好友申请");
         }
+        return ResultMsg.success("好友申请已发送");
     }
     @Transactional
-    public void auditFriendApplication(AuditResultDTO auditResultDTO) {
-        if (friendApplicationRepository.existsByWaitingApplicationIdAndReviewerId(auditResultDTO.getAuditObjectId(), auditResultDTO.getReviewerId())) {
-            if (auditResultDTO.isResult()) {
-                friendApplicationRepository.setState(auditResultDTO.getAuditObjectId(),FriendApplicationState.accepted);
-                Integer userId=friendApplicationRepository.getApplicantByApplicationId(auditResultDTO.getAuditObjectId());
-                List<Integer> members=List.of(userId,auditResultDTO.getReviewerId());
-                chatService.createChat(new ChatDTO(auditResultDTO.getReviewerId(),null,null,members), ChatType.friendChat);
-            }
-            else {
-                friendApplicationRepository.setState(auditResultDTO.getAuditObjectId(),FriendApplicationState.rejected);
-            }
+    public ResultMsg auditFriendApplication(AuditResultDTO auditResultDTO, Integer reviewerId) throws Exception {
+        auditResultDTO.setReviewerId(reviewerId);
+        if (!friendApplicationRepository.existsByWaitingApplicationIdAndReviewerId(auditResultDTO.getAuditObjectId(), auditResultDTO.getReviewerId())) {
+            throw new ServiceException(404, "找不到该用户");
         }
-        else{
-            throw new IllegalArgumentException("找不到该好友申请");
+        if (auditResultDTO.isResult()) {
+            friendApplicationRepository.setState(auditResultDTO.getAuditObjectId(),FriendApplicationState.accepted);
+            Integer userId=friendApplicationRepository.getApplicantByApplicationId(auditResultDTO.getAuditObjectId());
+            List<Integer> members=List.of(userId,auditResultDTO.getReviewerId());
+            chatService.createChat(new ChatDTO(auditResultDTO.getReviewerId(),null,null,members), ChatType.friendChat);
         }
+        else {
+            friendApplicationRepository.setState(auditResultDTO.getAuditObjectId(),FriendApplicationState.rejected);
+        }
+        return ResultMsg.success("好友申请处理成功");
     }
 
     public List<ApplicationResponseDTO> getAllFriendApplication(Integer userId) {

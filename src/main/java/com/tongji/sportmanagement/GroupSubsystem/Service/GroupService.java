@@ -3,6 +3,7 @@ package com.tongji.sportmanagement.GroupSubsystem.Service;
 
 import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.DTO.ChatDTO;
+import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.CompleteGroupDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupDetailDTO;
 import com.tongji.sportmanagement.GroupSubsystem.Entity.Group;
@@ -48,7 +49,8 @@ public class GroupService {
     }
 
     @Transactional
-    public void createGroup(CompleteGroupDTO completeGroup){
+    public ResultMsg createGroup(CompleteGroupDTO completeGroup, Integer creatorId){
+        completeGroup.setCreatorId(creatorId);
         Group group = new Group();
         //创建群聊
         var chat=chatService.createChat(new ChatDTO(completeGroup.getCreatorId(),completeGroup.getGroupName(),null,List.of(completeGroup.getCreatorId())),ChatType.groupChat);
@@ -67,6 +69,7 @@ public class GroupService {
         groupRecordService.addRecord(completeGroup.getCreatorId(), null, _group.getGroupId(),"创建团体");
         //发送邀请
         groupApplicationService.sendApplicationsEd(completeGroup.getMembers(),completeGroup.getCreatorId(),_group);
+        return ResultMsg.success("团体已经成功创建");
     }
 
     public List<Group> getGroups(){
@@ -110,16 +113,15 @@ public class GroupService {
     }
 
     @Transactional
-    public void deleteGroup(Integer groupId,Integer userId){
-        if(groupMemberRepository.checkAuth(groupId,userId)){
-            groupMemberRepository.deleteByGroupId(groupId);
-            groupRecordRepository.deleteByGroupId(groupId);
-            groupApplicationRepository.deleteByGroupId(groupId);
-            groupRepository.deleteById(groupId);
-        }
-        else{
+    public ResultMsg deleteGroup(Integer groupId,Integer userId) {
+        if(!groupMemberRepository.checkAuth(groupId,userId)){
             throw new IllegalArgumentException("该用户没有权限解散团体");
         }
+        groupMemberRepository.deleteByGroupId(groupId);
+        groupRecordRepository.deleteByGroupId(groupId);
+        groupApplicationRepository.deleteByGroupId(groupId);
+        groupRepository.deleteById(groupId);
+        return ResultMsg.success("成功解散团体");
     }
 
     @Transactional

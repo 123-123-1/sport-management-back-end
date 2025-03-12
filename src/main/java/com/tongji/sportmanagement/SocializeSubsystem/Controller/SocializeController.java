@@ -3,7 +3,9 @@ package com.tongji.sportmanagement.SocializeSubsystem.Controller;
 
 import com.tongji.sportmanagement.Common.DTO.*;
 import com.tongji.sportmanagement.SocializeSubsystem.DTO.*;
+import com.tongji.sportmanagement.SocializeSubsystem.Entity.Chat;
 import com.tongji.sportmanagement.SocializeSubsystem.Entity.ChatType;
+import com.tongji.sportmanagement.SocializeSubsystem.Entity.Message;
 import com.tongji.sportmanagement.SocializeSubsystem.Service.ChatService;
 import com.tongji.sportmanagement.SocializeSubsystem.Service.FriendApplicationService;
 import com.tongji.sportmanagement.SocializeSubsystem.Service.MessageService;
@@ -28,162 +30,78 @@ public class SocializeController {
 
 
     @PostMapping("/chats")
-    public ResponseEntity<Object> createChat(@RequestAttribute int idFromToken, @RequestBody ChatDTO chat) {
-        try {
-            chat.setUserId(idFromToken);
-            var c=chatService.createChat(chat, ChatType.friendGroup);
-            return ResponseEntity.status(200).body(c);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<Chat> createChat(@RequestAttribute int idFromToken, @RequestBody ChatDTO chat) {
+        return ResponseEntity.ok().body(chatService.createChat(chat, ChatType.friendGroup, idFromToken));
     }
 
     @GetMapping("/chats")
-    public ResponseEntity<Object> getChatsByID(@RequestAttribute int idFromToken) {
-        try{
-            var chatList= chatService.getChatsByUserId(idFromToken);
-            return ResponseEntity.status(200).body(chatList);
-        }
-        catch (Exception e){
-            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<List<Chat>> getChatsByID(@RequestAttribute int idFromToken) {
+        return ResponseEntity.ok().body(chatService.getChatsByUserId(idFromToken));
     }
 
     @DeleteMapping("/chats")
-    public ResponseEntity<Object> quitChat(@RequestAttribute int idFromToken, Integer chatId) {
-         try{
-             chatService.quitChat(chatId,idFromToken);
-             return ResponseEntity.status(200).body(ResultMsg.success("已经成功退出群聊"));
-         }
-         catch (Exception e){
-             return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-         }
+    public ResponseEntity<ResultMsg> quitChat(@RequestAttribute int idFromToken, Integer chatId) {
+        return ResponseEntity.ok().body(chatService.quitChat(chatId,idFromToken));
     }
 
     @PatchMapping("/chats")
-    public ResponseEntity<Object> inviteIntoChat(@RequestAttribute int idFromToken, @RequestBody InviteDTO inviteDto){
-        try{
-            inviteDto.setUserId(idFromToken);
-            chatService.inviteToChat(inviteDto);
-            return ResponseEntity.status(200).body(ResultMsg.success("已经成功邀请该用户"));
-        }
-        catch (Exception e){
-            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<ResultMsg> inviteIntoChat(@RequestAttribute int idFromToken, @RequestBody InviteDTO inviteDto){
+        return ResponseEntity.ok().body(chatService.inviteToChat(inviteDto, idFromToken));
     }
 
     @GetMapping("/chats/{chatId}")
-    public ResponseEntity<Object> getChatDetail(@PathVariable Integer chatId){
-        try{
-            var chat=chatService.getChatDetails(chatId);
-            return ResponseEntity.status(200).body(chat);
-        }
-        catch (Exception e){
-            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<ChatDetailDTO> getChatDetail(@PathVariable Integer chatId){
+        return ResponseEntity.ok().body(chatService.getChatDetails(chatId));
     }
 
     @PostMapping("/messages")
-    public ResponseEntity<Object> sendMessage(@RequestAttribute int idFromToken, @RequestBody MessageDTO messageDto){
-        try{
-            messageDto.setUserId(idFromToken);
-            var message= messageService.sendMessage(messageDto);
-            return ResponseEntity.status(200).body(message);
-        }
-        catch (Exception e){
-            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<Message> sendMessage(@RequestAttribute int idFromToken, @RequestBody MessageDTO messageDto){
+        return ResponseEntity.ok().body(messageService.sendMessage(messageDto, idFromToken));
     }
 
     @GetMapping("/messages")
-    public ResponseEntity<Object> getChatHistory(Integer chatId,@RequestAttribute int idFromToken) {
-        try {
-            List<MessageUserDTO> msgs=messageService.getChatHistory(chatId,idFromToken);
-            return ResponseEntity.status(200).body(msgs);
-        }
-        catch (Exception e){
-            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<List<MessageUserDTO>> getChatHistory(Integer chatId,@RequestAttribute int idFromToken) {
+        return ResponseEntity.ok().body(messageService.getChatHistory(chatId,idFromToken));
     }
 
     @DeleteMapping("/messages")
-    public ResponseEntity<Object> deleteMessage(@RequestAttribute int idFromToken, Integer messageId) {
-        try{
-            messageService.deleteMsg(idFromToken,messageId);
-            return ResponseEntity.status(200).body(ResultMsg.success("消息撤回成功"));
-        }
-        catch (Exception e){
-            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<ResultMsg> deleteMessage(@RequestAttribute int idFromToken, Integer messageId) {
+        return ResponseEntity.ok().body(messageService.deleteMsg(idFromToken,messageId));
     }
 
     @GetMapping("/friends")
-    public ResponseEntity<Object> getFriends(@RequestAttribute int idFromToken){
-        try {
-            var friends= chatService.getFriendsBy(idFromToken);
-            return ResponseEntity.status(200).body(friends);
-        }
-        catch (Exception e){
-            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<List<FriendDTO>> getFriends(@RequestAttribute int idFromToken){
+        return ResponseEntity.ok().body(chatService.getFriendsBy(idFromToken));
     }
 
     @PostMapping("/application")
-    public ResponseEntity<Object> postFriendApplication(@RequestAttribute int idFromToken, @RequestBody FriendApplicationDTO friendApplication){
-        try{
-            friendApplication.setApplicantId(idFromToken);
-            friendApplicationService.postFriendApplication(friendApplication);
-            return ResponseEntity.status(200).body(ResultMsg.success("好友申请已发送"));
-        }
-        catch (Exception e){
-            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<ResultMsg> postFriendApplication(@RequestAttribute int idFromToken, @RequestBody FriendApplicationDTO friendApplication){
+        return ResponseEntity.ok().body(friendApplicationService.postFriendApplication(friendApplication, idFromToken));
     }
 
     @PatchMapping("/application")
-    public ResponseEntity<Object> processFriendApplication(@RequestAttribute int idFromToken, @RequestBody AuditResultDTO auditResultDTO) {
-        try {
-            auditResultDTO.setReviewerId(idFromToken);
-            friendApplicationService.auditFriendApplication(auditResultDTO);
-            return ResponseEntity.status(200).body(ResultMsg.success("好友申请处理成功"));
-        }
-        catch (Exception e){
-            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<ResultMsg> processFriendApplication(@RequestAttribute int idFromToken, @RequestBody AuditResultDTO auditResultDTO) throws Exception {
+        return ResponseEntity.ok().body(friendApplicationService.auditFriendApplication(auditResultDTO, idFromToken));
     }
 
     @GetMapping("/application")
-    public ResponseEntity<Object> getFriendApplication(@RequestAttribute int idFromToken) {
-        try {
-            var applications=friendApplicationService.getAllFriendApplication(idFromToken);
-            return ResponseEntity.status(200).body(applications);
-        }
-        catch (Exception e){
-            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<List<ApplicationResponseDTO>> getFriendApplication(@RequestAttribute int idFromToken) {
+        return ResponseEntity.ok().body(friendApplicationService.getAllFriendApplication(idFromToken));
     }
 
     @DeleteMapping("/friends")
-    public ResponseEntity<Object> deleteFriend(@RequestAttribute int idFromToken, @RequestBody FriendDeleteDTO friendDeleteDTO){
-        try{
-            friendDeleteDTO.setOperatorId(idFromToken);
-            chatService.deleteFriend(friendDeleteDTO);
-            return ResponseEntity.status(200).body(ResultMsg.success("好友删除成功"));
-        }
-        catch (Exception e){
-            return ResponseEntity.status(500).body(ResultMsg.error(e.getMessage()));
-        }
+    public ResponseEntity<ResultMsg> deleteFriend(@RequestAttribute int idFromToken, @RequestBody FriendDeleteDTO friendDeleteDTO){
+        return ResponseEntity.ok().body(chatService.deleteFriend(friendDeleteDTO, idFromToken));
     }
 
-    public Integer createChatId( ChatDTO chat,String type) {
-        try {
-            //验证token
-            var c=chatService.createChat(chat, ChatType.valueOf(type));
-            return c.getChatId();
+    // public Integer createChatId( ChatDTO chat,String type) {
+    //     try {
+    //         //验证token
+    //         var c=chatService.createChat(chat, ChatType.valueOf(type));
+    //         return c.getChatId();
 
-        } catch (Exception e) {
-            return -1;
-        }
-    }
+    //     } catch (Exception e) {
+    //         return -1;
+    //     }
+    // }
 }
