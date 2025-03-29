@@ -5,14 +5,14 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
 
 @Repository
-public interface VenueRepository extends CrudRepository<Venue, Integer>
+public interface VenueRepository extends JpaRepository<Venue, Integer>
 {
   @Query(value = "SELECT * FROM venue LIMIT :count OFFSET :offset", nativeQuery = true)
   public List<Venue> findPageVenue(@Param("offset") int offset, @Param("count") int count);

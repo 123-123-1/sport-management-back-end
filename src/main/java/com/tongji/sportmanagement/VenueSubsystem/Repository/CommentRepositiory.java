@@ -2,13 +2,13 @@ package com.tongji.sportmanagement.VenueSubsystem.Repository;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import com.tongji.sportmanagement.VenueSubsystem.Entity.VenueComment;
 
-public interface CommentRepositiory extends CrudRepository<VenueComment, Integer>
+public interface CommentRepositiory extends JpaRepository<VenueComment, Integer>
 {
   @Query(value = "SELECT * FROM venue_comment WHERE venue_id = :venueId ORDER BY time DESC LIMIT :count OFFSET :offset", nativeQuery = true)
   List<VenueComment> findCommentByVenueId(@Param("venueId") Integer venueId, @Param("offset") long offset, @Param("count") int count);

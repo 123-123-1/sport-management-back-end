@@ -1,14 +1,14 @@
 package com.tongji.sportmanagement.VenueSubsystem.Repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
 
 @Repository
-public interface CourtAvailabilityRepository extends CrudRepository<CourtAvailability, Integer>
+public interface CourtAvailabilityRepository extends JpaRepository<CourtAvailability, Integer>
 {
   @Query
   Iterable<CourtAvailability> findAllByTimeslotId(Integer timeslotId);
