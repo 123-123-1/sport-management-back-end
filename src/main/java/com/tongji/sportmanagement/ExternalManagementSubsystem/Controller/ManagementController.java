@@ -1,5 +1,7 @@
 package com.tongji.sportmanagement.ExternalManagementSubsystem.Controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,13 +16,20 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.tongji.sportmanagement.Common.ServiceException;
-import com.tongji.sportmanagement.Common.DTO.ErrorMsg;
+import com.tongji.sportmanagement.Common.DTO.ResultMsg;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ApiConfigCreateDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ApiConfigResponseDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.AvailabilityConfigInfoDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.CourtAvailabilityConfigDTO;
 // import com.tongji.sportmanagement.Common.DTO.VenueInitDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationRequestDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationResponseDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiConfig;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiType;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.Service.ApiConfigService;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Service.AvailabilityConfigService;
+import com.tongji.sportmanagement.VenueSubsystem.DTO.CourtResponseDTO;
+import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueDetailDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
 import com.tongji.sportmanagement.VenueSubsystem.Service.CourtService;
@@ -38,6 +47,8 @@ public class ManagementController
   private CourtService courtService;
   @Autowired
   private AvailabilityConfigService availabilityConfigService;
+  @Autowired
+  private ApiConfigService apiConfigService;
 
   // @PostMapping("/initialization")
   // public ResponseEntity<Object> initVenue(@RequestBody VenueInitDTO initInfo)
@@ -46,118 +57,88 @@ public class ManagementController
   // }
 
   @GetMapping("/venueinfo")
-  public ResponseEntity<Object> getManagerVenue(@RequestAttribute Integer idFromToken)
+  public ResponseEntity<VenueDetailDTO> getManagerVenue(@RequestAttribute Integer idFromToken) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(venueService.getManagerVenue(idFromToken));
-    }
-    catch(ServiceException e){
-      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(venueService.getManagerVenue(idFromToken));
   }
 
   @PatchMapping("/venueinfo")
-  public ResponseEntity<Object> patchVenue(@RequestBody Venue venueInfo, @RequestAttribute Integer idFromToken)
+  public ResponseEntity<ResultMsg> patchVenue(@RequestBody Venue venueInfo, @RequestAttribute Integer idFromToken) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(venueService.patchVenue(venueInfo, idFromToken));
-    }
-    catch(ServiceException e){
-      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(venueService.patchVenue(venueInfo, idFromToken));
   }
 
   @PostMapping("/venueimage")
-  public ResponseEntity<Object> updateVenueImage(@RequestParam("image") MultipartFile image, @RequestAttribute Integer idFromToken)
+  public ResponseEntity<ResultMsg> updateVenueImage(@RequestParam("image") MultipartFile image, @RequestAttribute Integer idFromToken) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(venueService.updateVenueImage(image, idFromToken));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(venueService.updateVenueImage(image, idFromToken));
   }
 
   @PostMapping("/courts")
-  public ResponseEntity<Object> createCourt(@RequestBody Court courtInfo, @RequestAttribute Integer idFromToken)
+  public ResponseEntity<CourtResponseDTO> createCourt(@RequestBody Court courtInfo, @RequestAttribute Integer idFromToken) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(courtService.createCourt(courtInfo, idFromToken));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(courtService.createCourt(courtInfo, idFromToken));
   }
 
   @PatchMapping("/courts")
-  public ResponseEntity<Object> patchCourt(@RequestBody Court courtInfo)
+  public ResponseEntity<ResultMsg> patchCourt(@RequestBody Court courtInfo) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(courtService.patchCourt(courtInfo));
-    }
-    catch(ServiceException e){
-      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(courtService.patchCourt(courtInfo));
   }
 
   @DeleteMapping("/courts")
-  public ResponseEntity<Object> deleteCourt(@RequestParam(required = false) Integer courtId,
-  @RequestParam(required = false) String courtName, @RequestAttribute Integer idFromToken)
+  public ResponseEntity<ResultMsg> deleteCourt(@RequestParam(required = false) Integer courtId,
+  @RequestParam(required = false) String courtName, @RequestAttribute Integer idFromToken) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(courtService.deleteCourt(courtId, courtName, idFromToken));
-    }
-    catch(ServiceException e){
-      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(courtService.deleteCourt(courtId, courtName, idFromToken));
   }
 
   @PostMapping("/availability-config")
-  public ResponseEntity<Object> createAvailabilityConfig(@RequestBody AvailabilityConfigInfoDTO configInfo)
+  public ResponseEntity<ResultMsg> createAvailabilityConfig(@RequestBody AvailabilityConfigInfoDTO configInfo)
   {
-    try{
-      return ResponseEntity.ok().body(availabilityConfigService.createAvailabilityConfig(configInfo));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(availabilityConfigService.createAvailabilityConfig(configInfo));
   }
 
   @GetMapping("/availability-config")
-  public ResponseEntity<Object> getAvailabilityConfig(@RequestAttribute Integer idFromToken)
+  public ResponseEntity<List<CourtAvailabilityConfigDTO>> getAvailabilityConfig(@RequestAttribute Integer idFromToken) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(availabilityConfigService.getAvailabilityConfig(idFromToken));
-    }
-    catch(ServiceException e){
-      return ResponseEntity.status(e.getCode()).body(new ErrorMsg(e.getMessage()));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(availabilityConfigService.getAvailabilityConfig(idFromToken));
   }
 
   @PatchMapping("/availability-config")
-  public ResponseEntity<Object> patchAvailabilityConfig(@RequestBody AvailabilityConfigInfoDTO configInfo)
+  public ResponseEntity<ResultMsg> patchAvailabilityConfig(@RequestBody AvailabilityConfigInfoDTO configInfo) throws Exception
   {
-    try{
-      return ResponseEntity.ok().body(availabilityConfigService.patchAvailabilityConfig(configInfo));
-    }
-    catch(Exception e){
-      return ResponseEntity.internalServerError().body(new ErrorMsg(e.getMessage()));
-    }
+    return ResponseEntity.ok().body(availabilityConfigService.patchAvailabilityConfig(configInfo));
+  }
+
+  @DeleteMapping("/availability-config")
+  public ResponseEntity<ResultMsg> deleteAvailabilityConfig(@RequestParam Integer configId)
+  {
+    return ResponseEntity.ok().body(availabilityConfigService.deleteAvailabilityConfig(configId));
+  }
+
+  @GetMapping("/api-config")
+  public ResponseEntity<ApiConfigResponseDTO> getApiConfig(@RequestParam ApiType type, @RequestAttribute Integer idFromToken) throws Exception
+  {
+    return ResponseEntity.ok().body(apiConfigService.getConfigByManager(type, idFromToken));
+  }
+
+  @PostMapping("/api-config")
+  public ResponseEntity<ApiConfig> createApiConfig(@RequestBody ApiConfigCreateDTO createInfo, @RequestAttribute Integer idFromToken) throws Exception
+  {
+    return ResponseEntity.ok().body(apiConfigService.createApiConfig(createInfo, idFromToken));
+  }
+
+  @DeleteMapping("/api-config")
+  public ResponseEntity<ResultMsg> deleteApiConfig(@RequestParam Integer apiConfigId)
+  {
+    return ResponseEntity.ok().body(apiConfigService.deleteApiConfig(apiConfigId));
+  }
+
+  @PatchMapping("/api-config")
+  public ResponseEntity<ApiConfig> editApiConfig(@RequestBody ApiConfig config) throws Exception
+  {
+    return ResponseEntity.ok().body(apiConfigService.editApiConfig(config));
   }
 
   // @PostMapping("/timeslots")

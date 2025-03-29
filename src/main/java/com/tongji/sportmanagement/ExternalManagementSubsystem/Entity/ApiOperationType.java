@@ -1,6 +1,6 @@
 package com.tongji.sportmanagement.ExternalManagementSubsystem.Entity;
 
-public enum ApiType
+public enum ApiOperationType
 {
-  reservation, userinfo, cancel
+  auto, manual, api  
 }

@@ -1,5 +1,7 @@
 package com.tongji.sportmanagement.ExternalManagementSubsystem.Entity;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -26,8 +28,20 @@ public class ApiConfig
   Integer venueId;
 
   @Enumerated(EnumType.STRING)
+  @Column(name = "operation_type")
+  @ColumnDefault("auto")
+  ApiOperationType operationType;
+
+  @Column(name = "api_url", length = 255)
+  String apiUrl;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "type")
   ApiType type;
 
-  @Column(name = "content", length = 1000)
-  String content;
+  @Column(name = "request_content", length = 1000)
+  String requestContent;
+
+  @Column(name = "response_content", length = 1000)
+  String responseContent;
 }

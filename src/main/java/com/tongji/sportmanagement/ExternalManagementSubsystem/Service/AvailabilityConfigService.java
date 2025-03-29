@@ -114,6 +114,16 @@ public class AvailabilityConfigService
     return new ResultMsg("编辑成功", 1);
   }
 
+  @Transactional
+  public ResultMsg deleteAvailabilityConfig(Integer configId)
+  {
+    // 1. 删除所有时间段
+    timeslotConfigRepository.deleteAllByAvconfigId(configId);;
+    // 2. 删除配置项
+    availabilityConfigRepository.deleteById(configId);
+    return new ResultMsg("删除成功", 1);
+  }
+
   Integer getRepetitionBit(List<String> repetitionStr)
   {
     Integer repetitionBit = 0;

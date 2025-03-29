@@ -17,4 +17,8 @@ public interface TimeslotConfigRepository extends CrudRepository<TimeslotConfig,
   @Modifying
   @Query(value = "DELETE FROM timeslot_config WHERE avconfig_id = :avconfigId AND tsconfig_id NOT IN :existId", nativeQuery = true)
   public void deleteNonexistById(@Param("avconfigId") Integer avconfigId, @Param("existId") List<Integer> existId);
+
+  @Modifying
+  @Query
+  public void deleteAllByAvconfigId(Integer avconfigId);
 }
