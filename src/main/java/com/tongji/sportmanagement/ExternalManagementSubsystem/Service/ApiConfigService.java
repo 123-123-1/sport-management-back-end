@@ -14,35 +14,25 @@ import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiConfig;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiOperationType;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiType;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Repository.ApiConfigRepository;
-import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
-import com.tongji.sportmanagement.VenueSubsystem.Repository.VenueRepository;
 
 import jakarta.transaction.Transactional;
 
 @Service
 public class ApiConfigService
 {
-  
-  @Autowired
-  private VenueRepository venueRepository;
+
   @Autowired
   private ApiConfigRepository apiConfigRepository;
 
-  public Integer getVenueIdByManager(Integer managerId) throws Exception
-  {
-    Optional<Venue> venueOptional = venueRepository.findByManagerId(managerId);
-    if(venueOptional.isEmpty()){
-      throw new ServiceException(404, "未找到管理的场馆");
-    }
-    return venueOptional.get().getVenueId();
-  }
+  @Autowired
+  private ManagementUtilsService managementUtilsService;
 
   public ApiConfigResponseDTO getConfigByManager(ApiType type, Integer managerId) throws Exception
   {
     if(type == null){
       throw new ServiceException(400, "API类型参数错误");
     }
-    Integer venueId = getVenueIdByManager(managerId);
+    Integer venueId = managementUtilsService.getVenueIdByManager(managerId);
     Optional<ApiConfig> configOptional = apiConfigRepository.findByVenueIdAndType(venueId, type);
     return new ApiConfigResponseDTO(configOptional.isPresent() ? 1 : 0, configOptional);
   }
@@ -52,7 +42,7 @@ public class ApiConfigService
     if(createInfo.getType() == null){
       throw new ServiceException(400, "API类型参数错误");
     }
-    Integer venueId = getVenueIdByManager(managerId);
+    Integer venueId = managementUtilsService.getVenueIdByManager(managerId);
     ApiConfig config = new ApiConfig();
     config.setVenueId(venueId);
     config.setType(createInfo.getType());

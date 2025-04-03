@@ -2,12 +2,10 @@ package com.tongji.sportmanagement.ExternalManagementSubsystem.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.AvailabilityConfigInfoDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.CourtAvailabilityConfigDTO;
@@ -15,10 +13,8 @@ import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.Availabilit
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.TimeslotConfig;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Repository.AvailabilityConfigRepository;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Repository.TimeslotConfigRepository;
-import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
-import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
+import com.tongji.sportmanagement.VenueSubsystem.DTO.CourtDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Repository.CourtRepository;
-import com.tongji.sportmanagement.VenueSubsystem.Repository.VenueRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -26,11 +22,11 @@ import jakarta.transaction.Transactional;
 public class AvailabilityConfigService
 {
   @Autowired
+  private ManagementUtilsService managementUtilsService;
+  @Autowired
   private TimeslotConfigRepository timeslotConfigRepository;
   @Autowired
   private AvailabilityConfigRepository availabilityConfigRepository;
-  @Autowired
-  private VenueRepository venueRepository;
   @Autowired
   private CourtRepository courtRepository;
 
@@ -60,16 +56,12 @@ public class AvailabilityConfigService
   public List<CourtAvailabilityConfigDTO> getAvailabilityConfig(Integer managerId) throws Exception
   {
     // 1. 找到目标场馆
-    Optional<Venue> venueOptional = venueRepository.findByManagerId(managerId);
-    if(venueOptional.isEmpty()){
-      throw new ServiceException(404, "找不到用户管理的场馆");
-    }
-    Integer venueId = venueOptional.get().getVenueId();
+    Integer venueId = managementUtilsService.getVenueIdByManager(managerId);
     // 2. 找到场馆的所有场地
-    List<Court> venueCourts = courtRepository.findAllByVenueId(venueId);
+    List<CourtDTO> venueCourts = courtRepository.findAllByVenueId(venueId);
     List<CourtAvailabilityConfigDTO> result = new ArrayList<CourtAvailabilityConfigDTO>();
     // 3. 对每一个场地查找对应配置项
-    for (Court court : venueCourts) {
+    for (CourtDTO court : venueCourts) {
       List<AvailabilityConfigInfoDTO> courtConfigInfo = new ArrayList<AvailabilityConfigInfoDTO>();
       List<AvailabilityConfig> courtAvailabilityConfig = availabilityConfigRepository.findAllByCourtId(court.getCourtId());
       for (AvailabilityConfig availabilityConfig : courtAvailabilityConfig) {

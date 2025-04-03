@@ -1,17 +1,17 @@
 package com.tongji.sportmanagement.VenueSubsystem.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.CommentItemDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.PostCommentDTO;
-import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueCommentDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.VenueComment;
 import com.tongji.sportmanagement.VenueSubsystem.Repository.CommentRepositiory;
 
@@ -26,22 +26,19 @@ public class CommentService
   @Autowired
   private UserService userService;
 
-  public VenueCommentDTO getVenueComments(int venueId, long page)
+  public Page<CommentItemDTO> getVenueComments(Integer venueId, Integer page)
   {
-    // 1. 获取所有用户评论
-    long offset = (page - 1) * pageCommentCount;
-    List<VenueComment> comments = commentRepositiory.findCommentByVenueId(venueId, offset, pageCommentCount);
-    // 2. 获取评论的所有用户信息
-    List<CommentItemDTO> userComments = new ArrayList<CommentItemDTO>();
-    for (VenueComment comment : comments) {
-      userComments.add(new CommentItemDTO(comment, userService.getUserProfile(comment.getUserId())));
-    }
-    // 3. 生成查询结果
-    VenueCommentDTO result = new VenueCommentDTO();
-    result.setTotal(commentRepositiory.getCommentCount(venueId));
-    result.setPage(page);
-    result.setComments(userComments);
-    return result;
+    Pageable pageable = PageRequest.of(page, pageCommentCount, Sort.by("time").descending());
+    return commentRepositiory.getVenueComments(venueId, pageable).map(comment -> new CommentItemDTO(
+      comment.getCommentId(),
+      comment.getContent(),
+      comment.getTime(),
+      comment.getVenueId(),
+      comment.getScore(),
+      comment.getUserId(),
+      comment.getUserName(),
+      userService.getUserPhoto(comment.getUserId())
+    ));
   }
 
   public ResultMsg postVenueComment(PostCommentDTO comment, int userId)

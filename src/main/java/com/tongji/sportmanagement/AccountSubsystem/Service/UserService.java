@@ -138,6 +138,10 @@ public class UserService {
         return userProfileDTO;
     }
 
+    public String getUserPhoto(Integer userId){
+        return ossService.getFileLink(getAvatarName(userId));
+    }
+
     public UserInfoDetailDTO updateUserInfo(int userId, UserInfoUpdateDTO data) throws Exception {
         Optional<User> userOptional = userRepository.findByUserId(userId);
         if(userOptional.isEmpty()) {

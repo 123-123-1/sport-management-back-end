@@ -12,13 +12,14 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReservationMetaDTO
+public class ReservationManagerMetaDTO
 {
   Integer reservationId;
-  ReservationState state;
-  String venueName;
+  Integer courtId;
   String courtName;
-  ReservationType type;
   Instant startTime;
   Instant endTime;
+  ReservationType type;
+  Integer groupId;
+  String groupName;
 }

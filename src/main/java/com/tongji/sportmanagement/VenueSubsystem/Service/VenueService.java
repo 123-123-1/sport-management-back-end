@@ -1,13 +1,14 @@
 package com.tongji.sportmanagement.VenueSubsystem.Service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import com.tongji.sportmanagement.VenueSubsystem.Repository.VenueRepository;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,7 +17,6 @@ import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.SportManagementUtils;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueDetailDTO;
-import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueListDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.VenueState;
 
@@ -31,27 +31,63 @@ public class VenueService
   final int pageVenueCount = 10; // 一页场馆的数量
 
   // 获取所有场馆 or 根据名称关键字查找场馆
-  public VenueListDTO getAllVenues(int page, String name)
+  // public VenueListDTO getAllVenues(int page, String name)
+  // {
+  //   List<Venue> venues;
+  //   long total = 0;
+  //   if(name.isBlank()){
+  //     venues = venueRepository.findPageVenue((page - 1) * pageVenueCount, pageVenueCount);
+  //     total = venueRepository.count();
+  //   }
+  //   else{
+  //     venues = venueRepository.findVenueByName(name, (page - 1) * pageVenueCount, pageVenueCount);
+  //     total = venueRepository.getVenueNameCount(name);
+  //   }
+  //   // 处理结果
+  //   List<VenueDetailDTO> result = new ArrayList<VenueDetailDTO>();
+  //   for (Venue venue : venues) {
+  //     VenueDetailDTO resultVenue = new VenueDetailDTO();
+  //     BeanUtils.copyProperties(venue, resultVenue);
+  //     resultVenue.setImage(getVenueImage(venue.getVenueId()));
+  //     result.add(resultVenue);
+  //   }
+  //   return new VenueListDTO(total, page, result);
+  // }
+
+  // // 根据场馆ID获取场馆详细信息
+  // public VenueDetailDTO getVenueDetail(int venueId) throws Exception
+  // {
+  //   Optional<Venue> venueOptional = venueRepository.findById(venueId);
+  //   if(venueOptional.isEmpty()){
+  //     throw new ServiceException(404, "场馆不存在");
+  //   }
+  //   VenueDetailDTO result = new VenueDetailDTO();
+  //   BeanUtils.copyProperties(venueOptional.get(), result);
+  //   result.setImage(getVenueImage(venueId));
+  //   return result;
+  // }
+
+  
+  // 获取所有场馆 or 根据名称关键字查找场馆
+  public Page<VenueDetailDTO> getAllVenues(Integer page, String name)
   {
-    List<Venue> venues;
-    long total = 0;
+    Pageable pageable = PageRequest.of(page, pageVenueCount);
+    Page<Venue> venues;
     if(name.isBlank()){
-      venues = venueRepository.findPageVenue((page - 1) * pageVenueCount, pageVenueCount);
-      total = venueRepository.count();
+      venues = venueRepository.findAll(pageable);
     }
     else{
-      venues = venueRepository.findVenueByName(name, (page - 1) * pageVenueCount, pageVenueCount);
-      total = venueRepository.getVenueNameCount(name);
+      venues = venueRepository.findByVenueNameContaining(name, pageable);
     }
+
     // 处理结果
-    List<VenueDetailDTO> result = new ArrayList<VenueDetailDTO>();
-    for (Venue venue : venues) {
-      VenueDetailDTO resultVenue = new VenueDetailDTO();
-      BeanUtils.copyProperties(venue, resultVenue);
-      resultVenue.setImage(getVenueImage(venue.getVenueId()));
-      result.add(resultVenue);
-    }
-    return new VenueListDTO(total, page, result);
+    return venues.map(venue -> {
+        VenueDetailDTO venueDetail = new VenueDetailDTO();
+        BeanUtils.copyProperties(venue, venueDetail);
+        venueDetail.setImage(getVenueImage(venue.getVenueId()));
+        return venueDetail;
+      }
+    );
   }
 
   // 根据场馆ID获取场馆详细信息

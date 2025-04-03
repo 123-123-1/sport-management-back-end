@@ -7,11 +7,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-enum CourtState
-{
-    open, closed
-}
-
 @Getter
 @Setter
 @Entity
@@ -42,4 +37,12 @@ public class Court {
     @Column(name = "venue_id", nullable = false)
     private Integer venueId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "venue_id",
+        referencedColumnName = "venue_id",
+        insertable = false,
+        updatable = false
+    )
+    Venue venue;
 }

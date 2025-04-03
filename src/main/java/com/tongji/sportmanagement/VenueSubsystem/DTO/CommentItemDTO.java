@@ -2,8 +2,7 @@ package com.tongji.sportmanagement.VenueSubsystem.DTO;
 
 import lombok.Data;
 
-import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
-import com.tongji.sportmanagement.VenueSubsystem.Entity.VenueComment;
+import java.time.Instant;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -13,6 +12,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CommentItemDTO
 {
-  VenueComment commentInfo;
-  UserProfileDTO userInfo;
+  Integer commentId;
+  String content;
+  Instant time;
+  Integer venueId;
+  Double score;
+  Integer userId;
+  String userName;
+  String userPhoto;
 }

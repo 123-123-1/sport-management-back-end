@@ -1,5 +1,7 @@
 package com.tongji.sportmanagement.VenueSubsystem.Repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +13,7 @@ import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
 public interface CourtAvailabilityRepository extends JpaRepository<CourtAvailability, Integer>
 {
   @Query
-  Iterable<CourtAvailability> findAllByTimeslotId(Integer timeslotId);
+  List<CourtAvailability> findAllByTimeslotId(Integer timeslotId);
 
   @Query(value = "SELECT COUNT(*) FROM court_availability WHERE timeslot_id = :timeslotId", nativeQuery = true)
   Integer countByTimeslot(@Param("timeslotId")Integer timeslotId);

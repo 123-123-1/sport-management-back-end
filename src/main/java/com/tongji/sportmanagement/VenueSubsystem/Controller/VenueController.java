@@ -1,6 +1,9 @@
 package com.tongji.sportmanagement.VenueSubsystem.Controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,7 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tongji.sportmanagement.VenueSubsystem.DTO.CourtDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.PostCommentDTO;
+import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueDetailDTO;
+import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueTimeslotDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Service.CommentService;
 import com.tongji.sportmanagement.VenueSubsystem.Service.CourtService;
 import com.tongji.sportmanagement.VenueSubsystem.Service.TimeslotService;
@@ -31,31 +37,31 @@ public class VenueController
   private CommentService commentService;
 
   @GetMapping("/list")
-  public ResponseEntity<Object> getVenueList(@RequestParam int page, @RequestParam String name)
+  public ResponseEntity<Page<VenueDetailDTO>> getVenueList(@RequestParam int page, @RequestParam String name)
   {
     return ResponseEntity.ok().body(venueService.getAllVenues(page, name));
   }
 
   @GetMapping("/detail")
-  public ResponseEntity<Object> getVenueDetail(@RequestParam int venueId) throws Exception
+  public ResponseEntity<VenueDetailDTO> getVenueDetail(@RequestParam int venueId) throws Exception
   {
     return ResponseEntity.ok().body(venueService.getVenueDetail(venueId));
   }
 
   @GetMapping("/courts")
-  public ResponseEntity<Object> getVenueCourts(@RequestParam int venueId)
+  public ResponseEntity<List<CourtDTO>> getVenueCourts(@RequestParam int venueId)
   {
     return ResponseEntity.ok().body(courtService.getVenueCourts(venueId));
   }
 
   @GetMapping("/timeslots")
-  public ResponseEntity<Object> getVenueTimeslots(@RequestParam int venueId, @RequestParam String date)
+  public ResponseEntity<List<VenueTimeslotDTO>> getVenueTimeslots(@RequestParam int venueId, @RequestParam String date)
   {
     return ResponseEntity.ok().body(timeslotService.getVenueTimeslots(venueId, date));
   }
 
   @GetMapping("/comments")
-  public ResponseEntity<Object> getVenueComments(@RequestParam int venueId, @RequestParam long page)
+  public ResponseEntity<Object> getVenueComments(@RequestParam Integer venueId, @RequestParam Integer page)
   {
     return ResponseEntity.ok().body(commentService.getVenueComments(venueId, page));
   }

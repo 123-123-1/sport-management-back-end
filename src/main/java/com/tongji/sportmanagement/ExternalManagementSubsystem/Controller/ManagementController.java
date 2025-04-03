@@ -3,6 +3,7 @@ package com.tongji.sportmanagement.ExternalManagementSubsystem.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +29,8 @@ import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiConfig;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiType;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Service.ApiConfigService;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Service.AvailabilityConfigService;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.Service.ManagementReservationService;
+import com.tongji.sportmanagement.ReservationSubsystem.DTO.ReservationManagerMetaDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.CourtResponseDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueDetailDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
@@ -49,6 +52,8 @@ public class ManagementController
   private AvailabilityConfigService availabilityConfigService;
   @Autowired
   private ApiConfigService apiConfigService;
+  @Autowired
+  private ManagementReservationService managementReservationService;
 
   // @PostMapping("/initialization")
   // public ResponseEntity<Object> initVenue(@RequestBody VenueInitDTO initInfo)
@@ -139,6 +144,12 @@ public class ManagementController
   public ResponseEntity<ApiConfig> editApiConfig(@RequestBody ApiConfig config) throws Exception
   {
     return ResponseEntity.ok().body(apiConfigService.editApiConfig(config));
+  }
+
+  @GetMapping("/reservations/list")
+  public ResponseEntity<Page<ReservationManagerMetaDTO>> getVenueReservations(@RequestAttribute Integer idFromToken) throws Exception
+  {
+    return ResponseEntity.ok().body(managementReservationService.getVenueReservationByManager(idFromToken, null, null, 0));
   }
 
   // @PostMapping("/timeslots")

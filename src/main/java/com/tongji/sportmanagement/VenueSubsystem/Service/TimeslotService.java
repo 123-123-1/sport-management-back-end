@@ -2,7 +2,6 @@ package com.tongji.sportmanagement.VenueSubsystem.Service;
 
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +13,7 @@ import com.tongji.sportmanagement.Common.SportManagementUtils;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueTimeslotDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
+import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailabiliyDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Timeslot;
 import com.tongji.sportmanagement.VenueSubsystem.Repository.CourtAvailabilityRepository;
 import com.tongji.sportmanagement.VenueSubsystem.Repository.TimeslotRepository;
@@ -27,24 +27,37 @@ public class TimeslotService
   private CourtAvailabilityRepository courtAvailabilityRepository;
 
   // 获取场馆的所有Timeslot及其开放信息
-  public List<VenueTimeslotDTO> getVenueTimeslots(int venueId, String date)
+  public List<VenueTimeslotDTO> getVenueTimeslots(Integer venueId, String date)
   {
     // 1. 获取场馆的所有时间段
-    Instant start_date = Instant.parse(date + "T00:00:00Z");
-    Instant end_date = start_date.atZone(ZoneId.systemDefault()).plusDays(1).toInstant();
-    List<Timeslot> timeslots = (List<Timeslot>)timeslotRepository.findByDate(venueId, start_date, end_date);
-    // 2. 获取时间段的所有可预约项
-    List<VenueTimeslotDTO> result = new ArrayList<VenueTimeslotDTO>();
-    for (Timeslot timeslot : timeslots) {
-      List<CourtAvailability> availabilities = (List<CourtAvailability>)courtAvailabilityRepository.findAllByTimeslotId(timeslot.getTimeslotId());
-      result.add(new VenueTimeslotDTO(timeslot, availabilities));
-    }
+    Instant startDate = Instant.parse(date + "T00:00:00Z");
+    Instant endDate = startDate.atZone(ZoneId.systemDefault()).plusDays(1).toInstant();
+    List<VenueTimeslotDTO> result = timeslotRepository.findByDate(venueId, startDate, endDate).stream().map(timeslot -> new VenueTimeslotDTO(
+      timeslot.getTimeslotId(),
+      timeslot.getStartTime(),
+      timeslot.getEndTime(),
+      timeslot.getCourtAvailabilities().stream().map(courtAvailability -> new CourtAvailabiliyDTO(
+        courtAvailability.getAvailabilityId(),
+        courtAvailability.getTimeslotId(),
+        courtAvailability.getCourtId(),
+        courtAvailability.getState(),
+        courtAvailability.getPrice()
+      )).toList()
+    )).toList();
     return result;
+    // List<Timeslot> timeslots = timeslotRepository.findByDate(venueId, startDate, endDate);
+    // // 2. 获取时间段的所有可预约项
+    // List<VenueTimeslotDTO> result = new ArrayList<VenueTimeslotDTO>();
+    // for (Timeslot timeslot : timeslots) {
+    //   List<CourtAvailability> availabilities = courtAvailabilityRepository.findAllByTimeslotId(timeslot.getTimeslotId());
+    //   result.add(new VenueTimeslotDTO(timeslot.getTimeslotId(), timeslot.getStartTime(), timeslot.getEndTime(), availabilities));
+    // }
+    // return result;
   }
 
   public Timeslot createTimeslot(Timeslot timeslotInfo, Integer venueId)
   {
-    timeslotInfo.setVenue(venueId);
+    timeslotInfo.setVenueId(venueId);
     timeslotRepository.save(timeslotInfo);
     return timeslotInfo;
   }

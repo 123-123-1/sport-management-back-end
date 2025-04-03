@@ -1,6 +1,5 @@
 package com.tongji.sportmanagement.VenueSubsystem.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.SportManagementUtils;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
+import com.tongji.sportmanagement.VenueSubsystem.DTO.CourtDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.CourtResponseDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Venue;
@@ -28,7 +28,7 @@ public class CourtService
   private CourtAvailabilityRepository courtAvailabilityRepository;
 
   // 根据场馆ID获取场馆的所有场地
-  public List<Court> getVenueCourts(int venueId)
+  public List<CourtDTO> getVenueCourts(int venueId)
   {
     return courtRepository.findAllByVenueId(venueId);
   }
@@ -40,10 +40,7 @@ public class CourtService
       court.setVenueId(venueId);
     }
     courtRepository.saveAll(courts);
-    List<CourtResponseDTO> result = new ArrayList<CourtResponseDTO>();
-    for (Court court : courts) {
-      result.add(new CourtResponseDTO(court.getCourtId(), court.getCourtName()));
-    }
+    List<CourtResponseDTO> result = courts.stream().map(court -> new CourtResponseDTO(court.getCourtId(), court.getCourtName())).toList();
     return result;
   }
 

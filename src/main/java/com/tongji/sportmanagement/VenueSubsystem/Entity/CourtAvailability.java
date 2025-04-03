@@ -31,5 +31,23 @@ public class CourtAvailability
 
   @Column(name = "price")
   Double price;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(
+      name = "court_id",
+      referencedColumnName = "court_id",
+      insertable = false,
+      updatable = false
+  )
+  Court court;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(
+      name = "timeslot_id",
+      referencedColumnName = "timeslot_id",
+      insertable = false,
+      updatable = false
+  )
+  Timeslot timeslot;
 }
 

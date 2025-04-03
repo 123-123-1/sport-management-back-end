@@ -68,8 +68,9 @@ public class SecurityConfig {
             "/api/users/info", 
             "/api/users/password",
             "/api/users/avatar",
-            "/api/reservations/**", 
             "/api/users/notifications",
+            "/api/venues/comments",
+            "/api/reservations/**", 
             "/api/socialize/**",
             "/api/groups/**",
             "/api/management/**");

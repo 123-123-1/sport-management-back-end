@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+// import java.util.List;
+import java.util.List;
 
 @Getter
 @Setter
@@ -23,6 +25,8 @@ public class Timeslot {
     private Instant endTime;
 
     @Column(name = "venue_id", nullable = false)
-    private Integer venue;
+    private Integer venueId;
 
+    @OneToMany(mappedBy = "timeslot", fetch = FetchType.LAZY)
+    List<CourtAvailability> courtAvailabilities;
 }

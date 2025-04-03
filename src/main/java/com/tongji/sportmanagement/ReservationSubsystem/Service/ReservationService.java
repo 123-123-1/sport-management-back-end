@@ -16,7 +16,6 @@ import com.tongji.sportmanagement.AccountSubsystem.DTO.UserInfoDetailDTO;
 import com.tongji.sportmanagement.AccountSubsystem.Entity.NotificationType;
 import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.Common.ServiceException;
-import com.tongji.sportmanagement.Common.DTO.UserProfileDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Controller.ManagementController;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationRequestDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationResponseDTO;
@@ -46,14 +45,11 @@ import com.tongji.sportmanagement.ReservationSubsystem.Repository.MatchReservati
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.ReservationRecordRepository;
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.ReservationRepository;
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.UserReservationRepository;
-import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueDetailDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailabilityState;
-import com.tongji.sportmanagement.VenueSubsystem.Entity.Timeslot;
 import com.tongji.sportmanagement.VenueSubsystem.Service.CourtService;
 import com.tongji.sportmanagement.VenueSubsystem.Service.TimeslotService;
-import com.tongji.sportmanagement.VenueSubsystem.Service.VenueService;
 
 import jakarta.transaction.Transactional;
 
@@ -73,8 +69,6 @@ public class ReservationService
   @Autowired
   private ManagementController managementController; // 用于向场地管理方发送与接收预约信息
   @Autowired
-  private VenueService venueService; // 用于获取场馆信息
-  @Autowired
   private TimeslotService timeslotService; // 用于获取开放时间信息
   @Autowired
   private CourtService courtService; // 用于获取场地信息
@@ -82,6 +76,8 @@ public class ReservationService
   private UserService userService; // 用于获取用户信息
   @Autowired
   private GroupService groupService; // 用于获取团体信息
+
+  final static int ReservationPageCount = 10;
 
   // ---------- 工具函数：用于封装预约流程 ----------
   private <T> boolean isValidRequest(ResponseEntity<T> response, Class<?> expectClass)
@@ -109,15 +105,15 @@ public class ReservationService
   // 发送请求向场地管理方申请占用
   private void occupyManagerConfirm(ReservationRequestDTO requestDTO) throws Exception
   {
-    ResponseEntity<ReservationResponseDTO> managerResponse = managementController.sendOccupyRequest(requestDTO);
-    if(!isValidRequest(managerResponse, ReservationResponseDTO.class)){
-      throw new ServiceException(500, "场地管理方未给出有效的预约结果");
-    }
-    ReservationResponseDTO managerInfo = (ReservationResponseDTO)managerResponse.getBody();
-    if(managerInfo.getStatus() == 0){
-      throw new ServiceException(409, managerInfo.getMsg());
-    }
-    // 未抛出异常，预约成功
+    // ResponseEntity<ReservationResponseDTO> managerResponse = managementController.sendOccupyRequest(requestDTO);
+    // if(!isValidRequest(managerResponse, ReservationResponseDTO.class)){
+    //   throw new ServiceException(500, "场地管理方未给出有效的预约结果");
+    // }
+    // ReservationResponseDTO managerInfo = (ReservationResponseDTO)managerResponse.getBody();
+    // if(managerInfo.getStatus() == 0){
+    //   throw new ServiceException(409, managerInfo.getMsg());
+    // }
+    // // 未抛出异常，预约成功
   }
 
   // 隐去用户姓名和电话，避免前端泄露信息
@@ -137,17 +133,17 @@ public class ReservationService
   }
 
   // 将用户预约信息加入数据库中
-  private List<ReservationUserDTO> addReservationUsers(Reservation reservation, List<Integer> users, ReservationState state)
+  private List<ReservationUserDTO> addReservationUsers(Integer reservationId, List<Integer> users, ReservationState state)
   {
     ArrayList<ReservationUserDTO> result = new ArrayList<ReservationUserDTO>();
     Instant reservationTime = Instant.now();
     for (Integer user : users) {
-      UserReservation userReservation = new UserReservation(null, user, state, reservation);
+      UserReservation userReservation = new UserReservation(null, user, state, reservationId);
       userReservationRepository.save(userReservation);
-      reservationRecordRepository.save(new ReservationRecord(null, ReservationState.reserved, reservationTime, user, reservation.getReservationId()));
+      reservationRecordRepository.save(new ReservationRecord(null, ReservationState.reserved, reservationTime, user, reservationId));
       ReservationUserDTO userResult = new ReservationUserDTO();
       userResult.setUserId(user);
-      userResult.setUserReservationId(userReservation.getReservation().getReservationId());
+      userResult.setUserReservationId(userReservation.getUserReservationId());
       result.add(userResult);
     }
     return result;
@@ -156,9 +152,9 @@ public class ReservationService
   // 将预约信息加入数据库中
   private IndividualResponseDTO saveReservation(ReservationType type, Integer availabilityId, List<Integer> users, ReservationState state)
   {
-    Reservation reservation = new Reservation(null, type, availabilityId);
+    Reservation reservation = new Reservation(type, availabilityId);
     reservationRepository.save(reservation);
-    List<ReservationUserDTO> result = addReservationUsers(reservation, users, state);
+    List<ReservationUserDTO> result = addReservationUsers(reservation.getReservationId(), users, state);
     return new IndividualResponseDTO(reservation, result);
   }
 
@@ -191,14 +187,15 @@ public class ReservationService
 
   private List<Integer> findCourtByType(Integer venueId, String courtType) throws Exception
   {
-    List<Court> venueCourts = courtService.getVenueCourts(venueId);
-    List<Integer> eligibleCourts = new ArrayList<Integer>();
-    for (Court court : venueCourts) {
-      if(court.getType().equals(courtType)){
-        eligibleCourts.add(court.getCourtId());
-      }
-    }
-    return eligibleCourts;
+    // List<Court> venueCourts = courtService.getVenueCourts(venueId);
+    // List<Integer> eligibleCourts = new ArrayList<Integer>();
+    // for (Court court : venueCourts) {
+    //   if(court.getType().equals(courtType)){
+    //     eligibleCourts.add(court.getCourtId());
+    //   }
+    // }
+    // return eligibleCourts;
+    return new ArrayList<>();
   }
 
   private List<CourtAvailability> getAvailabilityByState(Integer timeslotId, List<Integer> courts, String state) throws Exception
@@ -281,7 +278,7 @@ public class ReservationService
       throw new ServiceException(404, "未找到预约信息");
     }
     Reservation targetReservation = reservation.get();
-    List<ReservationUserDTO> userResult = addReservationUsers(targetReservation, reservationInfo.getUsers(), ReservationState.matching);
+    List<ReservationUserDTO> userResult = addReservationUsers(targetReservation.getReservationId(), reservationInfo.getUsers(), ReservationState.matching);
     // 2. 查找用户预约信息
     getReservationUserInfo(userResult);
     // 3. 更新拼场预约信息
@@ -345,7 +342,7 @@ public class ReservationService
     IndividualResponseDTO saveResult = saveReservation(ReservationType.group, reservationInfo.getAvailabilityId(),
     reservationInfo.getUsers(), ReservationState.reserved);
     // 3. 插入团体预约
-    GroupReservation groupReservation = new GroupReservation(null, reservationInfo.getGroupId(), saveResult.getReservationInfo());
+    GroupReservation groupReservation = new GroupReservation(reservationInfo.getGroupId(), saveResult.getReservationInfo().getReservationId());
     groupReservationRepository.save(groupReservation);
     // 4. 更新场地可用状态
     targetAvailability.setState(CourtAvailabilityState.full);
@@ -392,90 +389,32 @@ public class ReservationService
     return matchResult;
   }
 
+  // 获取用户预约信息
   public List<ReservationMetaDTO> getUserReservations(Integer userId) throws Exception
   {
-    List<ReservationMetaDTO> result = new ArrayList<ReservationMetaDTO>();
-    // 1. 找到用户的所有预约
-    List<UserReservation> userReservations = (List<UserReservation>)userReservationRepository.findAllByUserId(userId);
-    // 2. 遍历每一个用户预约查找信息
-    for(UserReservation userReservation: userReservations){
-      Reservation reservation = userReservation.getReservation();
-      // 3. 找到可预约项
-      CourtAvailability availability = timeslotService.getAvailability(reservation.getAvailabilityId());
-      System.out.println(availability.getCourtId());
-      // 4. 找到场地
-      Court court = courtService.getCourtById(availability.getCourtId());
-      // 5. 找到场馆信息
-      VenueDetailDTO venue = venueService.getVenueDetail(court.getVenueId());
-      // 6. 找到可用时间段信息
-      Timeslot timeslot = timeslotService.getTimeslotById(availability.getTimeslotId());
-      // 7. 拼合预约信息
-      result.add(new ReservationMetaDTO(reservation.getReservationId(), venue.getVenueName(), court.getCourtName(),
-      timeslot.getStartTime(), timeslot.getEndTime(), reservation.getType(), userReservation.getState()));
-    }
-    return result;
+    return userReservationRepository.getUserReservationsMeta(userId);
   }
 
   public ReservationDetailDTO getReservationDetail(Integer reservationId, Integer userId) throws Exception
   {
     // 1. 获取基本信息
-    ReservationBasicDTO basicInfo = new ReservationBasicDTO();
-    basicInfo.setReservationId(reservationId);
-    // (1) 获取预约
-    Optional<Reservation> optionalReservation = reservationRepository.findById(reservationId);
-    if(optionalReservation.isEmpty()){
-      throw new ServiceException(404, "未找到预约信息");
-    }
-    Reservation reservation = optionalReservation.get();
-    basicInfo.setReservationId(reservationId);
-    basicInfo.setType(reservation.getType());
-    // (2) 获取预约项
-    CourtAvailability availability = timeslotService.getAvailability(reservation.getAvailabilityId());
-    // (3) 获取场地信息
-    Court court = courtService.getCourtById(availability.getCourtId());
-    basicInfo.setCourtId(court.getCourtId());
-    basicInfo.setCourtName(court.getCourtName());
-    // (4) 获取开放时间段
-    Timeslot timeslot = timeslotService.getTimeslotById(availability.getTimeslotId());
-    basicInfo.setStartTime(timeslot.getStartTime());
-    basicInfo.setEndTime(timeslot.getEndTime());
-    // (5) 获取场馆信息
-    VenueDetailDTO venue = venueService.getVenueDetail(court.getVenueId());
-    basicInfo.setVenueId(venue.getVenueId());
-    basicInfo.setVenueName(venue.getVenueName());
-    // (6) 获取团体信息
-    if(reservation.getType().equals(ReservationType.group)){
-      Optional<GroupReservation> groupReservation = groupReservationRepository.findByReservationId(reservationId);
-      if(groupReservation.isEmpty()){
-        throw new ServiceException(404, "未找到团体预约信息");
-      }
-      ReservationGroupDTO group = getReservationGroup(groupReservation.get().getGroupId(), null);
-      basicInfo.setGroupId(group.getGroupId());
-      basicInfo.setGroupName(group.getGroupName());
-    }
-    // (7) 获取拼场信息
-    else if(reservation.getType().equals(ReservationType.match)){
-      Optional<MatchReservation> optionalMatch = matchReservationRepository.findByReservationId(reservationId);
-      if(optionalMatch.isEmpty()){
-        throw new ServiceException(404, "未找到拼场预约信息");
-      }
-      MatchReservation matchReservation = optionalMatch.get();
-      basicInfo.setReservedCount(matchReservation.getReservedCount());
-      basicInfo.setExpirationTime(matchReservation.getExpirationTime());
-    }
+    ReservationBasicDTO basicInfo = reservationRepository.getReservationDetail(reservationId);
     // 2. 获取预约用户信息
-    List<UserReservation> userReservations = (List<UserReservation>)userReservationRepository.findAllByReservationId(reservationId);
-    List<ReservationUserDTO> userInfo = new ArrayList<ReservationUserDTO>();
-    for(UserReservation userReservation : userReservations){
-      UserProfileDTO userProfile = userService.getUserProfile(userReservation.getUserId());
-      userInfo.add(new ReservationUserDTO(userReservation.getUserReservationId(), userReservation.getUserId(),
-      userProfile.getUserName(), userProfile.getPhoto(), null, null));
+    List<ReservationUserDTO> userInfo = userReservationRepository.findAllByReservationId(reservationId).stream().map(userReservation -> {
       if(userReservation.getUserId() == userId){
         basicInfo.setState(userReservation.getState());
       }
-    }
+      return new ReservationUserDTO(
+        userReservation.getUserReservationId(),
+        userReservation.getUserId(),
+        userReservation.getUser().getUserName(),
+        userService.getUserPhoto(userReservation.getUserId()),
+        null,
+        null
+      );
+    }).toList();
     // 3. 获取预约记录信息
-    List<ReservationRecord> records = (List<ReservationRecord>)reservationRecordRepository.findAllByReservationId(reservationId);
+    List<ReservationRecord> records = reservationRecordRepository.findAllByReservationId(reservationId);
     return new ReservationDetailDTO(basicInfo, userInfo, records);
   }
 }
