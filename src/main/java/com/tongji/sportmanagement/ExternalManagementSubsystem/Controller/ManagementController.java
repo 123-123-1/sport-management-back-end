@@ -22,6 +22,7 @@ import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ApiConfigCreat
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ApiConfigResponseDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.AvailabilityConfigInfoDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.CourtAvailabilityConfigDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationManagerMetaDTO;
 // import com.tongji.sportmanagement.Common.DTO.VenueInitDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationRequestDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationResponseDTO;
@@ -30,7 +31,6 @@ import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiType;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Service.ApiConfigService;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Service.AvailabilityConfigService;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Service.ManagementReservationService;
-import com.tongji.sportmanagement.ReservationSubsystem.DTO.ReservationManagerMetaDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.CourtResponseDTO;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueDetailDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;

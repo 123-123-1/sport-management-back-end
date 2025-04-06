@@ -1,8 +1,7 @@
-package com.tongji.sportmanagement.ReservationSubsystem.DTO;
+package com.tongji.sportmanagement.ExternalManagementSubsystem.DTO;
 
 import java.time.Instant;
 
-import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationState;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationType;
 
 import lombok.AllArgsConstructor;

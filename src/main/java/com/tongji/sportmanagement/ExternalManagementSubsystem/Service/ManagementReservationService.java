@@ -8,7 +8,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.tongji.sportmanagement.Common.ServiceException;
-import com.tongji.sportmanagement.ReservationSubsystem.DTO.ReservationManagerMetaDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationManagerMetaDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.Reservation;
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.ReservationRepository;
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.ReservationSpecification;

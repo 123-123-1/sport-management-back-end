@@ -11,8 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationManagerMetaDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.ReservationBasicDTO;
-import com.tongji.sportmanagement.ReservationSubsystem.DTO.ReservationManagerMetaDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.Reservation;
 
 @Repository
@@ -118,7 +118,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
   // Page<ReservationManagerMetaReflection> getVenueReservationMeta(); 
 
     @Query("""
-      SELECT NEW com.tongji.sportmanagement.ReservationSubsystem.DTO.ReservationManagerMetaDTO(
+      SELECT NEW com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationManagerMetaDTO(
         r.reservationId,
         c.courtId,
         c.courtName,
