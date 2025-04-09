@@ -208,6 +208,15 @@ public class UserService {
         return new ResultMsg(ossService.getFileLink(avatarName), 1);
     }
 
+    public Boolean isUserAdmin(Integer userId)
+    {
+        Optional<User> user = userRepository.findById(userId);
+        if(user.isEmpty()){
+            return false;
+        }
+        return user.get().getUserType() == UserType.venueadmin;
+    }
+
     String getAvatarName(int userId){
         return "avatar_" + userId;
     }

@@ -2,6 +2,7 @@ package com.tongji.sportmanagement.ReservationSubsystem.DTO;
 
 import java.time.Instant;
 
+import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationUserState;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationState;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationType;
 
@@ -24,6 +25,7 @@ public class ReservationBasicDTO
   Instant endTime;
   ReservationType type;
   ReservationState state;
+  ReservationUserState userState;
   Integer groupId; // 团体预约时不为null
   String groupName; // 团体预约时不为null
   Instant expirationTime; // 拼场预约时不为null

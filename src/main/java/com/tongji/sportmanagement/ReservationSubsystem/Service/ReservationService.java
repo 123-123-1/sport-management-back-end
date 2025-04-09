@@ -37,7 +37,7 @@ import com.tongji.sportmanagement.ReservationSubsystem.Entity.GroupReservation;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.MatchReservation;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.Reservation;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationRecord;
-import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationState;
+import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationUserState;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationType;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.UserReservation;
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.GroupReservationRepository;
@@ -133,14 +133,14 @@ public class ReservationService
   }
 
   // 将用户预约信息加入数据库中
-  private List<ReservationUserDTO> addReservationUsers(Integer reservationId, List<Integer> users, ReservationState state)
+  private List<ReservationUserDTO> addReservationUsers(Integer reservationId, List<Integer> users, ReservationUserState state)
   {
     ArrayList<ReservationUserDTO> result = new ArrayList<ReservationUserDTO>();
     Instant reservationTime = Instant.now();
     for (Integer user : users) {
       UserReservation userReservation = new UserReservation(null, user, state, reservationId);
       userReservationRepository.save(userReservation);
-      reservationRecordRepository.save(new ReservationRecord(null, ReservationState.reserved, reservationTime, user, reservationId));
+      reservationRecordRepository.save(new ReservationRecord(null, ReservationUserState.reserved, reservationTime, user, reservationId));
       ReservationUserDTO userResult = new ReservationUserDTO();
       userResult.setUserId(user);
       userResult.setUserReservationId(userReservation.getUserReservationId());
@@ -150,7 +150,7 @@ public class ReservationService
   }
 
   // 将预约信息加入数据库中
-  private IndividualResponseDTO saveReservation(ReservationType type, Integer availabilityId, List<Integer> users, ReservationState state)
+  private IndividualResponseDTO saveReservation(ReservationType type, Integer availabilityId, List<Integer> users, ReservationUserState state)
   {
     Reservation reservation = new Reservation(type, availabilityId);
     reservationRepository.save(reservation);
@@ -163,7 +163,7 @@ public class ReservationService
   {
     for (int i = 0; i < users.size(); i++) {
       UserInfoDetailDTO userInfo = userService.getUserInfo(users.get(i).getUserId());
-      users.set(i, new ReservationUserDTO(null, userInfo.getUserId(), userInfo.getUserName(), userInfo.getPhoto(),
+      users.set(i, new ReservationUserDTO(null, userInfo.getUserId(), userInfo.getUserName(), userInfo.getPhoto(), null,
         userInfo.getRealName(), userInfo.getPhone()));
     }
   }
@@ -252,7 +252,7 @@ public class ReservationService
     CourtAvailability courtAvailability = availabilities.get(0);
     // 3. 向数据库中更新预约信息
     IndividualResponseDTO saveResult = saveReservation(ReservationType.match, courtAvailability.getAvailabilityId(),
-    reservationInfo.getUsers(), ReservationState.matching);
+    reservationInfo.getUsers(), ReservationUserState.matching);
     // 4. 向数据库中更新拼场预约信息
     Instant expirationTime = Instant.now().plus(Duration.ofDays(2));
     MatchReservation matchResult = new MatchReservation(null, saveResult.getReservationInfo().getReservationId(),
@@ -278,7 +278,7 @@ public class ReservationService
       throw new ServiceException(404, "未找到预约信息");
     }
     Reservation targetReservation = reservation.get();
-    List<ReservationUserDTO> userResult = addReservationUsers(targetReservation.getReservationId(), reservationInfo.getUsers(), ReservationState.matching);
+    List<ReservationUserDTO> userResult = addReservationUsers(targetReservation.getReservationId(), reservationInfo.getUsers(), ReservationUserState.matching);
     // 2. 查找用户预约信息
     getReservationUserInfo(userResult);
     // 3. 更新拼场预约信息
@@ -309,7 +309,7 @@ public class ReservationService
     CourtAvailability targetAvailability = timeslotService.getAvailability(reservationInfo.getAvailabilityId());
     // 2. 插入预约项目
     IndividualResponseDTO saveResult = saveReservation(ReservationType.individual, reservationInfo.getAvailabilityId(),
-    reservationInfo.getUsers(), ReservationState.reserved);
+    reservationInfo.getUsers(), ReservationUserState.reserved);
     // 3. 获取预约的用户信息
     getReservationUserInfo(saveResult.getUsers());
     // 4. 更新场地可用状态
@@ -340,7 +340,7 @@ public class ReservationService
     CourtAvailability targetAvailability = timeslotService.getAvailability(reservationInfo.getAvailabilityId());
     // 2. 插入预约项目
     IndividualResponseDTO saveResult = saveReservation(ReservationType.group, reservationInfo.getAvailabilityId(),
-    reservationInfo.getUsers(), ReservationState.reserved);
+    reservationInfo.getUsers(), ReservationUserState.reserved);
     // 3. 插入团体预约
     GroupReservation groupReservation = new GroupReservation(reservationInfo.getGroupId(), saveResult.getReservationInfo().getReservationId());
     groupReservationRepository.save(groupReservation);
@@ -401,15 +401,17 @@ public class ReservationService
     ReservationBasicDTO basicInfo = reservationRepository.getReservationDetail(reservationId);
     // 2. 获取预约用户信息
     List<ReservationUserDTO> userInfo = userReservationRepository.findAllByReservationId(reservationId).stream().map(userReservation -> {
-      if(userReservation.getUserId() == userId){
-        basicInfo.setState(userReservation.getState());
+      Boolean isAdmin = userService.isUserAdmin(userId);
+      if(!isAdmin && userReservation.getUserId() == userId){
+        basicInfo.setUserState(userReservation.getUserState());
       }
       return new ReservationUserDTO(
         userReservation.getUserReservationId(),
         userReservation.getUserId(),
         userReservation.getUser().getUserName(),
         userService.getUserPhoto(userReservation.getUserId()),
-        null,
+        userReservation.getUserState(),
+        isAdmin ? userReservation.getUser().getRealName() : null,
         null
       );
     }).toList();

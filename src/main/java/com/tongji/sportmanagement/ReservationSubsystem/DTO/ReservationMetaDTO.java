@@ -2,6 +2,7 @@ package com.tongji.sportmanagement.ReservationSubsystem.DTO;
 
 import java.time.Instant;
 
+import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationUserState;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationState;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationType;
 
@@ -16,6 +17,7 @@ public class ReservationMetaDTO
 {
   Integer reservationId;
   ReservationState state;
+  ReservationUserState userState;
   String venueName;
   String courtName;
   ReservationType type;

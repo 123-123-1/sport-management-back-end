@@ -2,6 +2,7 @@ package com.tongji.sportmanagement.ExternalManagementSubsystem.DTO;
 
 import java.time.Instant;
 
+import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationState;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationType;
 
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ public class ReservationManagerMetaDTO
   Instant startTime;
   Instant endTime;
   ReservationType type;
+  ReservationState state;
   Integer groupId;
   String groupName;
 }

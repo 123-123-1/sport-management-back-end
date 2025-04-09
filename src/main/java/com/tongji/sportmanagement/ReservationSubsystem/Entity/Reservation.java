@@ -37,6 +37,11 @@ public class Reservation
   @Column(name = "type")
   private ReservationType type;
 
+  @Enumerated(EnumType.STRING)
+  @ColumnDefault("normal")
+  @Column(name = "state")
+  private ReservationState state;
+
   @Column(name = "availability_id")
   private Integer availabilityId;
 

@@ -1,5 +1,6 @@
 package com.tongji.sportmanagement.ReservationSubsystem.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -12,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationManagerMetaDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationStateCountDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.ReservationBasicDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.Reservation;
 
@@ -64,6 +66,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
         t.startTime,
         t.endTime,
         r.type,
+        r.state,
         NULL,
         gr.groupId,
         g.groupName,
@@ -125,6 +128,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
         t.startTime, 
         t.endTime,
         r.type,
+        r.state,
         g.groupId, 
         g.groupName
       )
@@ -141,4 +145,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
         Specification<Reservation> spec,
         Pageable pageable
     );
+
+    @Query("SELECT NEW com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationStateCountDTO(r.state, COUNT(r)) FROM Reservation r WHERE r.availabilityId = :availabilityId GROUP BY r.state")
+    List<ReservationStateCountDTO> countConflictReservation(@Param("availabilityId") Integer availabilityId);
+    
 }

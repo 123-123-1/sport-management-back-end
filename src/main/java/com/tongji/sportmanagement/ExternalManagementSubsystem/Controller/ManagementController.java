@@ -21,11 +21,14 @@ import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ApiConfigCreateDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ApiConfigResponseDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.AvailabilityConfigInfoDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ChangeReservationStateDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ChangeReservationUserDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.CourtAvailabilityConfigDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationManagerMetaDTO;
 // import com.tongji.sportmanagement.Common.DTO.VenueInitDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationRequestDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationResponseDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationStateCountResponseDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiConfig;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiType;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Service.ApiConfigService;
@@ -150,6 +153,24 @@ public class ManagementController
   public ResponseEntity<Page<ReservationManagerMetaDTO>> getVenueReservations(@RequestAttribute Integer idFromToken) throws Exception
   {
     return ResponseEntity.ok().body(managementReservationService.getVenueReservationByManager(idFromToken, null, null, 0));
+  }
+
+  @PatchMapping("/reservations/user-state")
+  public ResponseEntity<ResultMsg> changeUserReservationState(@RequestBody ChangeReservationUserDTO stateDto) throws Exception
+  {
+    return ResponseEntity.ok().body(managementReservationService.changeUserReservationState(stateDto));
+  }
+
+  @GetMapping("/reservations/state-count")
+  public ResponseEntity<ReservationStateCountResponseDTO> getReservationStateCount(@RequestParam Integer reservationId) throws Exception
+  {
+    return ResponseEntity.ok().body(managementReservationService.countConflictReservation(reservationId));
+  }
+
+  @PatchMapping("/reservations/state")
+  public ResponseEntity<ResultMsg> changeReservationState(@RequestBody ChangeReservationStateDTO stateDto) throws Exception
+  {
+    return ResponseEntity.ok().body(managementReservationService.changeReservationState(stateDto));
   }
 
   // @PostMapping("/timeslots")

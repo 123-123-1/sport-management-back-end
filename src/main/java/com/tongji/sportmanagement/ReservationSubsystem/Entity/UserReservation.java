@@ -35,8 +35,8 @@ public class UserReservation
 
   @Enumerated(EnumType.STRING)
   @ColumnDefault("reserved")
-  @Column(name = "state")
-  private ReservationState state;
+  @Column(name = "user_state")
+  private ReservationUserState userState;
 
   @Column(name = "reservation_id")
   Integer reservationId;
@@ -59,11 +59,11 @@ public class UserReservation
   )
   User user;
 
-  public UserReservation(Integer userReservationId, Integer userId, ReservationState state, Integer reservationId)
+  public UserReservation(Integer userReservationId, Integer userId, ReservationUserState userState, Integer reservationId)
   {
     this.userReservationId = userReservationId;
     this.userId = userId;
-    this.state = state;
+    this.userState = userState;
     this.reservationId = reservationId;
     this.reservation = null;
   }
