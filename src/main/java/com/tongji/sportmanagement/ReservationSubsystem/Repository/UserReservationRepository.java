@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.ReservationMetaDTO;
+import com.tongji.sportmanagement.ReservationSubsystem.DTO.ReservationUserDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.UserReservation;
 
 @Repository
@@ -58,4 +59,17 @@ public interface UserReservationRepository extends JpaRepository<UserReservation
 
   @Query("SELECT ur FROM UserReservation ur WHERE ur.reservationId = :reservationId AND ur.userId = :userId")
   Optional<UserReservation> findByUserIdAndReservationId(@Param("reservationId") Integer reservationId, @Param("userId") Integer userId);
+
+  @Query("""
+    SELECT NEW com.tongji.sportmanagement.ReservationSubsystem.DTO.ReservationUserDTO(
+      ur.userReservationId, u.userId, u.userName, NULL, ur.userState, u.realName, u.phone
+    )
+    FROM UserReservation ur
+    JOIN ur.user u
+    WHERE ur.userReservationId IN :userReservationIdList
+  """)
+  List<ReservationUserDTO> getReservationUsers(@Param("userReservationIdList") List<Integer> userReservationIdList);
+
+  @Query(value = "SELECT COUNT(ur.user_id) FROM user_reservation ur WHERE ur.reservation_id = :reservationId AND ur.user_state != \"cancelled\"", nativeQuery = true)
+  Long countReservationUsers(@Param("reservationId") Integer reservationId);
 }

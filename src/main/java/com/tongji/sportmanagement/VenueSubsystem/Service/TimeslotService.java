@@ -13,6 +13,7 @@ import com.tongji.sportmanagement.Common.SportManagementUtils;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.VenueSubsystem.DTO.VenueTimeslotDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
+import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailabilityState;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailabiliyDTO;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Timeslot;
 import com.tongji.sportmanagement.VenueSubsystem.Repository.CourtAvailabilityRepository;
@@ -159,5 +160,15 @@ public class TimeslotService
       throw new ServiceException(404, "未找到开放时间段");
     }
     return timeslot.get();
+  }
+
+  public Integer findVenueByAvailabilityId(Integer availabilityId)
+  {
+    return courtAvailabilityRepository.findVenueByAvailability(availabilityId);
+  }
+
+  public void changeAvailabilityState(CourtAvailability courtAvailability){
+      courtAvailability.setState(CourtAvailabilityState.reserveable);
+      courtAvailabilityRepository.save(courtAvailability);
   }
 }

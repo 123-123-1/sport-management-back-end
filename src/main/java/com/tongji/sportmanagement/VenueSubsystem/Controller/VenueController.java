@@ -54,6 +54,12 @@ public class VenueController
     return ResponseEntity.ok().body(courtService.getVenueCourts(venueId));
   }
 
+  @GetMapping("/court-type")
+  public ResponseEntity<List<String>> getVenueCourtType(@RequestParam int venueId)
+  {
+    return ResponseEntity.ok().body(courtService.getVenueCourtType(venueId));
+  }
+
   @GetMapping("/timeslots")
   public ResponseEntity<List<VenueTimeslotDTO>> getVenueTimeslots(@RequestParam int venueId, @RequestParam String date)
   {

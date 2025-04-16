@@ -19,6 +19,7 @@ import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationMan
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationStateCountDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationStateCountResponseDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.Reservation;
+import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationOperation;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationRecord;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationState;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.UserReservation;
@@ -26,6 +27,8 @@ import com.tongji.sportmanagement.ReservationSubsystem.Repository.ReservationRec
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.ReservationRepository;
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.ReservationSpecification;
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.UserReservationRepository;
+import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
+import com.tongji.sportmanagement.VenueSubsystem.Service.TimeslotService;
 
 @Service
 public class ManagementReservationService
@@ -33,20 +36,22 @@ public class ManagementReservationService
   @Autowired
   ManagementUtilsService managementUtilsService;
   @Autowired
+  TimeslotService timeslotService;
+  @Autowired
   private ReservationRepository reservationRepository;
   @Autowired
   private UserReservationRepository userReservationRepository;
   @Autowired
   private ReservationRecordRepository reservationRecordRepository;
 
-  final static int ReservationPageCount = 10;
+  final static int ReservationPageCount = 20;
 
   // 场地管理方获取预约信息
   public Page<ReservationManagerMetaDTO> getVenueReservationByManager(Integer managerId, Integer userId, String userName, Integer page) throws Exception
   {
     Integer venueId = managementUtilsService.getVenueIdByManager(managerId);
     if (userId != null && userName != null) {
-        throw new ServiceException(422, "userId和userName不能同时传入");
+      throw new ServiceException(422, "userId和userName不能同时传入");
     }
 
     Specification<Reservation> spec = ReservationSpecification.filterByUser(userId, userName);
@@ -67,7 +72,8 @@ public class ManagementReservationService
     userReservationRepository.save(userReservation);
 
     // 2. 更新预约记录
-    ReservationRecord record = new ReservationRecord(null, stateDto.getUserState(), Instant.now(), stateDto.getUserId(), stateDto.getReservationId());
+    ReservationOperation operation = ReservationOperation.getManagerOperationByUserState(stateDto.getUserState());
+    ReservationRecord record = new ReservationRecord(null, operation, Instant.now(), stateDto.getUserId(), stateDto.getReservationId());
     reservationRecordRepository.save(record);
     return ResultMsg.success("更新用户状态成功");
   }
@@ -105,8 +111,16 @@ public class ManagementReservationService
     reservation.setState(stateDto.getState());
     reservationRepository.save(reservation);
 
-    // 2. 写入预约记录
-    // ReservationRecord record = new ReservationRecord(null, );
+    // 2. 更新场地状态信息
+    if(stateDto.getChangeAvailability()){
+      CourtAvailability courtAvailability = reservationRepository.getReservationCourtAvailability(stateDto.getReservationId());
+      timeslotService.changeAvailabilityState(courtAvailability);
+    }
+
+    // 3. 写入预约记录
+    ReservationOperation operation = ReservationOperation.getManagerOperationByReservationState(stateDto.getState());
+    ReservationRecord record = new ReservationRecord(null, operation, Instant.now(), null, stateDto.getReservationId());
+    reservationRecordRepository.save(record);
     return ResultMsg.success("修改预约状态成功");
   }
 }

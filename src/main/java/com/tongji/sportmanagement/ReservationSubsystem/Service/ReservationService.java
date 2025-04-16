@@ -4,24 +4,31 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tongji.sportmanagement.AccountSubsystem.DTO.NotificationContentDTO;
 import com.tongji.sportmanagement.AccountSubsystem.DTO.UserInfoDetailDTO;
 import com.tongji.sportmanagement.AccountSubsystem.Entity.NotificationType;
 import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.Common.ServiceException;
+import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Controller.ManagementController;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationRequestDTO;
-import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationResponseDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationStateCountDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiOperationType;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiType;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.Service.ApiConfigService;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupDetailDTO;
 import com.tongji.sportmanagement.GroupSubsystem.DTO.GroupMemberDetailDTO;
+import com.tongji.sportmanagement.GroupSubsystem.Entity.Group;
 import com.tongji.sportmanagement.GroupSubsystem.Service.GroupService;
+import com.tongji.sportmanagement.ReservationSubsystem.DTO.CancelReservationDTO;
+import com.tongji.sportmanagement.ReservationSubsystem.DTO.CancelReservationType;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.GroupRequestDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.GroupResponseDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.IndividualRequestDTO;
@@ -36,7 +43,9 @@ import com.tongji.sportmanagement.ReservationSubsystem.DTO.ReservationUserDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.GroupReservation;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.MatchReservation;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.Reservation;
+import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationOperation;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationRecord;
+import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationState;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationUserState;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationType;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.UserReservation;
@@ -48,10 +57,9 @@ import com.tongji.sportmanagement.ReservationSubsystem.Repository.UserReservatio
 import com.tongji.sportmanagement.VenueSubsystem.Entity.Court;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailabilityState;
+import com.tongji.sportmanagement.VenueSubsystem.Entity.Timeslot;
 import com.tongji.sportmanagement.VenueSubsystem.Service.CourtService;
 import com.tongji.sportmanagement.VenueSubsystem.Service.TimeslotService;
-
-import jakarta.transaction.Transactional;
 
 @Service
 public class ReservationService
@@ -76,31 +84,84 @@ public class ReservationService
   private UserService userService; // 用于获取用户信息
   @Autowired
   private GroupService groupService; // 用于获取团体信息
+  @Autowired
+  private ApiConfigService apiConfigService; // 用于获取场地管理方信息
 
   final static int ReservationPageCount = 10;
 
   // ---------- 工具函数：用于封装预约流程 ----------
-  private <T> boolean isValidRequest(ResponseEntity<T> response, Class<?> expectClass)
+
+  // 确认预约有效性
+  private String reservationConfirm(Reservation reservation, List<ReservationUserDTO> users) throws Exception
   {
-    Object responseBody = response.getBody();
-    return response.getStatusCode() == HttpStatusCode.valueOf(200) && responseBody != null 
-      && expectClass.isInstance(responseBody);
+    Integer venueId = timeslotService.findVenueByAvailabilityId(reservation.getAvailabilityId());
+    ApiOperationType confirmType = apiConfigService.getReservationStrategy(venueId, ApiType.reservation);
+    switch (confirmType) {
+      case auto:
+        reservationConfirmAuto(reservation);
+        return "";
+      case api:
+        return reservationConfirmManager(venueId, reservation, users);
+      case manual:
+        reservationConfirmManual(reservation);
+        return "请等待场馆负责人审核预约申请。";
+    }
+    return "";
   }
 
+  private synchronized void reservationConfirmAuto(Reservation reservation) throws Exception
+  {
+    List<ReservationStateCountDTO> stateCount = reservationRepository.countConflictReservation(reservation.getAvailabilityId());
+    Long resultCount = 0L;
+    for (ReservationStateCountDTO stateCountItem : stateCount) {
+      if(stateCountItem.getState() == ReservationState.matching || stateCountItem.getState() == ReservationState.normal){
+        resultCount += stateCountItem.getCount();
+      }
+    }
+    if(resultCount > 1){
+      throw new ServiceException(422, "存在预约冲突");
+    }
+    // 添加审核记录
+    ReservationRecord validateRecord = new ReservationRecord(null, ReservationOperation.sysvalidate, Instant.now(), null, reservation.getReservationId());
+    reservationRecordRepository.save(validateRecord);
+  }
+
+  private void reservationConfirmManual(Reservation reservation)
+  {
+    // 将reservation的状态设置为pending即可
+    reservation.setState(ReservationState.pending);
+    reservationRepository.save(reservation);
+  }
 
   // 发送请求向场地管理方确认预约
-  private void reservationManagerConfirm(ReservationRequestDTO requestDTO) throws Exception
+  private String reservationConfirmManager(Integer venueId, Reservation reservationData, List<ReservationUserDTO> reservationUsers) throws Exception
   {
-    ResponseEntity<ReservationResponseDTO> managerResponse = managementController.sendReservationRequest(requestDTO);
-    if(!isValidRequest(managerResponse, ReservationResponseDTO.class)){
-      throw new ServiceException(500, "场地管理方未给出有效的预约结果");
+    String reservationRequest = apiConfigService.generateReservationData(venueId, reservationData, reservationUsers);
+    String reservationUrl = apiConfigService.getVenueUrl(venueId);
+    String reservationResponse = managementController.sendReservationRequest(reservationUrl, reservationRequest);
+    Map<String, String> parsedResponse = apiConfigService.parseResponse(venueId, reservationResponse, ApiType.reservation);
+    String reservationStatus = parsedResponse.get("status");
+    if(reservationStatus.equals("1") || reservationStatus.equals("\"1\"")){
+      // 添加审核记录
+      ReservationRecord validateRecord = new ReservationRecord(null, ReservationOperation.validate, Instant.now(), null, reservationData.getReservationId());
+      reservationRecordRepository.save(validateRecord);
+      String successMsg = parsedResponse.get("success_msg");
+      if(successMsg != null && successMsg.length() > 2 && successMsg.charAt(0) == '"' && successMsg.charAt(successMsg.length() - 1) == '"'){
+        return successMsg.substring(1, successMsg.length() - 1);
+      }
+      return null;
     }
-    ReservationResponseDTO managerInfo = (ReservationResponseDTO)managerResponse.getBody();
-    if(managerInfo.getStatus() == 0){
-      throw new ServiceException(409, managerInfo.getMsg());
+    else if(reservationStatus.equals("0") || reservationStatus.equals("\"0\"")){
+      String msg = "场地管理方拒绝预约请求";
+      String additionalMsg = parsedResponse.get("success_msg");
+      if(additionalMsg != null && additionalMsg.length() > 2 && additionalMsg.charAt(0) == '"' && additionalMsg.charAt(additionalMsg.length() - 1) == '"'){
+        msg += "：" + additionalMsg.substring(1, additionalMsg.length() - 1); 
+      }
+      throw new ServiceException(409, msg);
     }
-    // 未抛出异常，预约成功
+    throw new ServiceException(500, "场地管理方未给出有效的预约结果，请联系场馆负责人");
   }
+
 
   // 发送请求向场地管理方申请占用
   private void occupyManagerConfirm(ReservationRequestDTO requestDTO) throws Exception
@@ -133,20 +194,18 @@ public class ReservationService
   }
 
   // 将用户预约信息加入数据库中
-  private List<ReservationUserDTO> addReservationUsers(Integer reservationId, List<Integer> users, ReservationUserState state)
+  private List<ReservationUserDTO> addReservationUsers(Integer reservationId, List<Integer> users, ReservationUserState state, ReservationOperation operation)
   {
-    ArrayList<ReservationUserDTO> result = new ArrayList<ReservationUserDTO>();
     Instant reservationTime = Instant.now();
-    for (Integer user : users) {
-      UserReservation userReservation = new UserReservation(null, user, state, reservationId);
-      userReservationRepository.save(userReservation);
-      reservationRecordRepository.save(new ReservationRecord(null, ReservationUserState.reserved, reservationTime, user, reservationId));
-      ReservationUserDTO userResult = new ReservationUserDTO();
-      userResult.setUserId(user);
-      userResult.setUserReservationId(userReservation.getUserReservationId());
-      result.add(userResult);
-    }
-    return result;
+    List<UserReservation> userReservations = users.stream().map(user -> new UserReservation(
+      null, user, state, reservationId
+    )).toList();
+    List<ReservationRecord> reservationRecords = users.stream().map(user -> new ReservationRecord(
+      null, operation, reservationTime, user, reservationId
+    )).toList();
+    userReservationRepository.saveAll(userReservations);
+    reservationRecordRepository.saveAll(reservationRecords);
+    return userReservationRepository.getReservationUsers(userReservations.stream().map(ur -> ur.getUserReservationId()).toList());
   }
 
   // 将预约信息加入数据库中
@@ -154,8 +213,8 @@ public class ReservationService
   {
     Reservation reservation = new Reservation(type, availabilityId);
     reservationRepository.save(reservation);
-    List<ReservationUserDTO> result = addReservationUsers(reservation.getReservationId(), users, state);
-    return new IndividualResponseDTO(reservation, result);
+    List<ReservationUserDTO> result = addReservationUsers(reservation.getReservationId(), users, state, ReservationOperation.reserve);
+    return new IndividualResponseDTO(reservation, result, "");
   }
 
   // 获取预约用户的详细信息
@@ -185,19 +244,6 @@ public class ReservationService
     return new ReservationGroupDTO(null, groupId, groupDetail.getGroupName());
   }
 
-  private List<Integer> findCourtByType(Integer venueId, String courtType) throws Exception
-  {
-    // List<Court> venueCourts = courtService.getVenueCourts(venueId);
-    // List<Integer> eligibleCourts = new ArrayList<Integer>();
-    // for (Court court : venueCourts) {
-    //   if(court.getType().equals(courtType)){
-    //     eligibleCourts.add(court.getCourtId());
-    //   }
-    // }
-    // return eligibleCourts;
-    return new ArrayList<>();
-  }
-
   private List<CourtAvailability> getAvailabilityByState(Integer timeslotId, List<Integer> courts, String state) throws Exception
   {
     List<CourtAvailability> availabilities = timeslotService.getAvailabilityByState(timeslotId, state);
@@ -214,7 +260,7 @@ public class ReservationService
   private Integer findMatch(Integer reserveCount, Integer venueId, Integer timeslotId, String courtType) throws Exception
   {
     // 1. 找到符合条件的目标场地
-    List<Integer> courts = findCourtByType(venueId, courtType);
+    List<Integer> courts = courtService.findCourtByType(venueId, courtType);
     // 2. 找到符合条件的可拼场项
     List<CourtAvailability> availabilities = getAvailabilityByState(timeslotId, courts, "matching");
     if(availabilities.size() == 0){
@@ -243,7 +289,7 @@ public class ReservationService
   private MatchResponseDTO allocateMatch(MatchRequestDTO reservationInfo) throws Exception
   {
     // 1. 找到符合条件的目标场地
-    List<Integer> courts = findCourtByType(reservationInfo.getVenueId(), reservationInfo.getCourtType());
+    List<Integer> courts = courtService.findCourtByType(reservationInfo.getVenueId(), reservationInfo.getCourtType());
     // 2. 找到符合条件的可预约项
     List<CourtAvailability> availabilities = getAvailabilityByState(reservationInfo.getTimeslotId(), courts, "reserveable");
     if(availabilities.size() == 0){
@@ -278,7 +324,7 @@ public class ReservationService
       throw new ServiceException(404, "未找到预约信息");
     }
     Reservation targetReservation = reservation.get();
-    List<ReservationUserDTO> userResult = addReservationUsers(targetReservation.getReservationId(), reservationInfo.getUsers(), ReservationUserState.matching);
+    List<ReservationUserDTO> userResult = addReservationUsers(targetReservation.getReservationId(), reservationInfo.getUsers(), ReservationUserState.matching, ReservationOperation.join);
     // 2. 查找用户预约信息
     getReservationUserInfo(userResult);
     // 3. 更新拼场预约信息
@@ -301,8 +347,8 @@ public class ReservationService
   }
 
   // 个人预约交易函数
-  @Transactional
-  private IndividualResponseDTO individualReservationTransaction(IndividualRequestDTO reservationInfo, Integer userId) throws Exception
+  @Transactional(rollbackFor = Exception.class)
+  public IndividualResponseDTO individualReservation(IndividualRequestDTO reservationInfo, Integer userId) throws Exception
   {
     // 该函数为transaction函数，抛出异常即表示预约失败，所有操作均会撤销
     // 1. 找到可预约项
@@ -310,20 +356,14 @@ public class ReservationService
     // 2. 插入预约项目
     IndividualResponseDTO saveResult = saveReservation(ReservationType.individual, reservationInfo.getAvailabilityId(),
     reservationInfo.getUsers(), ReservationUserState.reserved);
-    // 3. 获取预约的用户信息
-    getReservationUserInfo(saveResult.getUsers());
-    // 4. 更新场地可用状态
+
+    // 3. 更新场地可用状态
     targetAvailability.setState(CourtAvailabilityState.full);
     timeslotService.patchAvailability(targetAvailability);
-    // 5. 向场地管理方发送预约请求
-    reservationManagerConfirm(new ReservationRequestDTO(saveResult.getReservationInfo().getReservationId(), targetAvailability, saveResult.getUsers()));
-    return saveResult;
-  }
 
-  public IndividualResponseDTO individualReservation(IndividualRequestDTO reservationInfo, Integer userId) throws Exception
-  {
-    // 1-4. 执行预约交易操作
-    IndividualResponseDTO saveResult = individualReservationTransaction(reservationInfo, userId);
+    // 4. 确认预约信息
+    String reservationMsg = reservationConfirm(saveResult.getReservationInfo(), saveResult.getUsers());
+    saveResult.setMsg(reservationMsg);
     // 5. 发送通知
     sendReservationMessage(saveResult.getReservationInfo().getReservationId(), saveResult.getUsers());
     // 6. 隐藏用户姓名后返回给前端
@@ -333,7 +373,7 @@ public class ReservationService
 
   // 团体预约交易函数
   @Transactional
-  private GroupResponseDTO groupReservationTransaction(GroupRequestDTO reservationInfo, Integer userId) throws Exception
+  public GroupResponseDTO groupReservation(GroupRequestDTO reservationInfo, Integer userId) throws Exception
   {
     // 该函数为transaction函数，抛出异常即表示预约失败，所有操作均会撤销
     // 1. 找到可预约项
@@ -353,24 +393,18 @@ public class ReservationService
     ReservationGroupDTO groupInfo = getReservationGroup(reservationInfo.getGroupId(), userId);
     groupInfo.setGroupReservationId(groupReservation.getGroupReservationId());
     // 7. 向场地管理方发送预约请求
-    reservationManagerConfirm(new ReservationRequestDTO(saveResult.getReservationInfo().getReservationId(), targetAvailability, saveResult.getUsers()));
+    reservationConfirm(saveResult.getReservationInfo(), saveResult.getUsers());
+    hideUserInfo(saveResult.getUsers());
     return new GroupResponseDTO(saveResult.getReservationInfo(), saveResult.getUsers(), groupInfo);
-  }
-
-  public GroupResponseDTO groupReservation(GroupRequestDTO reservationInfo, Integer userId) throws Exception
-  {
-    // 1-7. 执行交易操作
-    GroupResponseDTO reservationResult = groupReservationTransaction(reservationInfo, userId);
-    // 8. 隐藏用户姓名后返回给前端
-    hideUserInfo(reservationResult.getUsers());
-    return reservationResult;
   }
 
   // 拼场预约交易函数
   @Transactional
-  private MatchResponseDTO matchReservationTransaction(MatchRequestDTO reservationInfo) throws Exception
+  public MatchResponseDTO matchReservation(MatchRequestDTO reservationInfo) throws Exception
   {
     // 1. 尝试查找可加入的拼场场地
+    Timeslot timeslot = timeslotService.getTimeslotById(reservationInfo.getTimeslotId());
+    reservationInfo.setVenueId(timeslot.getVenueId());
     Integer availableReservation = findMatch(reservationInfo.getReservationCount(), 
     reservationInfo.getVenueId(), reservationInfo.getTimeslotId(), reservationInfo.getCourtType());
     if(availableReservation == -1){
@@ -383,11 +417,11 @@ public class ReservationService
     }
   }
 
-  public MatchResponseDTO matchReservation(MatchRequestDTO reservationInfo) throws Exception
-  {
-    MatchResponseDTO matchResult = matchReservationTransaction(reservationInfo);
-    return matchResult;
-  }
+  // public MatchResponseDTO matchReservation(MatchRequestDTO reservationInfo) throws Exception
+  // {
+  //   MatchResponseDTO matchResult = matchReservationTransaction(reservationInfo);
+  //   return matchResult;
+  // }
 
   // 获取用户预约信息
   public List<ReservationMetaDTO> getUserReservations(Integer userId) throws Exception
@@ -399,6 +433,18 @@ public class ReservationService
   {
     // 1. 获取基本信息
     ReservationBasicDTO basicInfo = reservationRepository.getReservationDetail(reservationId);
+    if(basicInfo.getType() == ReservationType.group){
+      Group reservationGroup = groupReservationRepository.getReservationGroup(reservationId);
+      basicInfo.setGroupId(reservationGroup.getGroupId());
+      basicInfo.setGroupName(reservationGroup.getGroupName());
+    }
+    else if(basicInfo.getType() == ReservationType.match){
+      Optional<MatchReservation> matchReservationOptional = matchReservationRepository.findByReservationId(reservationId);
+      if(matchReservationOptional.isEmpty()){
+        throw new ServiceException(404, "未找到拼场预约信息");
+      }
+      basicInfo.setExpirationTime(matchReservationOptional.get().getExpirationTime());
+    }
     // 2. 获取预约用户信息
     List<ReservationUserDTO> userInfo = userReservationRepository.findAllByReservationId(reservationId).stream().map(userReservation -> {
       Boolean isAdmin = userService.isUserAdmin(userId);
@@ -418,5 +464,42 @@ public class ReservationService
     // 3. 获取预约记录信息
     List<ReservationRecord> records = reservationRecordRepository.findAllByReservationId(reservationId);
     return new ReservationDetailDTO(basicInfo, userInfo, records);
+  }
+
+  public ResultMsg userCancelReservation(CancelReservationDTO cancelDto, Integer userId) throws Exception
+  {
+    cancelDto.setUserId(userId);
+    ReservationOperation operation = ReservationOperation.usercancel;
+    // 1. 更新预约状态
+    if(cancelDto.getType() == CancelReservationType.all){
+      Optional<Reservation> reservationOptional = reservationRepository.findById(cancelDto.getReservationId());
+      if(reservationOptional.isEmpty()){
+        throw new ServiceException(404, "未找到预约信息");
+      }
+      Reservation reservation = reservationOptional.get();
+      reservation.setState(ReservationState.cancelled);
+      reservationRepository.save(reservation);
+      // 更新场地状态信息
+      CourtAvailability courtAvailability = reservationRepository.getReservationCourtAvailability(cancelDto.getReservationId());
+      timeslotService.changeAvailabilityState(courtAvailability);
+      operation = ReservationOperation.cancelall;
+    }
+    else if(cancelDto.getType() == CancelReservationType.individual){
+      if(userReservationRepository.countReservationUsers(cancelDto.getReservationId()) <= 1L){
+        throw new ServiceException(422, "您是唯一一位预约的用户，请取消整个预约项目");
+      }
+      Optional<UserReservation> userReservationOptional = userReservationRepository.findByUserIdAndReservationId(cancelDto.getReservationId(), cancelDto.getUserId());
+      if(userReservationOptional.isEmpty()){
+        throw new ServiceException(404, "未找到要更改的用户信息");
+      }
+      UserReservation userReservation = userReservationOptional.get();
+      userReservation.setUserState(ReservationUserState.cancelled);
+      userReservationRepository.save(userReservation);
+    }
+    
+    // 3. 写入预约记录
+    ReservationRecord record = new ReservationRecord(null, operation, Instant.now(), cancelDto.getUserId(), cancelDto.getReservationId());
+    reservationRecordRepository.save(record);
+    return ResultMsg.success("取消预约成功");
   }
 }

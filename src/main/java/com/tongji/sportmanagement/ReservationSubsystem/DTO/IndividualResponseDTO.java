@@ -15,4 +15,5 @@ public class IndividualResponseDTO
 {
   Reservation reservationInfo;
   List<ReservationUserDTO> users;
+  String msg;
 }

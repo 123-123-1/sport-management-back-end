@@ -77,5 +77,11 @@ public class Reservation
     this.reservationId = null;
     this.type = type;
     this.availabilityId = availabilityId;
+    if(type == ReservationType.match){
+      this.state = ReservationState.matching;
+    }
+    else{
+      this.state = ReservationState.normal;
+    }
   }
 }

@@ -26,4 +26,7 @@ public interface CourtAvailabilityRepository extends JpaRepository<CourtAvailabi
 
   @Query(value = "SELECT EXISTS (SELECT * FROM court_availability WHERE court_id = :courtId)", nativeQuery = true)
   Long hasCourtAvailability(@Param("courtId") Integer courtId);
+
+  @Query("SELECT t.venueId FROM CourtAvailability ca JOIN ca.timeslot t WHERE ca.availabilityId = :availabilityId")
+  Integer findVenueByAvailability(@Param("availabilityId") Integer availabilityId);
 }

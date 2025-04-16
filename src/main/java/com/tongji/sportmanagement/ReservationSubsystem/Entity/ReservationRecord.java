@@ -32,8 +32,8 @@ public class ReservationRecord
 
   @Enumerated(EnumType.STRING)
   @ColumnDefault("reserved")
-  @Column(name = "state")
-  ReservationUserState userState;
+  @Column(name = "operation")
+  ReservationOperation operation;
 
   @Column(name = "time")
   Instant time;

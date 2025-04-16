@@ -21,6 +21,4 @@ public class ReservationManagerMetaDTO
   Instant endTime;
   ReservationType type;
   ReservationState state;
-  Integer groupId;
-  String groupName;
 }

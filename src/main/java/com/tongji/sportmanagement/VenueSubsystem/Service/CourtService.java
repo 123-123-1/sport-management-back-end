@@ -100,4 +100,14 @@ public class CourtService
     }
     return result.get();
   }
+
+  public List<Integer> findCourtByType(Integer venueId, String type)
+  {
+    return courtRepository.findAllByVenueIdAndType(venueId, type);
+  }
+
+  public List<String> getVenueCourtType(Integer venueId)
+  {
+    return courtRepository.getVenueCourtType(venueId);
+  };
 }

@@ -30,7 +30,7 @@ public class GroupReservation
   @Column(name = "group_id")
   Integer groupId;
 
-  @Column(name = "reservation_id")
+  @Column(name = "reservation_id", unique = true)
   Integer reservationId;
 
   @OneToOne(fetch = FetchType.LAZY)

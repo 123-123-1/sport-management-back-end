@@ -31,4 +31,10 @@ public interface CourtRepository extends JpaRepository<Court, Integer>
 
   @Query(value = "SELECT court_id FROM court WHERE court_name = :courtName AND venue_id = :venueId", nativeQuery = true)
   Optional<Integer> findVenueCourt(@Param("courtName") String courtName, @Param("venueId") Integer venueId);
+
+  @Query("SELECT c.courtId FROM Court c WHERE c.venueId = :venueId AND c.type = :type")
+  List<Integer> findAllByVenueIdAndType(@Param("venueId") Integer venueId, @Param("type")String type);
+
+  @Query("SELECT c.type FROM Court c WHERE c.venueId = :venueId AND c.state = \"open\"")
+  List<String> getVenueCourtType(@Param("venueId") Integer venueId);
 }

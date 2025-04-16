@@ -16,6 +16,7 @@ import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationMan
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationStateCountDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.ReservationBasicDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.Reservation;
+import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Integer>, JpaSpecificationExecutor<Reservation>
@@ -66,21 +67,13 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
         t.startTime,
         t.endTime,
         r.type,
-        r.state,
-        NULL,
-        gr.groupId,
-        g.groupName,
-        mr.expirationTime,
-        mr.reservedCount
+        r.state
       )
       FROM Reservation r
       JOIN r.courtAvailability ca
       JOIN ca.court c
       JOIN c.venue v
       JOIN ca.timeslot t
-      LEFT JOIN r.groupReservation gr
-      LEFT JOIN gr.group g
-      LEFT JOIN r.matchReservation mr
       WHERE r.reservationId = :reservationId
     """
   )
@@ -128,16 +121,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
         t.startTime, 
         t.endTime,
         r.type,
-        r.state,
-        g.groupId, 
-        g.groupName
+        r.state
       )
       FROM Reservation r
       JOIN r.courtAvailability ca
       JOIN ca.court c
       JOIN ca.timeslot t
-      LEFT JOIN r.groupReservation gr
-      LEFT JOIN gr.group g
       WHERE c.venueId = :venueId
     """)
     Page<ReservationManagerMetaDTO> getReservationByVenue(
@@ -149,4 +138,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
     @Query("SELECT NEW com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationStateCountDTO(r.state, COUNT(r)) FROM Reservation r WHERE r.availabilityId = :availabilityId GROUP BY r.state")
     List<ReservationStateCountDTO> countConflictReservation(@Param("availabilityId") Integer availabilityId);
     
+    @Query("SELECT ca FROM Reservation r JOIN r.courtAvailability ca WHERE r.reservationId = :reservationId")
+    CourtAvailability getReservationCourtAvailability(Integer reservationId);
+
 }

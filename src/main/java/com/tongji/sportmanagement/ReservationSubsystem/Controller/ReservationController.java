@@ -3,6 +3,7 @@ package com.tongji.sportmanagement.ReservationSubsystem.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tongji.sportmanagement.Common.DTO.ResultMsg;
+import com.tongji.sportmanagement.ReservationSubsystem.DTO.CancelReservationDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.GroupRequestDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.IndividualRequestDTO;
 import com.tongji.sportmanagement.ReservationSubsystem.DTO.MatchRequestDTO;
@@ -60,5 +63,11 @@ public class ReservationController
   ResponseEntity<Object> getUserReservation(@RequestAttribute Integer idFromToken) throws Exception
   {
     return ResponseEntity.ok().body(violationService.getUserViolation(idFromToken));
+  }
+
+  @PatchMapping("/cancel")
+  ResponseEntity<ResultMsg> userCancelReservation(@RequestBody CancelReservationDTO cancelDto, @RequestAttribute Integer idFromToken) throws Exception
+  {
+    return ResponseEntity.ok().body(reservationService.userCancelReservation(cancelDto, idFromToken));
   }
 }

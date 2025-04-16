@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 public class ChangeReservationStateDTO
 {
   Integer reservationId;
-  ReservationState state;  
+  ReservationState state;
+  Boolean changeAvailability;
 }

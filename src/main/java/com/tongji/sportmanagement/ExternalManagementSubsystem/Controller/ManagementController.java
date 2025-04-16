@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ApiConfigCreateDTO;
+import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ApiConfigFieldsDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ApiConfigResponseDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.AvailabilityConfigInfoDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ChangeReservationStateDTO;
@@ -125,6 +129,12 @@ public class ManagementController
     return ResponseEntity.ok().body(availabilityConfigService.deleteAvailabilityConfig(configId));
   }
 
+  @GetMapping("/config-fields")
+  public ResponseEntity<ApiConfigFieldsDTO> getConfigFields(@RequestParam ApiType type) throws Exception
+  {
+    return ResponseEntity.ok().body(apiConfigService.getConfigFields(type));
+  }
+
   @GetMapping("/api-config")
   public ResponseEntity<ApiConfigResponseDTO> getApiConfig(@RequestParam ApiType type, @RequestAttribute Integer idFromToken) throws Exception
   {
@@ -223,21 +233,28 @@ public class ManagementController
   //   return venueController.getVenueTimeslots(idFromToken, date);
   // }
 
-  public ResponseEntity<ReservationResponseDTO> sendReservationRequest(ReservationRequestDTO requestDTO)
-  {
-    // 暂时发回本地进行测试
-    return restTemplate.postForEntity("http://localhost:8080/api/management/managermock", requestDTO, ReservationResponseDTO.class);
-  }
+  // public ResponseEntity<ReservationResponseDTO> sendReservationRequest(ReservationRequestDTO requestDTO)
+  // {
+  //   // 暂时发回本地进行测试
+  //   return restTemplate.postForEntity("http://localhost:8080/api/management/managermock", requestDTO, ReservationResponseDTO.class);
+  // }
 
-  public ResponseEntity<ReservationResponseDTO> sendOccupyRequest(ReservationRequestDTO requestDTO)
-  {
-    // 暂时发回本地进行测试
-    return restTemplate.postForEntity("http://localhost:8080/api/management/managermock", requestDTO, ReservationResponseDTO.class);
-  }
+  // public ResponseEntity<ReservationResponseDTO> sendOccupyRequest(ReservationRequestDTO requestDTO)
+  // {
+  //   // 暂时发回本地进行测试
+  //   return restTemplate.postForEntity("http://localhost:8080/api/management/managermock", requestDTO, ReservationResponseDTO.class);
+  // }
 
-  @PostMapping("/managermock")
-  ResponseEntity<ReservationResponseDTO> managermock()
+  // @PostMapping("/managermock")
+  // ResponseEntity<ReservationResponseDTO> managermock()
+  // {
+  //   return ResponseEntity.ok().body(new ReservationResponseDTO(1, "预约冲突"));
+  // }
+
+  public String sendReservationRequest(String reservationUrl, String reservationRequest)
   {
-    return ResponseEntity.ok().body(new ReservationResponseDTO(1, "预约冲突"));
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    return restTemplate.postForObject(reservationUrl, new HttpEntity<>(reservationRequest, headers), String.class);
   }
 }
