@@ -29,4 +29,7 @@ public interface TimeslotRepository extends JpaRepository<Timeslot, Integer>
 
   @Query(value = "SELECT timeslot_id FROM timeslot WHERE venue_id = :venueId AND start_time = :startTime AND end_time = :endTime", nativeQuery = true)
   Optional<Integer> findTimeslot(@Param("startTime") Instant startTime, @Param("endTime") Instant endTime, @Param("venueId") Integer venueId);
+
+  @Query("SELECT EXISTS(SELECT 1 FROM Timeslot ts WHERE ts.venueId = :venueId AND ts.startTime BETWEEN :startDate AND :endDate) ")
+  Boolean checkExistTimeslot(@Param("startDate") Instant startDate, @Param("endDate") Instant endDate, @Param("venueId") Integer venueId);
 }

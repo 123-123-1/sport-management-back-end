@@ -32,4 +32,10 @@ public class AvailabilityConfig
 
   @Column(name = "repetition", columnDefinition = "BIT(10)")
   Integer repetition;
+
+  @Column(name = "day_ahead")
+  Integer dayAhead;
+
+  @Column(name = "create_hour")
+  Integer createHour;
 }

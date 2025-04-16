@@ -41,7 +41,9 @@ public class AvailabilityConfigService
       null,
       configInfo.getAvconfigName(),
       configInfo.getCourtId(),
-      repetitionBit
+      repetitionBit,
+      configInfo.getDayAhead(),
+      configInfo.getCreateHour()
     );
     availabilityConfigRepository.save(availabilityConfig);
     // 2. 创建timeslotConfig
@@ -70,7 +72,9 @@ public class AvailabilityConfigService
           availabilityConfig.getAvconfigName(),
           null,
           timeslotConfigRepository.findAllByAvconfigId(availabilityConfig.getAvconfigId()),
-          getRepetitionStr(availabilityConfig.getRepetition())
+          getRepetitionStr(availabilityConfig.getRepetition()),
+          availabilityConfig.getDayAhead(),
+          availabilityConfig.getCreateHour()
         ));
       }
       result.add(new CourtAvailabilityConfigDTO(
@@ -90,7 +94,9 @@ public class AvailabilityConfigService
       configInfo.getAvconfigId(),
       configInfo.getAvconfigName(),
       configInfo.getCourtId(),
-      getRepetitionBit(configInfo.getRepetition())
+      getRepetitionBit(configInfo.getRepetition()),
+      configInfo.getDayAhead(),
+      configInfo.getCreateHour()
     );
     availabilityConfigRepository.save(availabilityConfig);
     // 2. 创建新时间段、编辑已有时间段

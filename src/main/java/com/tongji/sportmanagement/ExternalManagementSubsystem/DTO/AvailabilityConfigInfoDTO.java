@@ -18,4 +18,6 @@ public class AvailabilityConfigInfoDTO
   Integer courtId;
   List<TimeslotConfig> tsconfig;
   List<String> repetition;
+  Integer dayAhead;
+  Integer createHour;
 }
