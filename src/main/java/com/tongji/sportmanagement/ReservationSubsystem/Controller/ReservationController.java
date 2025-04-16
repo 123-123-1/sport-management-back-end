@@ -42,15 +42,15 @@ public class ReservationController
   }
 
   @PostMapping("/match")
-  ResponseEntity<Object> matchReservation(@RequestBody MatchRequestDTO reservationInfo) throws Exception
+  ResponseEntity<Object> matchReservation(@RequestBody MatchRequestDTO reservationInfo, @RequestAttribute Integer idFromToken) throws Exception
   {
-    return ResponseEntity.ok().body(reservationService.matchReservation(reservationInfo));
+    return ResponseEntity.ok().body(reservationService.matchReservation(reservationInfo, idFromToken));
   }
 
   @GetMapping("/list")
-  ResponseEntity<Object> getReservationList(@RequestAttribute Integer idFromToken) throws Exception
+  ResponseEntity<Object> getReservationList(@RequestParam Integer page, @RequestAttribute Integer idFromToken) throws Exception
   {
-    return ResponseEntity.ok().body(reservationService.getUserReservations(idFromToken));
+    return ResponseEntity.ok().body(reservationService.getUserReservations(idFromToken, page));
   }
 
   @GetMapping("/detail")

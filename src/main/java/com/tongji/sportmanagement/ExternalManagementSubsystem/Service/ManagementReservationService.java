@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +23,13 @@ import com.tongji.sportmanagement.ReservationSubsystem.Entity.Reservation;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationOperation;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationRecord;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationState;
+import com.tongji.sportmanagement.ReservationSubsystem.Entity.ReservationUserState;
 import com.tongji.sportmanagement.ReservationSubsystem.Entity.UserReservation;
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.ReservationRecordRepository;
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.ReservationRepository;
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.ReservationSpecification;
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.UserReservationRepository;
+import com.tongji.sportmanagement.ReservationSubsystem.Service.ViolationService;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
 import com.tongji.sportmanagement.VenueSubsystem.Service.TimeslotService;
 
@@ -37,6 +40,8 @@ public class ManagementReservationService
   ManagementUtilsService managementUtilsService;
   @Autowired
   TimeslotService timeslotService;
+  @Autowired
+  ViolationService violationService;
   @Autowired
   private ReservationRepository reservationRepository;
   @Autowired
@@ -55,7 +60,7 @@ public class ManagementReservationService
     }
 
     Specification<Reservation> spec = ReservationSpecification.filterByUser(userId, userName);
-    Pageable pageable = PageRequest.of(page, ReservationPageCount);
+    Pageable pageable = PageRequest.of(page, ReservationPageCount, Sort.by("reservationId").descending());
     return reservationRepository.getReservationByVenue(venueId, spec, pageable);
   }
 
@@ -71,7 +76,12 @@ public class ManagementReservationService
     userReservation.setUserState(stateDto.getUserState());
     userReservationRepository.save(userReservation);
 
-    // 2. 更新预约记录
+    // 2. 违约处理
+    if(stateDto.getUserState() == ReservationUserState.violated){
+      violationService.violationIncrement(stateDto.getUserId());
+    }
+
+    // 3. 更新预约记录
     ReservationOperation operation = ReservationOperation.getManagerOperationByUserState(stateDto.getUserState());
     ReservationRecord record = new ReservationRecord(null, operation, Instant.now(), stateDto.getUserId(), stateDto.getReservationId());
     reservationRecordRepository.save(record);

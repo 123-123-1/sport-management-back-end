@@ -3,6 +3,8 @@ package com.tongji.sportmanagement.ReservationSubsystem.Repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -54,8 +56,9 @@ public interface UserReservationRepository extends JpaRepository<UserReservation
     JOIN ca.timeslot t
     JOIN c.venue v
     WHERE ur.userId = :userId
+    ORDER BY t.startTime DESC
   """)
-  List<ReservationMetaDTO> getUserReservationsMeta(@Param("userId")Integer userId);
+  Page<ReservationMetaDTO> getUserReservationsMeta(@Param("userId")Integer userId, Pageable pageable);
 
   @Query("SELECT ur FROM UserReservation ur WHERE ur.reservationId = :reservationId AND ur.userId = :userId")
   Optional<UserReservation> findByUserIdAndReservationId(@Param("reservationId") Integer reservationId, @Param("userId") Integer userId);

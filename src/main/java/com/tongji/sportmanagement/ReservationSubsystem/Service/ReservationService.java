@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,6 +89,8 @@ public class ReservationService
   private GroupService groupService; // 用于获取团体信息
   @Autowired
   private ApiConfigService apiConfigService; // 用于获取场地管理方信息
+  @Autowired
+  private ViolationService violationService;
 
   final static int ReservationPageCount = 10;
 
@@ -351,6 +356,9 @@ public class ReservationService
   public IndividualResponseDTO individualReservation(IndividualRequestDTO reservationInfo, Integer userId) throws Exception
   {
     // 该函数为transaction函数，抛出异常即表示预约失败，所有操作均会撤销
+    if(!violationService.checkViolationState(userId)){
+      throw new ServiceException(422, "用户权限封禁中，无法进行预约");
+    }
     // 1. 找到可预约项
     CourtAvailability targetAvailability = timeslotService.getAvailability(reservationInfo.getAvailabilityId());
     // 2. 插入预约项目
@@ -376,6 +384,10 @@ public class ReservationService
   public GroupResponseDTO groupReservation(GroupRequestDTO reservationInfo, Integer userId) throws Exception
   {
     // 该函数为transaction函数，抛出异常即表示预约失败，所有操作均会撤销
+    if(!violationService.checkViolationState(userId)){
+      throw new ServiceException(422, "用户权限封禁中，无法进行预约");
+    }
+
     // 1. 找到可预约项
     CourtAvailability targetAvailability = timeslotService.getAvailability(reservationInfo.getAvailabilityId());
     // 2. 插入预约项目
@@ -400,8 +412,11 @@ public class ReservationService
 
   // 拼场预约交易函数
   @Transactional
-  public MatchResponseDTO matchReservation(MatchRequestDTO reservationInfo) throws Exception
+  public MatchResponseDTO matchReservation(MatchRequestDTO reservationInfo, Integer userId) throws Exception
   {
+    if(!violationService.checkViolationState(userId)){
+      throw new ServiceException(422, "用户权限封禁中，无法进行预约");
+    }
     // 1. 尝试查找可加入的拼场场地
     Timeslot timeslot = timeslotService.getTimeslotById(reservationInfo.getTimeslotId());
     reservationInfo.setVenueId(timeslot.getVenueId());
@@ -424,9 +439,10 @@ public class ReservationService
   // }
 
   // 获取用户预约信息
-  public List<ReservationMetaDTO> getUserReservations(Integer userId) throws Exception
+  public Page<ReservationMetaDTO> getUserReservations(Integer userId, Integer page) throws Exception
   {
-    return userReservationRepository.getUserReservationsMeta(userId);
+    Pageable pageable = PageRequest.of(page, ReservationPageCount);
+    return userReservationRepository.getUserReservationsMeta(userId, pageable);
   }
 
   public ReservationDetailDTO getReservationDetail(Integer reservationId, Integer userId) throws Exception

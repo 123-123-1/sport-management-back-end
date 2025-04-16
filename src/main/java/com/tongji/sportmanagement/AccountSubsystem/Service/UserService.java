@@ -7,6 +7,7 @@ import com.tongji.sportmanagement.AccountSubsystem.Repository.NotificationReposi
 import com.tongji.sportmanagement.AccountSubsystem.Repository.UserRepository;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.Common.Security.JwtTokenProvider;
+import com.tongji.sportmanagement.ReservationSubsystem.Service.ViolationService;
 import com.tongji.sportmanagement.VenueSubsystem.Service.VenueService;
 import com.tongji.sportmanagement.Common.OssService;
 import com.tongji.sportmanagement.Common.ServiceException;
@@ -45,6 +46,9 @@ public class UserService {
     @Autowired
     private VenueService venueService; // 用于管理员注册
 
+    @Autowired
+    private ViolationService violationService;
+
     public LoginResponseDTO login(String userName, String password) throws Exception {
         Optional<User> userOptional = userRepository.findByUserName(userName);
         if (userOptional.isEmpty()) {
@@ -79,6 +83,9 @@ public class UserService {
         // 场地管理员的注册
         if(user.getUserType() == UserType.venueadmin){
             venueService.createVenue(user.getUserId());
+        }
+        else { // 违约表的创建
+            violationService.createViolation(user.getUserId());
         }
 
         // 设置默认头像

@@ -30,8 +30,6 @@ import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ChangeReservat
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.CourtAvailabilityConfigDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationManagerMetaDTO;
 // import com.tongji.sportmanagement.Common.DTO.VenueInitDTO;
-import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationRequestDTO;
-import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationResponseDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationStateCountResponseDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiConfig;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiType;
@@ -160,9 +158,9 @@ public class ManagementController
   }
 
   @GetMapping("/reservations/list")
-  public ResponseEntity<Page<ReservationManagerMetaDTO>> getVenueReservations(@RequestAttribute Integer idFromToken) throws Exception
+  public ResponseEntity<Page<ReservationManagerMetaDTO>> getVenueReservations(@RequestAttribute Integer idFromToken, @RequestParam Integer page) throws Exception
   {
-    return ResponseEntity.ok().body(managementReservationService.getVenueReservationByManager(idFromToken, null, null, 0));
+    return ResponseEntity.ok().body(managementReservationService.getVenueReservationByManager(idFromToken, null, null, page));
   }
 
   @PatchMapping("/reservations/user-state")
