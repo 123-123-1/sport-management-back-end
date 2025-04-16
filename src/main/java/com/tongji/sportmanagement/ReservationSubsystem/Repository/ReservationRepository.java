@@ -21,8 +21,10 @@ import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Integer>, JpaSpecificationExecutor<Reservation>
 {
-  @Query
-  Optional<Reservation> findByAvailabilityId(Integer availabilityId);
+  // @Query
+  // Optional<Reservation> findByAvailabilityId(Integer availabilityId);
+  @Query("SELECT r FROM Reservation r WHERE r.availabilityId = :availabilityId AND r.state = \"matching\"")
+  Optional<Reservation> getMatchingReservation(Integer availabilityId);
 
   // @Query(
   //   value = "SELECT " + //

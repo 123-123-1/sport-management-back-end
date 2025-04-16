@@ -18,6 +18,9 @@ public interface CourtAvailabilityRepository extends JpaRepository<CourtAvailabi
   @Query(value = "SELECT COUNT(*) FROM court_availability WHERE timeslot_id = :timeslotId", nativeQuery = true)
   Integer countByTimeslot(@Param("timeslotId")Integer timeslotId);
 
+  @Query("SELECT ca FROM CourtAvailability ca JOIN ca.timeslot t JOIN ca.court c WHERE ca.availabilityId = :availabilityId")
+  CourtAvailability getAvailabilityFullInfo(@Param("availabilityId") Integer availabilityId);
+
   @Query(value = "SELECT * FROM court_availability WHERE court_id = :courtId AND timeslot_id = :timeslotId", nativeQuery = true)
   Iterable<CourtAvailability> findAvailability(@Param("courtId") Integer courtId, @Param("timeslotId") Integer timeslotId);
 

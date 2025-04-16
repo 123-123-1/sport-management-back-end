@@ -167,6 +167,11 @@ public class TimeslotService
     return courtAvailabilityRepository.findVenueByAvailability(availabilityId);
   }
 
+  public CourtAvailability getAvailabilityFullInfo(Integer availabilityId)
+  {
+    return courtAvailabilityRepository.getAvailabilityFullInfo(availabilityId);
+  }
+
   public void changeAvailabilityState(CourtAvailability courtAvailability){
       courtAvailability.setState(CourtAvailabilityState.reserveable);
       courtAvailabilityRepository.save(courtAvailability);

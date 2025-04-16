@@ -21,7 +21,6 @@ import com.tongji.sportmanagement.AccountSubsystem.Service.UserService;
 import com.tongji.sportmanagement.Common.ServiceException;
 import com.tongji.sportmanagement.Common.DTO.ResultMsg;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Controller.ManagementController;
-import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationRequestDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.DTO.ReservationStateCountDTO;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiOperationType;
 import com.tongji.sportmanagement.ExternalManagementSubsystem.Entity.ApiType;
@@ -142,7 +141,7 @@ public class ReservationService
   private String reservationConfirmManager(Integer venueId, Reservation reservationData, List<ReservationUserDTO> reservationUsers) throws Exception
   {
     String reservationRequest = apiConfigService.generateReservationData(venueId, reservationData, reservationUsers);
-    String reservationUrl = apiConfigService.getVenueUrl(venueId);
+    String reservationUrl = apiConfigService.getVenueUrl(venueId, ApiType.reservation);
     String reservationResponse = managementController.sendReservationRequest(reservationUrl, reservationRequest);
     Map<String, String> parsedResponse = apiConfigService.parseResponse(venueId, reservationResponse, ApiType.reservation);
     String reservationStatus = parsedResponse.get("status");
@@ -164,22 +163,32 @@ public class ReservationService
       }
       throw new ServiceException(409, msg);
     }
-    throw new ServiceException(500, "场地管理方未给出有效的预约结果，请联系场馆负责人");
+    throw new ServiceException(500, "管理员未给出有效的预约结果，请联系场馆负责人");
   }
 
 
   // 发送请求向场地管理方申请占用
-  private void occupyManagerConfirm(ReservationRequestDTO requestDTO) throws Exception
+  private void occupyManagerConfirm(Integer availabilityId) throws Exception
   {
-    // ResponseEntity<ReservationResponseDTO> managerResponse = managementController.sendOccupyRequest(requestDTO);
-    // if(!isValidRequest(managerResponse, ReservationResponseDTO.class)){
-    //   throw new ServiceException(500, "场地管理方未给出有效的预约结果");
-    // }
-    // ReservationResponseDTO managerInfo = (ReservationResponseDTO)managerResponse.getBody();
-    // if(managerInfo.getStatus() == 0){
-    //   throw new ServiceException(409, managerInfo.getMsg());
-    // }
-    // // 未抛出异常，预约成功
+    CourtAvailability courtAvailability = timeslotService.getAvailabilityFullInfo(availabilityId);
+    Integer venueId = courtAvailability.getTimeslot().getVenueId();
+    ApiOperationType confirmType = apiConfigService.getReservationStrategy(venueId, ApiType.reservation);
+    if(confirmType != ApiOperationType.api){
+      return;
+    }
+    String occupyRequest = apiConfigService.generateOccupyData(courtAvailability);
+    String occupyUrl = apiConfigService.getVenueUrl(venueId, ApiType.occupy);
+    String occupyResponse = managementController.sendReservationRequest(occupyUrl, occupyRequest);
+    Map<String, String> parsedResponse = apiConfigService.parseResponse(venueId, occupyResponse, ApiType.occupy);
+    String occupyStatus = parsedResponse.get("status");
+    if(occupyStatus.equals("1") || occupyStatus.equals("\"1\"")){
+      
+      return; // 通过审核
+    }
+    else if(occupyStatus.equals("0") || occupyStatus.equals("\"0\"")){
+      throw new ServiceException(409, "管理员拒绝使用该场地进行拼场预约");
+    }
+    throw new ServiceException(500, "管理员未给出有效的预约结果，请联系场馆负责人");
   }
 
   // 隐去用户姓名和电话，避免前端泄露信息
@@ -273,7 +282,7 @@ public class ReservationService
     }
     // 3. 检查容量限制
     for(CourtAvailability availability: availabilities){
-      Optional<Reservation> reservation = reservationRepository.findByAvailabilityId(availabilities.get(0).getAvailabilityId());
+      Optional<Reservation> reservation = reservationRepository.getMatchingReservation(availabilities.get(0).getAvailabilityId());
       if(reservation.isEmpty()){
         throw new ServiceException(500, "开放时间段与预约对应不一致");
       }
@@ -298,7 +307,7 @@ public class ReservationService
     // 2. 找到符合条件的可预约项
     List<CourtAvailability> availabilities = getAvailabilityByState(reservationInfo.getTimeslotId(), courts, "reserveable");
     if(availabilities.size() == 0){
-      throw new ServiceException(404, "未找到可用的拼场场地");
+      throw new ServiceException(404, "该时间段没有可以拼场的场地");
     }
     CourtAvailability courtAvailability = availabilities.get(0);
     // 3. 向数据库中更新预约信息
@@ -316,7 +325,8 @@ public class ReservationService
     // 6. 获取预约用户信息
     getReservationUserInfo(saveResult.getUsers());
     // 7. 向场地管理方申请拼场占用
-    occupyManagerConfirm(new ReservationRequestDTO(saveResult.getReservationInfo().getReservationId(), courtAvailability, saveResult.getUsers()));
+    // occupyManagerConfirm(new ReservationRequestDTO(saveResult.getReservationInfo().getReservationId(), courtAvailability, saveResult.getUsers()));
+    occupyManagerConfirm(courtAvailability.getAvailabilityId());
     return new MatchResponseDTO(saveResult.getReservationInfo(), saveResult.getUsers(), matchResult);
   }
 
@@ -331,7 +341,7 @@ public class ReservationService
     Reservation targetReservation = reservation.get();
     List<ReservationUserDTO> userResult = addReservationUsers(targetReservation.getReservationId(), reservationInfo.getUsers(), ReservationUserState.matching, ReservationOperation.join);
     // 2. 查找用户预约信息
-    getReservationUserInfo(userResult);
+    // getReservationUserInfo(userResult);
     // 3. 更新拼场预约信息
     Optional<MatchReservation> matchReservation = matchReservationRepository.findByReservationId(reservationId);
     if(matchReservation.isEmpty()){
@@ -340,6 +350,7 @@ public class ReservationService
     MatchReservation matchResult = matchReservation.get();
     matchResult.setReservedCount(matchResult.getReservedCount() + reservationInfo.getReservationCount());
     matchReservationRepository.save(matchResult);
+    targetReservation.setCourtAvailability(null);
     return new MatchResponseDTO(targetReservation, userResult, matchResult);
   }
 
@@ -380,7 +391,7 @@ public class ReservationService
   }
 
   // 团体预约交易函数
-  @Transactional
+  @Transactional(rollbackFor = Exception.class)
   public GroupResponseDTO groupReservation(GroupRequestDTO reservationInfo, Integer userId) throws Exception
   {
     // 该函数为transaction函数，抛出异常即表示预约失败，所有操作均会撤销
@@ -411,7 +422,7 @@ public class ReservationService
   }
 
   // 拼场预约交易函数
-  @Transactional
+  @Transactional(rollbackFor = Exception.class)
   public MatchResponseDTO matchReservation(MatchRequestDTO reservationInfo, Integer userId) throws Exception
   {
     if(!violationService.checkViolationState(userId)){

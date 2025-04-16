@@ -83,21 +83,39 @@ public class ApiConfigService
     null
   );
 
-  private final ApiConfigFieldsDTO cancelConfigFields = new ApiConfigFieldsDTO(
-    new ApiRequestFieldDTO[] {
-      new ApiRequestFieldDTO("reservation_id_number", "怡运动系统为该预约分配的ID（数字类型）", "", "Number",  1),
-      new ApiRequestFieldDTO("reservation_id_str", "怡运动系统为该预约分配的ID（字符串类型）", "", "String", "1"),
-      new ApiRequestFieldDTO("user_id_number", "申请进行取消预约操作的用户ID（数字类型）", "", "Number", 2),
-      new ApiRequestFieldDTO("user_id_str", "申请进行取消预约操作的用户ID（字符串类型）", "", "String", "2"),
-      new ApiRequestFieldDTO("user_name", "申请取消预约操作的用户名", "", "String", "username"),
-      new ApiRequestFieldDTO("user_real_name", "申请取消预约操作的用户真实姓名", "", "String", ""),
-      new ApiRequestFieldDTO("type", "取消预约的类型", "all为取消整个预约项目，individual为取消个人预约", "String", "all")
-    }, 
+  // private final ApiConfigFieldsDTO cancelConfigFields = new ApiConfigFieldsDTO(
+  //   new ApiRequestFieldDTO[] {
+  //     new ApiRequestFieldDTO("reservation_id_number", "怡运动系统为该预约分配的ID（数字类型）", "", "Number",  1),
+  //     new ApiRequestFieldDTO("reservation_id_str", "怡运动系统为该预约分配的ID（字符串类型）", "", "String", "1"),
+  //     new ApiRequestFieldDTO("user_id_number", "申请进行取消预约操作的用户ID（数字类型）", "", "Number", 2),
+  //     new ApiRequestFieldDTO("user_id_str", "申请进行取消预约操作的用户ID（字符串类型）", "", "String", "2"),
+  //     new ApiRequestFieldDTO("user_name", "申请取消预约操作的用户名", "", "String", "username"),
+  //     new ApiRequestFieldDTO("user_real_name", "申请取消预约操作的用户真实姓名", "", "String", ""),
+  //     new ApiRequestFieldDTO("type", "取消预约的类型", "all为取消整个预约项目，individual为取消个人预约", "String", "all")
+  //   }, 
+  //   new ApiResponseFieldDTO[]{
+  //     new ApiResponseFieldDTO("status", true, "取消预约操作的结果，1表示预约成功，0表示预约失败", "Number | String", 1),
+  //     new ApiResponseFieldDTO("fail_msg", false, "取消预约失败原因（可选）","String", "预约发生错误"),
+  //     new ApiResponseFieldDTO("success_msg", false, "取消预约的成功说明（可选）", "String", "您已成功预约场地")
+  //   });
+  private final ApiConfigFieldsDTO occupyConfigFields = new ApiConfigFieldsDTO(
+    new ApiRequestFieldDTO[]{
+      new ApiRequestFieldDTO("availability_id_number", "要占用的预约项ID（数字形式）", "", "Number", 1),
+      new ApiRequestFieldDTO("availability_id_str", "要占用的预约项ID（字符串形式）", "", "String", "1"),
+      new ApiRequestFieldDTO("court_id_number", "用户预约的场地在怡运动系统的ID（数字类型）", "", "Number", 2),
+      new ApiRequestFieldDTO("court_id_str", "用户预约的场地在怡运动系统的ID（字符串类型）", "", "String" , "2"),
+      new ApiRequestFieldDTO("court_name", "用户预约的场地名称", "", "String", "场地1"),
+      new ApiRequestFieldDTO("timeslot_id_number", "要占用的时间段ID（数字形式）", "", "Number", 2),
+      new ApiRequestFieldDTO("timeslot_id_str", "要占用的时间段ID（字符串形式）", "", "String", "2"),
+      new ApiRequestFieldDTO("start_time_str", "用户预约的时间段的开始时间", "字符串格式为YYYY-MM-DDThh:mm", "String", "2025-05-01T16:00"),
+      new ApiRequestFieldDTO("end_time_str", "用户预约的时间段的结束时间", "字符串格式为YYYY-MM-DDThh:mm", "String", "2025-05-01T17:00"),
+      new ApiRequestFieldDTO("start_time_date", "用户预约的时间段的开始时间", "表示从1970-01-01到预约时间的毫秒数", "Number", 1746086400000L),
+      new ApiRequestFieldDTO("end_time_date", "用户预约的时间段的结束时间", "表示从1970-01-01到预约时间的毫秒数", "Number", 1746090000000L),
+    },
     new ApiResponseFieldDTO[]{
-      new ApiResponseFieldDTO("status", true, "取消预约操作的结果，1表示预约成功，0表示预约失败", "Number | String", 1),
-      new ApiResponseFieldDTO("fail_msg", false, "取消预约失败原因（可选）","String", "预约发生错误"),
-      new ApiResponseFieldDTO("success_msg", false, "取消预约的成功说明（可选）", "String", "您已成功预约场地")
-    });
+      new ApiResponseFieldDTO("status", true, "场地占用操作的结果，1表示占用场地成功，0表示占用场地失败", "Number | String", 1)
+    }
+  );
 
   public ApiConfigFieldsDTO getConfigFields(ApiType type) throws Exception
   {
@@ -106,8 +124,8 @@ public class ApiConfigService
         return reservationConfigFields;
       case userinfo:
         return userDataConfigFields;
-      case cancel:
-        return cancelConfigFields;
+      case occupy:
+        return occupyConfigFields;
     }
     throw new ServiceException(422, "不支持的API配置类型");
   }
@@ -122,9 +140,9 @@ public class ApiConfigService
     return new ApiConfigResponseDTO(configOptional.isPresent() ? 1 : 0, configOptional);
   }
 
-  public String getVenueUrl(Integer venueId) throws Exception
+  public String getVenueUrl(Integer venueId, ApiType type) throws Exception
   {
-    Optional<ApiConfig> configOptional = apiConfigRepository.findByVenueIdAndType(venueId, ApiType.reservation);
+    Optional<ApiConfig> configOptional = apiConfigRepository.findByVenueIdAndType(venueId, type);
     if(configOptional.isEmpty()){
       throw new ServiceException(404, "未找到配置项信息");
     }
@@ -267,6 +285,42 @@ public class ApiConfigService
     }
     StringSubstitutor reservationDataSubstitutor = new StringSubstitutor(replaceVar);
     return reservationDataSubstitutor.replace(reservationRequestTpl);
+  }
+
+  public String generateOccupyData(CourtAvailability courtAvailability) throws Exception
+  {
+    Integer venueId = courtAvailability.getTimeslot().getVenueId();
+    Optional<ApiConfig> occupyConfigOptional = apiConfigRepository.findByVenueIdAndType(venueId, ApiType.occupy);
+    if(occupyConfigOptional.isEmpty()){
+      throw new ServiceException(404, "未找到场地管理方配置项");
+    }
+    String occupyConfigTpl = occupyConfigOptional.get().getRequestContent();
+    Map<String, String> replaceVar = new HashMap<>();
+    final String[] occupyDataFields = new String[] {
+      courtAvailability.getAvailabilityId().toString(),
+      courtAvailability.getAvailabilityId().toString(),
+      courtAvailability.getCourtId().toString(),
+      courtAvailability.getCourtId().toString(),
+      courtAvailability.getCourt().getCourtName(),
+      courtAvailability.getTimeslotId().toString(),
+      courtAvailability.getTimeslotId().toString(),
+      courtAvailability.getTimeslot().getStartTime().toString(),
+      courtAvailability.getTimeslot().getEndTime().toString(),
+      Long.toString(courtAvailability.getTimeslot().getStartTime().toEpochMilli()),
+      Long.toString(courtAvailability.getTimeslot().getEndTime().toEpochMilli())
+    };
+    final ApiRequestFieldDTO[] occupyRequestFields = occupyConfigFields.getRequestFields();
+    assert(occupyDataFields.length == occupyRequestFields.length);
+    for(int i = 0; i < occupyRequestFields.length; ++i){
+      if(occupyRequestFields[i].getType().equals("String")){
+        replaceVar.put(occupyRequestFields[i].getName(), "\"" + occupyDataFields[i] + "\"");
+      }
+      else{
+        replaceVar.put(occupyRequestFields[i].getName(), occupyDataFields[i]);
+      }
+    }
+    StringSubstitutor occupyDataSubstitutor = new StringSubstitutor(replaceVar);
+    return occupyDataSubstitutor.replace(occupyConfigTpl);
   }
 
   public Map<String, String> parseResponse(Integer venueId, String responseData, ApiType type) throws Exception
