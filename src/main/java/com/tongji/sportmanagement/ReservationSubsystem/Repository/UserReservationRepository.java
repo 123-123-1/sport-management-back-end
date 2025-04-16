@@ -73,6 +73,16 @@ public interface UserReservationRepository extends JpaRepository<UserReservation
   """)
   List<ReservationUserDTO> getReservationUsers(@Param("userReservationIdList") List<Integer> userReservationIdList);
 
+  @Query("""
+    SELECT NEW com.tongji.sportmanagement.ReservationSubsystem.DTO.ReservationUserDTO(
+      ur.userReservationId, u.userId, u.userName, NULL, ur.userState, u.realName, u.phone
+    )
+    FROM UserReservation ur
+    JOIN ur.user u
+    WHERE ur.reservationId = :reservationId
+  """)
+  List<ReservationUserDTO> getUsersByReservationId(@Param("reservationId") Integer reservationId);
+
   @Query(value = "SELECT COUNT(ur.user_id) FROM user_reservation ur WHERE ur.reservation_id = :reservationId AND ur.user_state != \"cancelled\"", nativeQuery = true)
   Long countReservationUsers(@Param("reservationId") Integer reservationId);
 }

@@ -31,6 +31,7 @@ import com.tongji.sportmanagement.ReservationSubsystem.Repository.ReservationSpe
 import com.tongji.sportmanagement.ReservationSubsystem.Repository.UserReservationRepository;
 import com.tongji.sportmanagement.ReservationSubsystem.Service.ViolationService;
 import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailability;
+import com.tongji.sportmanagement.VenueSubsystem.Entity.CourtAvailabilityState;
 import com.tongji.sportmanagement.VenueSubsystem.Service.TimeslotService;
 
 @Service
@@ -124,7 +125,7 @@ public class ManagementReservationService
     // 2. 更新场地状态信息
     if(stateDto.getChangeAvailability()){
       CourtAvailability courtAvailability = reservationRepository.getReservationCourtAvailability(stateDto.getReservationId());
-      timeslotService.changeAvailabilityState(courtAvailability);
+      timeslotService.changeAvailabilityState(courtAvailability, CourtAvailabilityState.reserveable);
     }
 
     // 3. 写入预约记录

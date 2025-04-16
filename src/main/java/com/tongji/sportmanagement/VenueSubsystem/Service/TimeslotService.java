@@ -172,8 +172,8 @@ public class TimeslotService
     return courtAvailabilityRepository.getAvailabilityFullInfo(availabilityId);
   }
 
-  public void changeAvailabilityState(CourtAvailability courtAvailability){
-      courtAvailability.setState(CourtAvailabilityState.reserveable);
+  public void changeAvailabilityState(CourtAvailability courtAvailability, CourtAvailabilityState state){
+      courtAvailability.setState(state);
       courtAvailabilityRepository.save(courtAvailability);
   }
 }

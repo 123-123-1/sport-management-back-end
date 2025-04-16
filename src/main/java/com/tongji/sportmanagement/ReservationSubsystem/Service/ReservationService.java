@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,6 +91,8 @@ public class ReservationService
   private ApiConfigService apiConfigService; // 用于获取场地管理方信息
   @Autowired
   private ViolationService violationService;
+  @Autowired
+  private TaskScheduler taskScheduler;
 
   final static int ReservationPageCount = 10;
 
@@ -182,13 +185,54 @@ public class ReservationService
     Map<String, String> parsedResponse = apiConfigService.parseResponse(venueId, occupyResponse, ApiType.occupy);
     String occupyStatus = parsedResponse.get("status");
     if(occupyStatus.equals("1") || occupyStatus.equals("\"1\"")){
-      
       return; // 通过审核
     }
     else if(occupyStatus.equals("0") || occupyStatus.equals("\"0\"")){
       throw new ServiceException(409, "管理员拒绝使用该场地进行拼场预约");
     }
     throw new ServiceException(500, "管理员未给出有效的预约结果，请联系场馆负责人");
+  }
+
+  private void scheduleMatchDue(MatchReservation matchReservation)
+  {
+    taskScheduler.schedule(() -> {
+      handleMatchReservationDue(matchReservation.getReservationId());
+    }, matchReservation.getExpirationTime());
+  }
+
+  private void handleMatchReservationDue(Integer reservationId)
+  {
+    try{
+      Optional<Reservation> reservationOptional = reservationRepository.findById(reservationId);
+      Reservation reservation = reservationOptional.get();
+      List<ReservationUserDTO> reservationUsers = userReservationRepository.getUsersByReservationId(reservationId);
+      reservationConfirm(reservation, reservationUsers);
+      reservation.setState(ReservationState.normal);
+      reservationRepository.save(reservation);
+      List<UserReservation> userReservations = userReservationRepository.findAllByReservationId(reservationId);
+      for (UserReservation userReservation : userReservations) {
+        userReservation.setUserState(ReservationUserState.reserved);
+      }
+      userReservationRepository.saveAll(userReservations);
+      CourtAvailability courtAvailability = timeslotService.getAvailability(reservation.getAvailabilityId());
+      timeslotService.changeAvailabilityState(courtAvailability, CourtAvailabilityState.full);
+    }
+    catch(Exception e){
+      // e.printStackTrace();
+      Optional<Reservation> reservationOptional = reservationRepository.findById(reservationId);
+      if(reservationOptional.isEmpty()){
+        System.err.println("更新拼场预约时未找到预约项");
+        return;
+      }
+      Reservation reservation = reservationOptional.get();
+      reservation.setState(ReservationState.cancelled);
+      reservationRepository.save(reservation);
+      List<UserReservation> userReservations = userReservationRepository.findAllByReservationId(reservationId);
+      for (UserReservation userReservation : userReservations) {
+        userReservation.setUserState(ReservationUserState.cancelled);
+      }
+      userReservationRepository.saveAll(userReservations);
+    }
   }
 
   // 隐去用户姓名和电话，避免前端泄露信息
@@ -314,6 +358,7 @@ public class ReservationService
     IndividualResponseDTO saveResult = saveReservation(ReservationType.match, courtAvailability.getAvailabilityId(),
     reservationInfo.getUsers(), ReservationUserState.matching);
     // 4. 向数据库中更新拼场预约信息
+    // Instant expirationTime = Instant.now().plus(Duration.ofSeconds(30));
     Instant expirationTime = Instant.now().plus(Duration.ofDays(2));
     MatchReservation matchResult = new MatchReservation(null, saveResult.getReservationInfo().getReservationId(),
     expirationTime, reservationInfo.getReservationCount());
@@ -327,6 +372,8 @@ public class ReservationService
     // 7. 向场地管理方申请拼场占用
     // occupyManagerConfirm(new ReservationRequestDTO(saveResult.getReservationInfo().getReservationId(), courtAvailability, saveResult.getUsers()));
     occupyManagerConfirm(courtAvailability.getAvailabilityId());
+    // 8. 设置拼场到期逻辑
+    scheduleMatchDue(matchResult);
     return new MatchResponseDTO(saveResult.getReservationInfo(), saveResult.getUsers(), matchResult);
   }
 
@@ -508,7 +555,7 @@ public class ReservationService
       reservationRepository.save(reservation);
       // 更新场地状态信息
       CourtAvailability courtAvailability = reservationRepository.getReservationCourtAvailability(cancelDto.getReservationId());
-      timeslotService.changeAvailabilityState(courtAvailability);
+      timeslotService.changeAvailabilityState(courtAvailability, CourtAvailabilityState.reserveable);
       operation = ReservationOperation.cancelall;
     }
     else if(cancelDto.getType() == CancelReservationType.individual){

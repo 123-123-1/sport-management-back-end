@@ -1,5 +1,6 @@
 package com.tongji.sportmanagement.ExternalManagementSubsystem.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -67,13 +68,14 @@ public class AvailabilityDailyUpdateService
         if(timeslotRepository.checkExistTimeslot(targetDate, endDate, venueId)){
           continue;
         }
+        
         // 添加开放时间段
         List<TimeslotConfig> timeslotConfigs = timeslotConfigRepository.findAllByAvconfigId(avconfig.getAvconfigId());
         List<TimeslotAvailabilityDTO> timeslotAvailabilities = timeslotConfigs.stream().map(tsconfig -> new TimeslotAvailabilityDTO(
           new Timeslot(
             null,
-            targetDate.plusSeconds((tsconfig.getStartTime().getHour() * 60 + tsconfig.getStartTime().getMinute()) * 60),
-            targetDate.plusSeconds((tsconfig.getEndTime().getHour() * 60 + tsconfig.getEndTime().getMinute()) * 60),
+            targetDate.plus(Duration.ofHours(tsconfig.getStartTime().getHour())).plus(Duration.ofMinutes(tsconfig.getStartTime().getMinute())),
+            targetDate.plus(Duration.ofHours(tsconfig.getEndTime().getHour())).plus(Duration.ofMinutes(tsconfig.getEndTime().getMinute())),
             venueId,
             null
           ),
