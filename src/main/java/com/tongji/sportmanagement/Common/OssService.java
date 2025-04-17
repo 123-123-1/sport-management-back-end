@@ -35,6 +35,12 @@ public class OssService
       String accessKeySecret = sc.nextLine();
       bucketName = sc.nextLine();
       sc.close();
+
+      // String endpoint = "oss-cn-shanghai.aliyuncs.com";
+      // String accessKeyId = "";
+      // String accessKeySecret = "";
+      // bucketName = "joy-sports";
+
       ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
     }
     catch(FileNotFoundException e){

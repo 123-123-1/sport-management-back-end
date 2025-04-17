@@ -177,10 +177,7 @@ public class UserService {
     }
 
     public List<NotificationDetailDTO> getUserNotification(int userId) throws Exception {
-        List<Notification> notificationOptional = (List<Notification>) notificationRepository.findAllByUserId(userId);
-        if(notificationOptional.isEmpty()) {
-            throw new ServiceException(400, "未找到通知");
-        }
+        List<Notification> notificationOptional = notificationRepository.findAllByUserId(userId);
         List<NotificationDetailDTO> notificationDetailDTO = new ArrayList<>();
         for(Notification notification : notificationOptional) {
             NotificationDetailDTO dto = new NotificationDetailDTO();
