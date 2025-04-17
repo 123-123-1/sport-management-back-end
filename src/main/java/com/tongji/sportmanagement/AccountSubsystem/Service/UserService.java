@@ -102,6 +102,7 @@ public class UserService {
         for(User user : userOptional) {
             UserInfoDetailDTO userInfoDetailDTO = new UserInfoDetailDTO();
             BeanUtils.copyProperties(user, userInfoDetailDTO);
+            userInfoDetailDTO.setPhoto(getUserPhoto(user.getUserId()));
             userInfoDetailDTOList.add(userInfoDetailDTO);
         }
         return userInfoDetailDTOList;
