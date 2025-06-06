@@ -22,8 +22,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+// import java.util.stream.Collectors;
+// import java.util.stream.Stream;
 
 
 @Service
@@ -72,11 +72,11 @@ public class GroupApplicationService {
 
     @Transactional
     public List<GroupApplicationResultDTO> getGroupApplications(Integer userId) {
-        var applications1= groupApplicationRepository.findAllByReviewerId(userId);
-        var applications2= groupApplicationRepository.findAllByGroup(userId);
-        List<GroupApplication> applications = Stream.concat(applications1.stream(), applications2.stream())
-                .collect(Collectors.toList());
-        // var applications = groupApplicationRepository.findAllByGroup(userId);
+        // var applications1= groupApplicationRepository.findAllByReviewerId(userId);
+        // var applications2= groupApplicationRepository.findAllByGroup(userId);
+        // List<GroupApplication> applications = Stream.concat(applications1.stream(), applications2.stream())
+        //         .collect(Collectors.toList());
+        var applications = groupApplicationRepository.findGroupApplicationByUser(userId);
         return applications.stream().map(application -> {
             GroupApplicationResultDTO m = new GroupApplicationResultDTO();
             m.setGroupApplicationId(application.getGroupApplicationId());
@@ -85,6 +85,7 @@ public class GroupApplicationService {
             m.setExpirationTime(application.getExpirationTime());
             m.setApplyInfo(application.getApplyInfo());
             m.setApplicantId(application.getApplicantId());
+            m.setType(application.getType());
             m.setState(application.getState());
             UserProfileDTO applicant = userService.getUserProfile(application.getApplicantId());
             m.setApplicantName(applicant.getUserName());
@@ -141,14 +142,14 @@ public class GroupApplicationService {
 
             if (application.getType().equals(GroupApplicationType.apply)) {
                 groupMemberService.addMember(application.getGroupId(), application.getApplicantId());
-                chatService.inviteIntoGroupChat(application.getApplicantId(),group.getChatId());
+                chatService.inviteIntoGroupChat(group.getChatId(), application.getApplicantId());
                 
                 groupRecordService.addRecord(application.getReviewerId(),application.getApplicantId() , group.getGroupId(),"同意加入申请");
                 groupRecordService.addRecord(application.getApplicantId(),  null, group.getGroupId(), "申请加入团体");
             }
             else if (application.getType().equals(GroupApplicationType.invited)) {
                 groupMemberService.addMember(application.getGroupId(), application.getReviewerId());
-                chatService.inviteIntoGroupChat(application.getReviewerId(),group.getChatId());
+                chatService.inviteIntoGroupChat(group.getChatId(), application.getReviewerId());
                 groupRecordService.addRecord(application.getReviewerId(), null, group.getGroupId(),"受邀加入团体");
             }
         } else {

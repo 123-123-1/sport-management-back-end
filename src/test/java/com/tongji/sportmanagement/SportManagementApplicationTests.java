@@ -8,6 +8,7 @@ class SportManagementApplicationTests {
 
     @Test
     void contextLoads() {
+        System.out.println("hello world");
     }
 
 }

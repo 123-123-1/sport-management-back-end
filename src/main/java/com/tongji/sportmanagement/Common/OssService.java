@@ -1,10 +1,10 @@
 package com.tongji.sportmanagement.Common;
-import java.io.File;
-import java.io.FileNotFoundException;
+// import java.io.File;
+// import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Date;
-import java.util.Scanner;
+// import java.util.Scanner;
 
 import org.springframework.stereotype.Component;
 
@@ -26,26 +26,26 @@ public class OssService
 
   @PostConstruct
   public void init(){
-    try{
-      // 从oss-key.txt中读取配置信息
-      File ossKeyFile = new File("./src/main/resources/oss-key.txt");
-      Scanner sc = new Scanner(ossKeyFile);
-      String endpoint = sc.nextLine();
-      String accessKeyId = sc.nextLine();
-      String accessKeySecret = sc.nextLine();
-      bucketName = sc.nextLine();
-      sc.close();
+    // try{
+    //   // 从oss-key.txt中读取配置信息
+    //   File ossKeyFile = new File("./src/main/resources/oss-key.txt");
+    //   Scanner sc = new Scanner(ossKeyFile);
+    //   String endpoint = sc.nextLine();
+    //   String accessKeyId = sc.nextLine();
+    //   String accessKeySecret = sc.nextLine();
+    //   bucketName = sc.nextLine();
+    //   sc.close();
 
-      // String endpoint = "oss-cn-shanghai.aliyuncs.com";
-      // String accessKeyId = "";
-      // String accessKeySecret = "";
-      // bucketName = "joy-sports";
+      String endpoint = "oss-cn-shanghai.aliyuncs.com";
+      String accessKeyId = "";
+      String accessKeySecret = "";
+      bucketName = "joy-sports";
 
       ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
-    }
-    catch(FileNotFoundException e){
-      System.err.println("找不到oss-key.txt");
-    }
+    // }
+    // catch(FileNotFoundException e){
+    //   System.err.println("找不到oss-key.txt");
+    // }
   }
 
   public void uploadFile(InputStream fileInput, String key){

@@ -94,7 +94,7 @@ public class UserService {
     }
 
     public List<UserInfoDetailDTO> getUserList() throws Exception {
-        List<User> userOptional = (List<User>) userRepository.findAll();
+        List<User> userOptional = userRepository.getAllUsers();
         if(userOptional.isEmpty()) {
             throw new ServiceException(400, "用户列表为空");
         }
